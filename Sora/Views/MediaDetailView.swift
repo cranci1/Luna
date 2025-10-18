@@ -7,15 +7,19 @@
 
 import SwiftUI
 import Kingfisher
+import os
 
 struct MediaDetailView: View {
+    let logger = os.Logger(subsystem: "Sora", category: "MediaDetailView")
+    
     let searchResult: TMDBSearchResult
     
-    @StateObject private var tmdbService = TMDBService.shared
     @State private var movieDetail: TMDBMovieDetail?
     @State private var tvShowDetail: TMDBTVShowWithSeasons?
     @State private var selectedSeason: TMDBSeason?
     @State private var seasonDetail: TMDBSeasonDetail?
+    private let tmdbService = TMDBService.shared
+    
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var ambientColor: Color = Color.black
@@ -27,7 +31,11 @@ struct MediaDetailView: View {
     @State private var showingSearchResults = false
     @State private var showingAddToCollection = false
     @State private var selectedEpisodeForSearch: TMDBEpisode?
+    @State private var nextEpisodeToWatch: TMDBEpisode?
     @State private var romajiTitle: String?
+    
+    @State private var progressResetTrigger: UUID = UUID()
+    @State private var showingResetConfirmation = false
     
     @StateObject private var serviceManager = ServiceManager.shared
     @ObservedObject private var libraryManager = LibraryManager.shared
@@ -46,6 +54,8 @@ struct MediaDetailView: View {
     private var playButtonText: String {
         if searchResult.isMovie {
             return "Play"
+        } else if let nextEpisode = nextEpisodeToWatch {
+            return "Watch S\(nextEpisode.seasonNumber)E\(nextEpisode.episodeNumber)"
         } else if let selectedEpisode = selectedEpisodeForSearch {
             return "Play S\(selectedEpisode.seasonNumber)E\(selectedEpisode.episodeNumber)"
         } else {
@@ -89,10 +99,16 @@ struct MediaDetailView: View {
             loadMediaDetails()
             updateBookmarkStatus()
         }
+        .onChange(of: progressResetTrigger, perform: { _ in
+            updateNextEpisodeToWatch()
+        })
         .onChange(of: libraryManager.collections) { _ in
             updateBookmarkStatus()
         }
-        .sheet(isPresented: $showingSearchResults) {
+        .sheet(isPresented: $showingSearchResults, onDismiss: {
+            updateNextEpisodeToWatch()
+            progressResetTrigger = UUID()
+        }) {
             ModulesSearchResultsSheet(
                 mediaTitle: searchResult.displayTitle,
                 originalTitle: romajiTitle,
@@ -103,6 +119,19 @@ struct MediaDetailView: View {
         }
         .sheet(isPresented: $showingAddToCollection) {
             AddToCollectionView(searchResult: searchResult)
+        }
+        .confirmationDialog(
+            "Reset Show Progress",
+            isPresented: $showingResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset All Episodes", role: .destructive) {
+                resetEntireShowProgress()
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        message: {
+            Text("Are you sure you want to reset progress for all episodes?")
         }
     }
     
@@ -348,6 +377,23 @@ struct MediaDetailView: View {
                     .foregroundColor(.primary)
                     .cornerRadius(8)
             }
+            Button(action: {
+                showResetConfirmation()
+            }) {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.title2)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black.opacity(0.2))
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(.ultraThinMaterial)
+                            )
+                    )
+                    .foregroundColor(.primary)
+                    .cornerRadius(8)
+            }
         }
         .padding(.horizontal)
     }
@@ -360,6 +406,10 @@ struct MediaDetailView: View {
                 selectedSeason: $selectedSeason,
                 seasonDetail: $seasonDetail,
                 selectedEpisodeForSearch: $selectedEpisodeForSearch,
+                progressUpdateTrigger: progressResetTrigger,
+                updateProgressTrigger: {
+                    progressResetTrigger = UUID()
+                },
                 tmdbService: tmdbService
             )
         }
@@ -376,12 +426,22 @@ struct MediaDetailView: View {
         isBookmarked = libraryManager.isBookmarked(searchResult)
     }
     
+    private func showResetConfirmation() {
+        showingResetConfirmation = true
+    }
+    
+    private func resetEntireShowProgress() {
+        if let show = tvShowDetail, show.id > 0 {
+            ProgressManager.shared.resetEntireShowProgress(showId: show.id)
+            progressResetTrigger = UUID() // This will force views to update
+        }
+    }
+    
+    // 2) Prefer the computed "nextEpisodeToWatch" when searching services
     private func searchInServices() {
-        // This function will only be called when services are available
-        // since the button is disabled when no services are active
-        
         if !searchResult.isMovie {
-            if selectedEpisodeForSearch != nil {
+            if let next = nextEpisodeToWatch {
+                selectedEpisodeForSearch = next
             } else if let seasonDetail = seasonDetail, !seasonDetail.episodes.isEmpty {
                 selectedEpisodeForSearch = seasonDetail.episodes.first
             } else {
@@ -390,8 +450,112 @@ struct MediaDetailView: View {
         } else {
             selectedEpisodeForSearch = nil
         }
-        
         showingSearchResults = true
+    }
+    
+    private func updateNextEpisodeToWatch() {
+        guard !searchResult.isMovie, let show = tvShowDetail else {
+            nextEpisodeToWatch = nil
+            return
+        }
+
+        Task {
+            let showId = show.id
+
+            if let latest = ProgressManager.shared.getLatestWatchedEpisode(showId: showId) {
+                do {
+                    // Current season detail
+                    let currentSeasonDetail = try await tmdbService.getSeasonDetails(
+                        tvShowId: showId,
+                        seasonNumber: latest.season
+                    )
+                    
+                    logger.debug("Latest watched episode: S\(latest.season)E\(latest.episode)")
+
+                    // If "before first episode", pick the first episode of this season
+                    if latest.episode <= 0 {
+                        await MainActor.run {
+                            self.nextEpisodeToWatch = currentSeasonDetail.episodes.first
+                        }
+                        return
+                    }
+
+                    // Find next episode in the same season
+                    if let idx = currentSeasonDetail.episodes.firstIndex(where: { $0.episodeNumber == latest.episode }),
+                       idx + 1 < currentSeasonDetail.episodes.count {
+                        let next = currentSeasonDetail.episodes[idx + 1]
+                        await MainActor.run {
+                            self.nextEpisodeToWatch = next
+                        }
+                        return
+                    }
+
+                    // Move to first episode of next non-special season
+                    let orderedSeasons = show.seasons
+                        .filter { $0.seasonNumber > 0 }
+                        .sorted { $0.seasonNumber < $1.seasonNumber }
+
+                    if let sIdx = orderedSeasons.firstIndex(where: { $0.seasonNumber == latest.season }),
+                       sIdx + 1 < orderedSeasons.count {
+                        let nextSeasonNumber = orderedSeasons[sIdx + 1].seasonNumber
+                        let nextSeasonDetail = try await tmdbService.getSeasonDetails(
+                            tvShowId: showId,
+                            seasonNumber: nextSeasonNumber
+                        )
+                        await MainActor.run {
+                            self.nextEpisodeToWatch = nextSeasonDetail.episodes.first
+                        }
+                        return
+                    }
+
+                    await MainActor.run { self.nextEpisodeToWatch = nil }
+                } catch {
+                    await MainActor.run { self.nextEpisodeToWatch = nil }
+                }
+            } else {
+                // No latest watched: pick first episode of first non-special season
+                if let firstSeason = show.seasons
+                    .filter({ $0.seasonNumber > 0 })
+                    .sorted(by: { $0.seasonNumber < $1.seasonNumber })
+                    .first {
+                    do {
+                        let sd = try await tmdbService.getSeasonDetails(
+                            tvShowId: showId,
+                            seasonNumber: firstSeason.seasonNumber
+                        )
+                        await MainActor.run { self.nextEpisodeToWatch = sd.episodes.first }
+                        return
+                    } catch {
+                        await MainActor.run { self.nextEpisodeToWatch = nil }
+                    }
+                } else {
+                    await MainActor.run { self.nextEpisodeToWatch = nil }
+                }
+            }
+        }
+    }
+
+    private func refreshAfterPlayback() {
+        // Notify dependent views (e.g., episodes section) to recompute progress
+        progressResetTrigger = UUID()
+        updateNextEpisodeToWatch()
+
+        // Optionally reload the currently selected season’s episodes
+        if let show = tvShowDetail, let season = selectedSeason {
+            Task {
+                do {
+                    let sd = try await tmdbService.getSeasonDetails(
+                        tvShowId: show.id,
+                        seasonNumber: season.seasonNumber
+                    )
+                    await MainActor.run {
+                        self.seasonDetail = sd
+                    }
+                } catch {
+                    // Ignore reload errors for now
+                }
+            }
+        }
     }
     
     private func loadMediaDetails() {
@@ -422,6 +586,7 @@ struct MediaDetailView: View {
                         self.selectedEpisodeForSearch = nil
                         self.isLoading = false
                     }
+                    updateNextEpisodeToWatch()
                 }
             } catch {
                 await MainActor.run {
@@ -431,4 +596,5 @@ struct MediaDetailView: View {
             }
         }
     }
+    
 }

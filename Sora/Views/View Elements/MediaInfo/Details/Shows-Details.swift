@@ -13,6 +13,10 @@ struct TVShowSeasonsSection: View {
     @Binding var selectedSeason: TMDBSeason?
     @Binding var seasonDetail: TMDBSeasonDetail?
     @Binding var selectedEpisodeForSearch: TMDBEpisode?
+    
+    var progressUpdateTrigger: UUID
+    var updateProgressTrigger: () -> Void
+    
     let tmdbService: TMDBService
     
     @State private var isLoadingSeason = false
@@ -115,15 +119,19 @@ struct TVShowSeasonsSection: View {
             }
         }
         .onAppear {
-            if let tvShow = tvShow, let selectedSeason = selectedSeason {
-                loadSeasonDetails(tvShowId: tvShow.id, season: selectedSeason)
-                Task {
-                    let romaji = await tmdbService.getRomajiTitle(for: "tv", id: tvShow.id)
-                    await MainActor.run {
-                        self.romajiTitle = romaji
-                    }
+            guard let tvShow = tvShow else { return }
+            autoSelectSeasonFor(tvShow: tvShow)
+
+            Task {
+                let romaji = await tmdbService.getRomajiTitle(for: "tv", id: tvShow.id)
+                await MainActor.run {
+                    self.romajiTitle = romaji
                 }
             }
+        }
+        .onChange(of: tvShow?.id) { _ in
+            guard let tvShow = tvShow else { return }
+            autoSelectSeasonFor(tvShow: tvShow)
         }
         .sheet(isPresented: $showingSearchResults) {
             ModulesSearchResultsSheet(
@@ -298,10 +306,35 @@ struct TVShowSeasonsSection: View {
                 isSelected: isSelected,
                 onTap: { episodeTapAction(episode: episode) },
                 onMarkWatched: { markAsWatched(episode: episode) },
-                onResetProgress: { resetProgress(episode: episode) }
+                onResetProgress: { resetProgress(episode: episode) },
+                onMarkPreviousEpisodesWatched: { onMarkPreviousEpisodesAsWatched(upTo: episode) },
+                progressUpdateTrigger: progressUpdateTrigger
             )
         } else {
             EmptyView()
+        }
+    }
+    
+    private func autoSelectSeasonFor(tvShow: TMDBTVShowWithSeasons) {
+        let nonSpecialSeasons = tvShow.seasons
+            .filter { $0.seasonNumber > 0 }
+            .sorted { $0.seasonNumber < $1.seasonNumber }
+
+        if let latest = ProgressManager.shared.getLatestWatchedEpisode(showId: tvShow.id),
+           let target = nonSpecialSeasons.first(where: { $0.seasonNumber == latest.season }) {
+            if selectedSeason?.id != target.id {
+                selectedSeason = target
+            }
+            loadSeasonDetails(tvShowId: tvShow.id, season: target)
+            return
+        }
+
+        // Fallback: keep current selection or default to first non-special
+        if let current = selectedSeason {
+            loadSeasonDetails(tvShowId: tvShow.id, season: current)
+        } else if let first = nonSpecialSeasons.first {
+            selectedSeason = first
+            loadSeasonDetails(tvShowId: tvShow.id, season: first)
         }
     }
     
@@ -323,20 +356,60 @@ struct TVShowSeasonsSection: View {
     
     private func markAsWatched(episode: TMDBEpisode) {
         guard let tvShow = tvShow else { return }
-        ProgressManager.shared.markEpisodeAsWatched(
-            showId: tvShow.id,
-            seasonNumber: episode.seasonNumber,
-            episodeNumber: episode.episodeNumber
-        )
+        
+        // Use Task to ensure we can await async operations if needed
+        Task {
+            // Mark as watched
+            ProgressManager.shared.markEpisodeAsWatched(
+                showId: tvShow.id,
+                seasonNumber: episode.seasonNumber,
+                episodeNumber: episode.episodeNumber
+            )
+            
+            // Ensure we're on the main thread for UI updates
+            await MainActor.run {
+                // Trigger UI update
+                updateProgressTrigger()
+            }
+        }
     }
     
     private func resetProgress(episode: TMDBEpisode) {
         guard let tvShow = tvShow else { return }
-        ProgressManager.shared.resetEpisodeProgress(
-            showId: tvShow.id,
-            seasonNumber: episode.seasonNumber,
-            episodeNumber: episode.episodeNumber
-        )
+        
+        Task {
+            // Reset progress
+            ProgressManager.shared.resetEpisodeProgress(
+                showId: tvShow.id,
+                seasonNumber: episode.seasonNumber,
+                episodeNumber: episode.episodeNumber
+            )
+            
+            // Ensure we're on the main thread for UI updates
+            await MainActor.run {
+                // Trigger UI update
+                updateProgressTrigger()
+            }
+        }
+    }
+    
+    private func onMarkPreviousEpisodesAsWatched(upTo episode: TMDBEpisode) {
+        guard let tvShow = tvShow else { return }
+        
+        Task {
+            // Reset progress
+            ProgressManager.shared.markAllEpisodesBeforeAsWatched(
+                showId: tvShow.id,
+                seasonNumber: episode.seasonNumber,
+                episodeNumber: episode.episodeNumber
+            )
+            
+            // Ensure we're on the main thread for UI updates
+            await MainActor.run {
+                // Trigger UI update
+                updateProgressTrigger()
+            }
+        }
     }
     
     private func loadSeasonDetails(tvShowId: Int, season: TMDBSeason) {

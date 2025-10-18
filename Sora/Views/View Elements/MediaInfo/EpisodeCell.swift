@@ -16,6 +16,8 @@ struct EpisodeCell: View {
     let onTap: () -> Void
     let onMarkWatched: () -> Void
     let onResetProgress: () -> Void
+    let onMarkPreviousEpisodesWatched: () -> Void
+    let progressUpdateTrigger: UUID
     
     @State private var isWatched: Bool = false
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList: Bool = false
@@ -127,6 +129,10 @@ struct EpisodeCell: View {
         .onAppear {
             loadEpisodeProgress()
         }
+        .onChange(of: progressUpdateTrigger) { _ in
+            loadEpisodeProgress()
+        }
+        .opacity(isWatched ? 0.5 : 1.0)
     }
     
     @MainActor private var verticalLayout: some View {
@@ -238,6 +244,10 @@ struct EpisodeCell: View {
         .onAppear {
             loadEpisodeProgress()
         }
+        .onChange(of: progressUpdateTrigger) { _ in
+            loadEpisodeProgress()
+        }
+        .opacity(isWatched ? 0.5 : 1.0)
     }
     
     private var episodeContextMenu: some View {
@@ -245,14 +255,16 @@ struct EpisodeCell: View {
             Button(action: onTap) {
                 Label("Play", systemImage: "play.fill")
             }
-            
-            if progress < 0.95 {
+            if episode.episodeNumber > 1 {
                 Button(action: {
-                    ProgressManager.shared.markEpisodeAsWatched(
-                        showId: showId,
-                        seasonNumber: episode.seasonNumber,
-                        episodeNumber: episode.episodeNumber
-                    )
+                    onMarkPreviousEpisodesWatched()
+                }) {
+                    Label("Mark all previous Episodes as Watched", systemImage: "checkmark.circle")
+                }
+            }
+            
+            if progress < 0.95 && !isWatched{
+                Button(action: {
                     onMarkWatched()
                     isWatched = true
                 }) {
@@ -260,13 +272,8 @@ struct EpisodeCell: View {
                 }
             }
             
-            if progress > 0 {
+            if progress > 0  || isWatched {
                 Button(action: {
-                    ProgressManager.shared.resetEpisodeProgress(
-                        showId: showId,
-                        seasonNumber: episode.seasonNumber,
-                        episodeNumber: episode.episodeNumber
-                    )
                     onResetProgress()
                     isWatched = false
                 }) {
