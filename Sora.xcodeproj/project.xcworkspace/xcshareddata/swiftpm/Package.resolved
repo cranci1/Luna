@@ -12,10 +12,10 @@
     {
       "identity" : "mpvkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mpvkit/MPVKit",
+      "location" : "https://github.com/cranci1/MPVKit/",
       "state" : {
-        "revision" : "32794687269115d5f93495d5bc3a86bf7bf95293",
-        "version" : "0.40.0"
+        "branch" : "main",
+        "revision" : "a8929d866e715a275310e39553a43a6ff993d2c2"
       }
     },
     {

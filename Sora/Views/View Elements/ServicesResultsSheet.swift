@@ -877,6 +877,7 @@ struct ModulesSearchResultsSheet: View {
                                 self.pendingEpisodes = season
                                 self.pendingResult = result
                                 self.pendingJSController = jsController
+                                self.pendingService = service
                                 self.isFetchingStreams = false
                                 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -906,6 +907,7 @@ struct ModulesSearchResultsSheet: View {
                                 self.availableSeasons = seasons
                                 self.pendingResult = result
                                 self.pendingJSController = jsController
+                                self.pendingService = service
                                 self.isFetchingStreams = false
                                 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -918,6 +920,7 @@ struct ModulesSearchResultsSheet: View {
                                     self.pendingEpisodes = season
                                     self.pendingResult = result
                                     self.pendingJSController = jsController
+                                    self.pendingService = service
                                     self.isFetchingStreams = false
                                     
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -1117,8 +1120,14 @@ struct ModulesSearchResultsSheet: View {
                 let pvc = PlayerViewController(
                     url: streamURL,
                     preset: preset ?? PlayerPreset(id: .sdrRec709, title: "Default", summary: "", stream: nil, commands: []),
-                    headers: finalHeaders
+                    headers: finalHeaders,
+                    subtitles: subtitles
                 )
+                if isMovie {
+                    pvc.mediaInfo = .movie(id: tmdbId, title: mediaTitle)
+                } else if let episode = selectedEpisode {
+                    pvc.mediaInfo = .episode(showId: tmdbId, seasonNumber: episode.seasonNumber, episodeNumber: episode.episodeNumber)
+                }
                 pvc.modalPresentationStyle = .fullScreen
                 
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

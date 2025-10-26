@@ -25,9 +25,6 @@ struct ServicesView: View {
                 EditButton()
             }
         }
-        .refreshable {
-            await serviceManager.refreshDefaultServices()
-        }
     }
     
     @ViewBuilder

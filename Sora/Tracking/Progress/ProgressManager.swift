@@ -16,7 +16,13 @@ class ProgressManager {
     // MARK: - Key Generation
     
     private func movieProgressKey(movieId: Int, title: String) -> String {
-        return "movie_progress_\(movieId)_\(title.replacingOccurrences(of: " ", with: "_").lowercased())"
+        let sanitizedTitle = title
+            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
+            .replacingOccurrences(of: " ", with: "_")
+            .lowercased()
+            .prefix(50)
+        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
+        return "movie_progress_\(movieId)_\(finalTitle)"
     }
     
     private func episodeProgressKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
@@ -24,7 +30,13 @@ class ProgressManager {
     }
     
     private func movieDurationKey(movieId: Int, title: String) -> String {
-        return "movie_duration_\(movieId)_\(title.replacingOccurrences(of: " ", with: "_").lowercased())"
+        let sanitizedTitle = title
+            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
+            .replacingOccurrences(of: " ", with: "_")
+            .lowercased()
+            .prefix(50)
+        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
+        return "movie_duration_\(movieId)_\(finalTitle)"
     }
     
     private func episodeDurationKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
@@ -32,7 +44,13 @@ class ProgressManager {
     }
     
     private func movieWatchedKey(movieId: Int, title: String) -> String {
-        return "movie_watched_\(movieId)_\(title.replacingOccurrences(of: " ", with: "_").lowercased())"
+        let sanitizedTitle = title
+            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
+            .replacingOccurrences(of: " ", with: "_")
+            .lowercased()
+            .prefix(50)
+        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
+        return "movie_watched_\(movieId)_\(finalTitle)"
     }
     
     private func episodeWatchedKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
@@ -58,8 +76,6 @@ class ProgressManager {
         if progressPercentage >= 0.95 {
             UserDefaults.standard.set(true, forKey: watchedKey)
         }
-        
-        Logger.shared.log("Updated movie progress: \(title) - \(String(format: "%.1f", progressPercentage * 100))%", type: "Progress")
     }
     
     func updateEpisodeProgress(showId: Int, seasonNumber: Int, episodeNumber: Int, currentTime: Double, totalDuration: Double) {
@@ -79,8 +95,6 @@ class ProgressManager {
         if progressPercentage >= 0.95 {
             UserDefaults.standard.set(true, forKey: watchedKey)
         }
-        
-        Logger.shared.log("Updated episode progress: S\(seasonNumber)E\(episodeNumber) - \(String(format: "%.1f", progressPercentage * 100))%", type: "Progress")
     }
     
     // MARK: - Progress Retrieval

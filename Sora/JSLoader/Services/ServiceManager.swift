@@ -29,10 +29,6 @@ class ServiceManager: ObservableObject {
     
     let documentsDirectory: URL
     let servicesDirectory: URL
-    private let defaultServiceURLs = [
-        "https://raw.githubusercontent.com/cranci1/Sora-Modules/refs/heads/main/Emby/Emby.json",
-        "https://raw.githubusercontent.com/cranci1/Sora-Modules/refs/heads/main/JellyFin/jellyfin.json"
-    ]
     
     private init() {
 #if os(tvOS)
@@ -45,7 +41,6 @@ class ServiceManager: ObservableObject {
         createServicesDirectoryIfNeeded()
         loadExistingServices()
         loadServiceOrder()
-        loadDefaultServicesIfNeeded()
         
         let activeCount = services.filter { $0.isActive }.count
         Logger.shared.log("ServiceManager initialized with \(services.count) services, \(activeCount) active", type: "ServiceManager")
@@ -192,11 +187,6 @@ class ServiceManager: ObservableObject {
         }
     }
     
-    func refreshDefaultServices() async {
-        UserDefaults.standard.set(false, forKey: "DefaultServicesLoaded")
-        await loadDefaultServices()
-    }
-    
     // MARK: - Search Methods
     
     func searchInActiveServices(query: String) async -> [(service: Services, results: [SearchItem])] {
@@ -213,7 +203,7 @@ class ServiceManager: ObservableObject {
                     guard let self = self else { return (service.id, []) }
                     return await withTaskCancellationHandler(handler: {
                     }, operation: {
-                        let timeoutSeconds: UInt64 = 10 // per-service timeout
+                        let timeoutSeconds: UInt64 = 10
                         return await ServiceManager.withTimeout(seconds: timeoutSeconds) {
                             let found = await self.searchInService(service: service, query: query)
                             return (service.id, found)
@@ -440,29 +430,6 @@ class ServiceManager: ObservableObject {
             self.downloadProgress = 0.0
             self.downloadMessage = ""
         }
-    }
-    
-    // MARK: - Default Services
-    
-    private func loadDefaultServicesIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: "DefaultServicesLoaded") else { return }
-        Task { await loadDefaultServices() }
-    }
-    
-    private func loadDefaultServices() async {
-        for serviceURL in defaultServiceURLs {
-            do {
-                let metadata = try await downloadAndParseMetadata(from: serviceURL)
-                let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
-                _ = try await saveuPdateService(metadata: metadata, jsContent: jsContent, metadataUrl: serviceURL)
-                
-            } catch {
-                Logger.shared.log("Failed to load default service from \(serviceURL): \(error.localizedDescription)", type: "ServiceManager")
-            }
-        }
-        
-        await MainActor.run { self.saveServiceStates() }
-        UserDefaults.standard.set(true, forKey: "DefaultServicesLoaded")
     }
     
     // MARK: - Service Settings

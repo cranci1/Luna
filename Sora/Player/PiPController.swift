@@ -58,7 +58,7 @@ final class PiPController: NSObject {
         
         pipController = AVPictureInPictureController(contentSource: contentSource)
         pipController?.delegate = self
-        
+        pipController?.requiresLinearPlayback = false
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
     }
     
@@ -76,6 +76,10 @@ final class PiPController: NSObject {
     }
     
     func invalidate() {
+        pipController?.invalidatePlaybackState()
+    }
+    
+    func updatePlaybackState() {
         pipController?.invalidatePlaybackState()
     }
 }

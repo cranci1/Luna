@@ -156,7 +156,7 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
             lastPlayedTime = ProgressManager.shared.getEpisodeCurrentTime(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
         }
         
-        if lastPlayedTime > 30 {
+        if lastPlayedTime != 0 {
             let progress = getProgressPercentage(for: mediaInfo)
             if progress < 0.95 {
                 let seekTime = CMTime(seconds: lastPlayedTime, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
