@@ -37,7 +37,9 @@ final class SampleBufferDisplayView: UIView {
         backgroundColor = .black
         displayLayer.videoGravity = .resizeAspect
         if #available(iOS 17.0, *) {
-            displayLayer.wantsExtendedDynamicRangeContent = true
+            #if !os(tvOS)
+                displayLayer.wantsExtendedDynamicRangeContent = true
+            #endif
         }
         setupPictureInPicture()
     }

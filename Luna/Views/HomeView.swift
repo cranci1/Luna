@@ -60,7 +60,7 @@ struct HomeView: View {
         ZStack {
             Group {
                 if useSolidBackgroundBehindHero {
-                    Color(.systemBackground)
+                    Color.background
                 } else {
                     ambientColor
                 }
@@ -81,7 +81,7 @@ struct HomeView: View {
                 loadContent()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _ in
+        .onChange(of: contentFilter.filterHorror) { _, _ in
             if hasLoadedContent {
                 loadContent()
             }

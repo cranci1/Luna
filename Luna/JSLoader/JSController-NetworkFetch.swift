@@ -8,6 +8,7 @@
 #if !os(tvOS)
 import WebKit
 #endif
+
 import JavaScriptCore
 
 struct NetworkFetchOptions {
@@ -44,13 +45,12 @@ struct NetworkFetchOptions {
     }
 }
 
-#if !os(tvOS)
 extension JSContext {
     func setupNetworkFetch() {
         let networkFetchNativeFunction: @convention(block) (String, JSValue?, JSValue, JSValue) -> Void = { urlString, optionsValue, resolve, reject in
             DispatchQueue.main.async {
                 var options = NetworkFetchOptions()
-                
+
                 if let optionsDict = optionsValue?.toDictionary() {
                     let timeoutSeconds = optionsDict["timeoutSeconds"] as? Int ?? 10
                     let headers = optionsDict["headers"] as? [String: String] ?? [:]
@@ -61,7 +61,7 @@ extension JSContext {
                     let waitForSelectors = optionsDict["waitForSelectors"] as? [String] ?? []
                     let maxWaitTime = optionsDict["maxWaitTime"] as? Int ?? 5
                     let htmlContent = optionsDict["htmlContent"] as? String
-                    
+
                     options = NetworkFetchOptions(
                         timeoutSeconds: timeoutSeconds,
                         headers: headers,
@@ -74,7 +74,7 @@ extension JSContext {
                         htmlContent: htmlContent
                     )
                 }
-                
+
                 NetworkFetchManager.shared.performNetworkFetch(
                     urlString: urlString,
                     options: options,
@@ -83,9 +83,9 @@ extension JSContext {
                 )
             }
         }
-        
+
         self.setObject(networkFetchNativeFunction, forKeyedSubscript: "networkFetchNative" as NSString)
-        
+
         let networkFetchDefinition = """
             function networkFetch(url, options = {}) {
                 if (typeof options === 'number') {
@@ -184,10 +184,10 @@ extension JSContext {
                 });
             }
             """
-        
+
         self.evaluateScript(networkFetchDefinition)
     }
-    
+
     func setupNetworkFetchSimple() {
         let networkFetchSimpleNativeFunction: @convention(block) (String, JSValue?, JSValue, JSValue) -> Void = { urlString, optionsValue, resolve, reject in
             DispatchQueue.main.async {
@@ -247,13 +247,13 @@ extension JSContext {
 
 class NetworkFetchSimpleManager: NSObject, ObservableObject {
     static let shared = NetworkFetchSimpleManager()
-    
+
     private var activeMonitors: [String: NetworkFetchSimpleMonitor] = [:]
-    
+
     private override init() {
         super.init()
     }
-    
+
     func performNetworkFetch(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, headers: [String: String] = [:], resolve: JSValue, reject: JSValue) {
         let monitorId = UUID().uuidString
         let monitor = NetworkFetchSimpleMonitor()
@@ -278,11 +278,11 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
     private var webView: WKWebView?
     private var completionHandler: (([String: Any]) -> Void)?
     private var timer: Timer?
-    
+
     @Published private(set) var networkRequests: [String] = []
-    
+
     private var originalUrlString: String = ""
-    
+
     func startMonitoring(urlString: String, timeoutSeconds: Int, htmlContent: String? = nil, headers: [String: String] = [:], completion: @escaping ([String: Any]) -> Void) {
         originalUrlString = urlString
         completionHandler = completion
@@ -307,24 +307,24 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             self?.stopMonitoring()
         }
     }
-    
+
     private func loadHTMLContent(_ htmlContent: String) {
         guard let webView = webView else { return }
-        
+
         addRequest("data:text/html;charset=utf-8,<html_content>")
-        
+
         webView.loadHTMLString(htmlContent, baseURL: nil)
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.simulateUserInteraction()
         }
     }
-    
+
     private func setupWebView() {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
-        
+
         let jsCode = """
         (function() {
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -557,17 +557,17 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             setTimeout(nuclearScan, 3000);
         })();
         """
-        
-        let userScript = WKUserScript(source: jsCode, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+
+        let userScript = WKUserScript(source: jsCode, injectionTime: WKUserScriptInjectionTime.atDocumentStart, forMainFrameOnly: false)
         config.userContentController.addUserScript(userScript)
         config.userContentController.add(self, name: "networkLogger")
-        
+
         webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080), configuration: config)
         webView?.navigationDelegate = self
-        
+
         webView?.customUserAgent = URLSession.randomUserAgent
     }
-    
+
     private func loadURL(url: URL, headers: [String: String] = [:]) {
         guard let webView = webView else { return }
         addRequest(url.absoluteString)
@@ -599,10 +599,10 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
             self.simulateUserInteraction()
         }
     }
-    
+
     private func simulateUserInteraction() {
         guard let webView = webView else { return }
-        
+
         let jsInteraction = """
         setTimeout(function() {
             const playButtons = document.querySelectorAll('button, div, span, a').filter(function(el) {
@@ -650,30 +650,30 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         """
         webView.evaluateJavaScript(jsInteraction, completionHandler: nil)
     }
-    
+
     private func stopMonitoring() {
         timer?.invalidate()
         timer = nil
-        
+
         webView?.stopLoading()
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "networkLogger")
-        
-        let originalUrl = networkRequests.first == "data:text/html;charset=utf-8,<html_content>" ? 
-            "data:text/html;charset=utf-8,<html_content>" : 
+
+        let originalUrl = networkRequests.first == "data:text/html;charset=utf-8,<html_content>" ?
+            "data:text/html;charset=utf-8,<html_content>" :
             (webView?.url?.absoluteString ?? originalUrlString)
-        
+
         let result: [String: Any] = [
             "originalUrl": originalUrl,
             "requests": networkRequests,
             "success": true
         ]
-        
+
         webView = nil
-        
+
         completionHandler?(result)
         completionHandler = nil
     }
-    
+
     private func addRequest(_ urlString: String) {
         DispatchQueue.main.async {
             if !self.networkRequests.contains(urlString) {
@@ -839,7 +839,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         }
         
         if shouldCaptureCookies {
-            captureCookies { [weak self] in
+            captureCookies {
                 DispatchQueue.main.async {
                     checkCompletion()
                 }
@@ -854,7 +854,7 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
         }
         
         let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
-        
+
         cookieStore.getAllCookies { [weak self] cookies in
             DispatchQueue.main.async {
                 var cookieDict: [String: String] = [:]
@@ -1401,7 +1401,7 @@ extension NetworkFetchMonitor: WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {}
     
-    private func webView(_ webView: WKNavigationAction, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
             addRequest(url.absoluteString)
         }
@@ -1450,8 +1450,3 @@ extension NetworkFetchMonitor: WKScriptMessageHandler {
         }
     }
 }
-#else
-extension JSContext {
-    func setupNetworkFetch() {}
-}
-#endif

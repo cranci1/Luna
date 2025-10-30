@@ -379,7 +379,7 @@ extension JSContext {
         """
         self.evaluateScript(scrapingUtils)
     }
-    
+
     func setupJavaScriptEnvironment() {
         setupWeirdCode()
         setupConsoleLogging()

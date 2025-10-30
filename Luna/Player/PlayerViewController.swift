@@ -80,7 +80,10 @@ final class PlayerViewController: UIViewController {
         btn.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
         btn.backgroundColor = UIColor(white: 1.0, alpha: 0.12)
         btn.layer.cornerRadius = 6
-        btn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+
+        if #unavailable(tvOS 15) {
+            btn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        }
         btn.addTarget(self, action: #selector(viewLogsTapped), for: .touchUpInside)
         
         container.addSubview(icon)
@@ -228,7 +231,10 @@ final class PlayerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        modalPresentationCapturesStatusBarAppearance = true
+
+        #if !os(tvOS)
+            modalPresentationCapturesStatusBarAppearance = true
+        #endif
         setupLayout()
         setupActions()
         setupHoldGesture()
@@ -261,28 +267,30 @@ final class PlayerViewController: UIViewController {
         super.viewDidAppear(animated)
         view.bringSubviewToFront(errorBanner)
     }
-    
-    override var prefersStatusBarHidden: Bool { true }
-    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation { .fade }
-    
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
-            return .landscape
-        } else {
-            return .all
+
+    #if !os(tvOS)
+        override var prefersStatusBarHidden: Bool { true }
+        override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation { .fade }
+
+        override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+            if UserDefaults.standard.bool(forKey: "alwaysLandscape") {
+                return .landscape
+            } else {
+                return .all
+            }
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        setNeedsStatusBarAppearanceUpdate()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        setNeedsStatusBarAppearanceUpdate()
-    }
-    
+
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            setNeedsStatusBarAppearanceUpdate()
+        }
+
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            setNeedsStatusBarAppearanceUpdate()
+        }
+    #endif
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -361,7 +369,9 @@ final class PlayerViewController: UIViewController {
         displayLayer.frame = videoContainer.bounds
         displayLayer.videoGravity = .resizeAspect
         if #available(iOS 17.0, *) {
-            displayLayer.wantsExtendedDynamicRangeContent = true
+            #if !os(tvOS)
+                displayLayer.wantsExtendedDynamicRangeContent = true
+            #endif
         }
         displayLayer.backgroundColor = UIColor.black.cgColor
         
@@ -876,10 +886,13 @@ final class PlayerViewController: UIViewController {
         Task { @MainActor in
             let logs = await Logger.shared.getLogsAsync()
             let vc = UIViewController()
-            vc.view.backgroundColor = .systemBackground
+            vc.view.backgroundColor = UIColor(named: "background")
             let tv = UITextView()
             tv.translatesAutoresizingMaskIntoConstraints = false
-            tv.isEditable = false
+
+            #if !os(tvOS)
+                tv.isEditable = false
+            #endif
             tv.text = logs
             tv.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
             vc.view.addSubview(tv)
@@ -891,8 +904,12 @@ final class PlayerViewController: UIViewController {
             ])
             vc.navigationItem.title = "Logs"
             let nav = UINavigationController(rootViewController: vc)
-            nav.modalPresentationStyle = .pageSheet
-            let close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
+
+            #if !os(tvOS)
+                nav.modalPresentationStyle = .pageSheet
+            #endif
+
+            let close = UIBarButtonItem(title: "Close", style: .prominent, target: self, action: #selector(dismissLogs))
             vc.navigationItem.rightBarButtonItem = close
             self.present(nav, animated: true, completion: nil)
         }

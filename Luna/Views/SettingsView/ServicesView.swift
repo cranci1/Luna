@@ -20,11 +20,13 @@ struct ServicesView: View {
             }
         }
         .navigationTitle("Services")
+        #if !os(tvOS)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 EditButton()
             }
         }
+        #endif
     }
     
     @ViewBuilder

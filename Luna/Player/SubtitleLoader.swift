@@ -138,7 +138,7 @@ class SubtitleLoader {
         let italicFont = UIFont.italicSystemFont(ofSize: fontSize)
         
         let attributedString = NSMutableAttributedString()
-        var currentText = text
+        let currentText = text
         var currentIndex = currentText.startIndex
         
         while currentIndex < currentText.endIndex {

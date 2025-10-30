@@ -57,7 +57,7 @@ struct MediaDetailView: View {
         ZStack {
             Group {
                 if useSolidBackgroundBehindHero {
-                    Color(.systemBackground)
+                    Color.background
                 } else {
                     ambientColor
                 }
@@ -89,7 +89,7 @@ struct MediaDetailView: View {
             loadMediaDetails()
             updateBookmarkStatus()
         }
-        .onChange(of: libraryManager.collections) { _ in
+        .onChange(of: libraryManager.collections) { _, _ in
             updateBookmarkStatus()
         }
         .sheet(isPresented: $showingSearchResults) {

@@ -59,7 +59,9 @@ final class PiPController: NSObject {
         pipController = AVPictureInPictureController(contentSource: contentSource)
         pipController?.delegate = self
         pipController?.requiresLinearPlayback = false
+        #if !os(tvOS)
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
+        #endif
     }
     
     func startPictureInPicture() {

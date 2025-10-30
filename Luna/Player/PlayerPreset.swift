@@ -41,7 +41,7 @@ struct PlayerPreset: Identifiable, Hashable {
     let commands: [[String]]
     
     static var presets: [PlayerPreset] {
-        var list: [PlayerPreset] = []
+        let list: [PlayerPreset] = []
         return list
     }
 }
