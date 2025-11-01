@@ -3,12 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		123682CC2EB402E400F86F5B /* JSController-WKWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123682CB2EB402CA00F86F5B /* JSController-WKWebView.swift */; };
+		120B0E122EB67889008EA699 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 120B0E112EB67889008EA699 /* FakeWebKit */; };
 		125350A82EB1612800501F30 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 125350A72EB1612800501F30 /* SoraCore */; };
+		12F745402EB53B4D00889684 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12F7453F2EB53B4D00889684 /* FakeWebKit */; };
 		131A62002E51CCE9009CE905 /* FeaturedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131A61FF2E51CCE9009CE905 /* FeaturedCard.swift */; };
 		1324E7BB2E940BD70036B5F5 /* PlayerPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */; };
 		1324E7BC2E940BD70036B5F5 /* MPVSoftwareRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */; };
@@ -76,8 +77,20 @@
 		13F5B5972E730CDB00565E75 /* TMDBFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B5962E730CDB00565E75 /* TMDBFiltersView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		12F745372EB539F000889684 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		123682CB2EB402CA00F86F5B /* JSController-WKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSController-WKWebView.swift"; sourceTree = "<group>"; };
 		131A61FF2E51CCE9009CE905 /* FeaturedCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeaturedCard.swift; sourceTree = "<group>"; };
 		1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerPreset.swift; sourceTree = "<group>"; };
 		1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPVSoftwareRenderer.swift; sourceTree = "<group>"; };
@@ -152,8 +165,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				1396D5332E9C0715008DBB8B /* MPVKit in Frameworks */,
+				120B0E122EB67889008EA699 /* FakeWebKit in Frameworks */,
 				125350A82EB1612800501F30 /* SoraCore in Frameworks */,
 				13E34D2A2E535CB500C7BF07 /* Kingfisher in Frameworks */,
+				12F745402EB53B4D00889684 /* FakeWebKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,7 +264,6 @@
 			children = (
 				13F072BD2E4B2ED600EF90EB /* Services */,
 				13F0726F2E4B2D9000EF90EB /* JavaScriptCore+Extensions.swift */,
-				123682CB2EB402CA00F86F5B /* JSController-WKWebView.swift */,
 				13B2E5732E7597B9009F3271 /* JSController-NetworkFetch.swift */,
 				13F072702E4B2D9000EF90EB /* JSController-Search.swift */,
 				13F072712E4B2D9000EF90EB /* JSController-Details.swift */,
@@ -451,6 +465,7 @@
 				13F072572E4B2D3300EF90EB /* Sources */,
 				13F072582E4B2D3300EF90EB /* Frameworks */,
 				13F072592E4B2D3300EF90EB /* Resources */,
+				12F745372EB539F000889684 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -461,6 +476,8 @@
 				13E34D292E535CB500C7BF07 /* Kingfisher */,
 				1396D5322E9C0715008DBB8B /* MPVKit */,
 				125350A72EB1612800501F30 /* SoraCore */,
+				12F7453F2EB53B4D00889684 /* FakeWebKit */,
+				120B0E112EB67889008EA699 /* FakeWebKit */,
 			);
 			productName = Sora;
 			productReference = 13F0725B2E4B2D3300EF90EB /* Luna.app */;
@@ -473,7 +490,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1520;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					13F0725A2E4B2D3300EF90EB = {
@@ -494,6 +511,7 @@
 				13E34D282E535CB500C7BF07 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				1396D5312E9C0715008DBB8B /* XCRemoteSwiftPackageReference "MPVKit" */,
 				125350A62EB1612800501F30 /* XCRemoteSwiftPackageReference "SoraCore" */,
+				120B0E102EB67889008EA699 /* XCLocalSwiftPackageReference "../FakeWebKit" */,
 			);
 			productRefGroup = 13F0725C2E4B2D3300EF90EB /* Products */;
 			projectDirPath = "";
@@ -539,7 +557,6 @@
 				13F072BA2E4B2D9200EF90EB /* TMDBService.swift in Sources */,
 				13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */,
 				13F187AD2E6F38CE00747F7E /* LibraryItem.swift in Sources */,
-				123682CC2EB402E400F86F5B /* JSController-WKWebView.swift in Sources */,
 				13F187B02E6F38CE00747F7E /* CreateCollectionView.swift in Sources */,
 				13F072A42E4B2D9200EF90EB /* ServicesView.swift in Sources */,
 				13F072A62E4B2D9200EF90EB /* LibraryView.swift in Sources */,
@@ -822,6 +839,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		120B0E102EB67889008EA699 /* XCLocalSwiftPackageReference "../FakeWebKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../FakeWebKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		125350A62EB1612800501F30 /* XCRemoteSwiftPackageReference "SoraCore" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -850,10 +874,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		120B0E112EB67889008EA699 /* FakeWebKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FakeWebKit;
+		};
 		125350A72EB1612800501F30 /* SoraCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 125350A62EB1612800501F30 /* XCRemoteSwiftPackageReference "SoraCore" */;
 			productName = SoraCore;
+		};
+		12F7453F2EB53B4D00889684 /* FakeWebKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FakeWebKit;
 		};
 		1396D5322E9C0715008DBB8B /* MPVKit */ = {
 			isa = XCSwiftPackageProductDependency;

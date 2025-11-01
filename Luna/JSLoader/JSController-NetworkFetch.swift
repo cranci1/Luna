@@ -5,8 +5,10 @@
 //  Created by paul on 17/08/2025.
 //
 
-#if !os(tvOS)
-import WebKit
+#if os(tvOS)
+    import FakeWebKit
+#else
+    import WebKit
 #endif
 
 import JavaScriptCore
@@ -87,102 +89,6 @@ extension JSContext {
         self.setObject(networkFetchNativeFunction, forKeyedSubscript: "networkFetchNative" as NSString)
 
         let networkFetchDefinition = """
-            function networkFetch(url, options = {}) {
-                if (typeof options === 'number') {
-                    const timeoutSeconds = options;
-                    const headers = arguments[2] || {};
-                    const cutoff = arguments[3] || null;
-                    options = { timeoutSeconds, headers, cutoff };
-                }
-                
-                const finalOptions = {
-                    timeoutSeconds: options.timeoutSeconds || 10,
-                    headers: options.headers || {},
-                    cutoff: options.cutoff || null,
-                    returnHTML: options.returnHTML || false,
-                    returnCookies: options.returnCookies !== undefined ? options.returnCookies : true,
-                    clickSelectors: options.clickSelectors || [],
-                    waitForSelectors: options.waitForSelectors || [],
-                    maxWaitTime: options.maxWaitTime || 5,
-                    htmlContent: options.htmlContent || null
-                };
-                
-                return new Promise(function(resolve, reject) {
-                    networkFetchNative(url, finalOptions, function(result) {
-                        resolve({
-                            url: result.originalUrl,
-                            requests: result.requests,
-                            html: result.html || null,
-                            cookies: result.cookies || null,
-                            success: result.success,
-                            error: result.error || null,
-                            totalRequests: result.requests.length,
-                            cutoffTriggered: result.cutoffTriggered || false,
-                            cutoffUrl: result.cutoffUrl || null,
-                            htmlCaptured: result.htmlCaptured || false,
-                            cookiesCaptured: result.cookiesCaptured || false,
-                            elementsClicked: result.elementsClicked || [],
-                            waitResults: result.waitResults || {}
-                        });
-                    }, reject);
-                });
-            }
-            
-            function networkFetchWithHTML(url, timeoutSeconds = 10) {
-                return networkFetch(url, {
-                    timeoutSeconds: timeoutSeconds,
-                    returnHTML: true,
-                    returnCookies: true
-                });
-            }
-            
-            function networkFetchWithCutoff(url, cutoff, timeoutSeconds = 10) {
-                return networkFetch(url, {
-                    timeoutSeconds: timeoutSeconds,
-                    cutoff: cutoff,
-                    returnCookies: true
-                });
-            }
-            
-            function networkFetchWithClicks(url, clickSelectors, options = {}) {
-                return networkFetch(url, {
-                    timeoutSeconds: options.timeoutSeconds || 10,
-                    headers: options.headers || {},
-                    cutoff: options.cutoff || null,
-                    returnHTML: options.returnHTML || false,
-                    returnCookies: options.returnCookies !== undefined ? options.returnCookies : true,
-                    clickSelectors: Array.isArray(clickSelectors) ? clickSelectors : [clickSelectors],
-                    waitForSelectors: options.waitForSelectors || [],
-                    maxWaitTime: options.maxWaitTime || 5
-                });
-            }
-            
-            function networkFetchWithWaitAndClick(url, waitForSelectors, clickSelectors, options = {}) {
-                return networkFetch(url, {
-                    timeoutSeconds: options.timeoutSeconds || 10,
-                    headers: options.headers || {},
-                    cutoff: options.cutoff || null,
-                    returnHTML: options.returnHTML || false,
-                    returnCookies: options.returnCookies !== undefined ? options.returnCookies : true,
-                    clickSelectors: Array.isArray(clickSelectors) ? clickSelectors : [clickSelectors],
-                    waitForSelectors: Array.isArray(waitForSelectors) ? waitForSelectors : [waitForSelectors],
-                    maxWaitTime: options.maxWaitTime || 5
-                });
-            }
-            
-            function networkFetchFromHTML(htmlContent, options = {}) {
-                return networkFetch('', {
-                    timeoutSeconds: options.timeoutSeconds || 10,
-                    headers: options.headers || {},
-                    cutoff: options.cutoff || null,
-                    returnHTML: options.returnHTML || false,
-                    returnCookies: options.returnCookies !== undefined ? options.returnCookies : true,
-                    clickSelectors: options.clickSelectors || [],
-                    waitForSelectors: options.waitForSelectors || [],
-                    maxWaitTime: options.maxWaitTime || 5,
-                    htmlContent: htmlContent
-                });
-            }
             """
 
         self.evaluateScript(networkFetchDefinition)
@@ -211,35 +117,6 @@ extension JSContext {
         }
         self.setObject(networkFetchSimpleNativeFunction, forKeyedSubscript: "networkFetchSimpleNative" as NSString)
         let networkFetchSimpleDefinition = """
-            function networkFetchSimple(url, options = {}) {
-                if (typeof options === 'number') {
-                    const timeoutSeconds = options;
-                    options = { timeoutSeconds };
-                }
-                const finalOptions = {
-                    timeoutSeconds: options.timeoutSeconds || 5,
-                    htmlContent: options.htmlContent || null,
-                    headers: options.headers || {}
-                };
-                return new Promise(function(resolve, reject) {
-                    networkFetchSimpleNative(url, finalOptions, function(result) {
-                        resolve({
-                            url: result.originalUrl,
-                            requests: result.requests,
-                            success: result.success,
-                            error: result.error || null,
-                            totalRequests: result.requests.length
-                        });
-                    }, reject);
-                });
-            }
-            function networkFetchSimpleFromHTML(htmlContent, options = {}) {
-                return networkFetchSimple('', {
-                    timeoutSeconds: options.timeoutSeconds || 5,
-                    htmlContent: htmlContent,
-                    headers: options.headers || {}
-                });
-            }
             """
         self.evaluateScript(networkFetchSimpleDefinition)
     }
@@ -326,236 +203,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         config.mediaTypesRequiringUserActionForPlayback = []
 
         let jsCode = """
-        (function() {
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-            Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-            delete window.navigator.__proto__.webdriver;
-            
-            window.chrome = { runtime: {} };
-            Object.defineProperty(navigator, 'permissions', { get: () => undefined });
-            
-            const originalFetch = window.fetch;
-            const originalXHROpen = XMLHttpRequest.prototype.open;
-            const originalXHRSend = XMLHttpRequest.prototype.send;
-            
-            window.fetch = function() {
-                const url = arguments[0];
-                const options = arguments[1] || {};
-                
-                try {
-                    const fullUrl = new URL(url, window.location.href).href;
-                    window.webkit.messageHandlers.networkLogger.postMessage({
-                        type: 'fetch',
-                        url: fullUrl
-                    });
-                } catch(e) {
-                    window.webkit.messageHandlers.networkLogger.postMessage({
-                        type: 'fetch',
-                        url: url.toString()
-                    });
-                }
-                return originalFetch.apply(this, arguments);
-            };
-            
-            XMLHttpRequest.prototype.open = function() {
-                const method = arguments[0];
-                const url = arguments[1];
-                
-                try {
-                    this._url = new URL(url, window.location.href).href;
-                } catch(e) {
-                    this._url = url;
-                }
-                
-                window.webkit.messageHandlers.networkLogger.postMessage({
-                    type: 'xhr-open',
-                    url: this._url
-                });
-                
-                const self = this;
-                const originalOnReadyStateChange = this.onreadystatechange;
-                
-                this.onreadystatechange = function() {
-                    if (this.readyState === 4) {
-                        if (this.responseURL) {
-                            window.webkit.messageHandlers.networkLogger.postMessage({
-                                type: 'xhr-response',
-                                url: this.responseURL
-                            });
-                        }
-                        
-                        try {
-                            const responseText = this.responseText;
-                            if (responseText) {
-                                const urlRegex = /(https?:\\/\\/[^\\s"'<>]+\\.(m3u8|ts|mp4|webm|mkv))/gi;
-                                const matches = responseText.match(urlRegex);
-                                if (matches) {
-                                    matches.forEach(function(match) {
-                                        window.webkit.messageHandlers.networkLogger.postMessage({
-                                            type: 'response-content',
-                                            url: match
-                                        });
-                                    });
-                                }
-                            }
-                        } catch(e) {
-                        }
-                    }
-                    
-                    if (originalOnReadyStateChange) {
-                        originalOnReadyStateChange.apply(this, arguments);
-                    }
-                };
-                
-                return originalXHROpen.apply(this, arguments);
-            };
-            
-            XMLHttpRequest.prototype.send = function() {
-                if (this._url) {
-                    window.webkit.messageHandlers.networkLogger.postMessage({
-                        type: 'xhr-send',
-                        url: this._url
-                    });
-                }
-                return originalXHRSend.apply(this, arguments);
-            };
-            
-            const originalWebSocket = window.WebSocket;
-            window.WebSocket = function(url, protocols) {
-                window.webkit.messageHandlers.networkLogger.postMessage({
-                    type: 'websocket',
-                    url: url
-                });
-                return new originalWebSocket(url, protocols);
-            };
-            
-            const hookUrlProperties = function(obj, properties) {
-                properties.forEach(function(prop) {
-                    if (obj && obj.prototype) {
-                        const descriptor = Object.getOwnPropertyDescriptor(obj.prototype, prop) || {};
-                        const originalSetter = descriptor.set;
-                        
-                        if (originalSetter) {
-                            Object.defineProperty(obj.prototype, prop, {
-                                set: function(value) {
-                                    if (typeof value === 'string' && (value.includes('http') || value.includes('.m3u8') || value.includes('.ts'))) {
-                                        window.webkit.messageHandlers.networkLogger.postMessage({
-                                            type: 'property-set',
-                                            url: value
-                                        });
-                                    }
-                                    return originalSetter.call(this, value);
-                                },
-                                get: descriptor.get,
-                                configurable: true
-                            });
-                        }
-                    }
-                });
-            };
-            
-            hookUrlProperties(HTMLVideoElement, ['src']);
-            hookUrlProperties(HTMLSourceElement, ['src']);
-            hookUrlProperties(HTMLScriptElement, ['src']);
-            hookUrlProperties(HTMLImageElement, ['src']);
-            
-            let jwHookAttempts = 0;
-            const aggressiveJWHook = function() {
-                jwHookAttempts++;
-                
-                if (window.jwplayer) {
-                    const originalJWPlayer = window.jwplayer;
-                    window.jwplayer = function(id) {
-                        const player = originalJWPlayer.apply(this, arguments);
-                        
-                        if (player && player.setup) {
-                            const originalSetup = player.setup;
-                            player.setup = function(config) {
-                                const extractUrls = function(obj, path = '') {
-                                    if (!obj) return;
-                                    
-                                    if (typeof obj === 'string' && (obj.includes('http') || obj.includes('.m3u8') || obj.includes('.ts'))) {
-                                        window.webkit.messageHandlers.networkLogger.postMessage({
-                                            type: 'jwplayer-config',
-                                            url: obj
-                                        });
-                                    } else if (typeof obj === 'object' && obj !== null) {
-                                        Object.keys(obj).forEach(function(key) {
-                                            extractUrls(obj[key], path + '.' + key);
-                                        });
-                                    }
-                                };
-                                
-                                extractUrls(config);
-                                return originalSetup.call(this, config);
-                            };
-                        }
-                        
-                        return player;
-                    };
-                    
-                    Object.keys(originalJWPlayer).forEach(function(key) {
-                        window.jwplayer[key] = originalJWPlayer[key];
-                    });
-                }
-                
-                if (jwHookAttempts < 20) {
-                    setTimeout(aggressiveJWHook, 200);
-                }
-            };
-            
-            aggressiveJWHook();
-            
-            const nuclearScan = function() {
-                Object.keys(window).forEach(function(key) {
-                    try {
-                        const value = window[key];
-                        if (typeof value === 'string' && (value.includes('.m3u8') || value.includes('.ts') || (value.includes('http') && value.includes('.')))) {
-                            window.webkit.messageHandlers.networkLogger.postMessage({
-                                type: 'global-variable',
-                                url: value
-                            });
-                        }
-                    } catch(e) {
-                    }
-                });
-                
-                document.querySelectorAll('script').forEach(function(script) {
-                    if (script.textContent) {
-                        const urlRegex = /(https?:\\/\\/[^\\s"'<>]+\\.(m3u8|ts|mp4))/gi;
-                        const matches = script.textContent.match(urlRegex);
-                        if (matches) {
-                            matches.forEach(function(match) {
-                                window.webkit.messageHandlers.networkLogger.postMessage({
-                                    type: 'script-content',
-                                    url: match
-                                });
-                            });
-                        }
-                    }
-                });
-                
-                const clickableSelectors = [
-                    'button', '.play', '.play-button', '[data-play]', '.video-play',
-                    '.jwplayer', '.player', '[id*="player"]', '[class*="play"]',
-                    'div[onclick]', 'span[onclick]', 'a[onclick]'
-                ];
-                
-                clickableSelectors.forEach(function(selector) {
-                    document.querySelectorAll(selector).forEach(function(el) {
-                        try {
-                            el.click();
-                        } catch(e) {
-                        }
-                    });
-                });
-            };
-            
-            setTimeout(nuclearScan, 500);
-            setTimeout(nuclearScan, 1500);
-            setTimeout(nuclearScan, 3000);
-        })();
         """
 
         let userScript = WKUserScript(source: jsCode, injectionTime: WKUserScriptInjectionTime.atDocumentStart, forMainFrameOnly: false)
@@ -604,49 +251,6 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
         guard let webView = webView else { return }
 
         let jsInteraction = """
-        setTimeout(function() {
-            const playButtons = document.querySelectorAll('button, div, span, a').filter(function(el) {
-                const text = el.textContent || el.innerText || '';
-                const classes = el.className || '';
-                return text.toLowerCase().includes('play') || 
-                       classes.toLowerCase().includes('play') ||
-                       el.getAttribute('aria-label')?.toLowerCase().includes('play');
-            });
-            playButtons.forEach(function(btn, index) {
-                setTimeout(function() {
-                    btn.click();
-                }, index * 200);
-            });
-            window.scrollTo(0, document.body.scrollHeight / 2);
-            setTimeout(function() {
-                window.scrollTo(0, 0);
-            }, 500);
-            document.querySelectorAll('video').forEach(function(video) {
-                if (video.play && typeof video.play === 'function') {
-                    video.play().catch(function(e) {
-                    });
-                }
-            });
-            if (window.jwplayer) {
-                try {
-                    const players = window.jwplayer().getInstances?.() || [];
-                    players.forEach(function(player) {
-                        if (player.play) {
-                            player.play();
-                        }
-                    });
-                } catch(e) {}
-            }
-            if (window.videojs) {
-                try {
-                    window.videojs.getAllPlayers?.().forEach(function(player) {
-                        if (player.play) {
-                            player.play();
-                        }
-                    });
-                } catch(e) {}
-            }
-        }, 1000);
         """
         webView.evaluateJavaScript(jsInteraction, completionHandler: nil)
     }
@@ -684,11 +288,11 @@ class NetworkFetchSimpleMonitor: NSObject, ObservableObject {
 }
 
 extension NetworkFetchSimpleMonitor: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-    }
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation) {}
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {}
     
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-    }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation, withError error: Error) {}
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
@@ -1397,9 +1001,11 @@ class NetworkFetchMonitor: NSObject, ObservableObject {
 }
 
 extension NetworkFetchMonitor: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {}
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation) {}
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {}
     
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {}
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation, withError error: Error) {}
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let url = navigationAction.request.url {
