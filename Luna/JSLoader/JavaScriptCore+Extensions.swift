@@ -381,7 +381,6 @@ extension JSContext {
     }
 
     func setupJavaScriptEnvironment() {
-        setupWeirdCode()
         setupConsoleLogging()
         setupNativeFetch()
         setupNetworkFetch()
