@@ -7,6 +7,18 @@
 
 #if os(tvOS)
     import FakeWebKit
+
+    /*
+    // Uncomment code below to enable FakeWebKit debug logging:
+
+    private let FakeWebKitLoggerEnabled: Void = {
+        struct SimpleLogger: DebugLogger {
+            func log(_ m: String) { print("[FakeWKWebView] log:", m) }
+            func logError(_ m: String) { print("[FakeWKWebView] error:", m) }
+        }
+        WKWebView.logger = SimpleLogger()
+    }()
+     */
 #else
     import WebKit
 #endif
