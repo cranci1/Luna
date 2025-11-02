@@ -153,7 +153,7 @@ struct MediaDetailView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.white)
                         .frame(width: 32, height: 32)
                         .applyLiquidGlassBackground(cornerRadius: 16)
                 }
@@ -242,7 +242,7 @@ struct MediaDetailView: View {
             Text(searchResult.displayTitle)
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.white)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -258,6 +258,7 @@ struct MediaDetailView: View {
             if !synopsis.isEmpty {
                 Text(showFullSynopsis ? synopsis : String(synopsis.prefix(180)) + (synopsis.count > 180 ? "..." : ""))
                     .font(.body)
+                    .foregroundColor(.white)
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
@@ -270,6 +271,7 @@ struct MediaDetailView: View {
                       !overview.isEmpty {
                 Text(showFullSynopsis ? overview : String(overview.prefix(200)) + (overview.count > 200 ? "..." : ""))
                     .font(.body)
+                    .foregroundColor(.white)
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
@@ -284,7 +286,7 @@ struct MediaDetailView: View {
     
     @ViewBuilder
     private var playAndBookmarkSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Button(action: {
                 searchInServices()
             }) {
@@ -297,15 +299,13 @@ struct MediaDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 25)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(serviceManager.activeServices.isEmpty ? Color.gray.opacity(0.3) : Color.black.opacity(0.2))
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(serviceManager.activeServices.isEmpty ? .thinMaterial : .ultraThinMaterial)
-                        )
+                .applyLiquidGlassBackground(
+                    cornerRadius: 12,
+                    fallbackFill: serviceManager.activeServices.isEmpty ? Color.gray.opacity(0.3) : Color.black.opacity(0.2),
+                    fallbackMaterial: serviceManager.activeServices.isEmpty ? .thinMaterial : .ultraThinMaterial,
+                    glassTint: serviceManager.activeServices.isEmpty ? Color.gray.opacity(0.3) : nil
                 )
-                .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .primary)
+                .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .white)
                 .cornerRadius(8)
             }
             .disabled(serviceManager.activeServices.isEmpty)
@@ -317,7 +317,7 @@ struct MediaDetailView: View {
                     .font(.title2)
                     .frame(width: 42, height: 42)
                     .applyLiquidGlassBackground(cornerRadius: 12)
-                    .foregroundColor(isBookmarked ? .yellow : .primary)
+                    .foregroundColor(isBookmarked ? .yellow : .white)
                     .cornerRadius(8)
             }
             
@@ -328,7 +328,7 @@ struct MediaDetailView: View {
                     .font(.title2)
                     .frame(width: 42, height: 42)
                     .applyLiquidGlassBackground(cornerRadius: 12)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white)
                     .cornerRadius(8)
             }
         }

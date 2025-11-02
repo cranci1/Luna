@@ -39,6 +39,7 @@ struct TVShowSeasonsSection: View {
                     .fontWeight(.bold)
                     .padding(.horizontal)
                     .padding(.top)
+                    .foregroundColor(.white)
                 
                 VStack(spacing: 12) {
                     if let numberOfSeasons = tvShow.numberOfSeasons, numberOfSeasons > 0 {
@@ -76,6 +77,7 @@ struct TVShowSeasonsSection: View {
                 .padding(.horizontal)
                 .padding(.vertical, 16)
                 .applyLiquidGlassBackground(cornerRadius: 12)
+                .padding(.horizontal)
                 
                 if !tvShow.seasons.isEmpty {
                     if isGroupedBySeasons && !useSeasonMenu {
@@ -85,6 +87,7 @@ struct TVShowSeasonsSection: View {
                                 .fontWeight(.bold)
                             Spacer()
                         }
+                        .foregroundColor(.white)
                         .padding(.horizontal)
                         .padding(.top)
                         
@@ -96,6 +99,7 @@ struct TVShowSeasonsSection: View {
                                 .fontWeight(.bold)
                             Spacer()
                         }
+                        .foregroundColor(.white)
                         .padding(.horizontal)
                         .padding(.top)
                     } else {
@@ -139,6 +143,7 @@ struct TVShowSeasonsSection: View {
             Text("Episodes")
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundColor(.white)
             
             Spacer()
             
@@ -176,7 +181,7 @@ struct TVShowSeasonsSection: View {
                     
                     Image(systemName: "chevron.down")
                 }
-                .foregroundColor(.primary)
+                .foregroundColor(.white)
             }
         }
     }
@@ -226,7 +231,7 @@ struct TVShowSeasonsSection: View {
                                         .lineLimit(1)
                                         .multilineTextAlignment(.center)
                                         .frame(width: 80)
-                                        .foregroundColor(selectedSeason?.id == season.id ? .accentColor : .primary)
+                                        .foregroundColor(selectedSeason?.id == season.id ? .accentColor : .white)
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())

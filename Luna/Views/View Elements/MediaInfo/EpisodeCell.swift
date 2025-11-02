@@ -81,31 +81,36 @@ struct EpisodeCell: View {
                                         .foregroundColor(.yellow)
                                     Text(String(format: "%.1f", episode.voteAverage))
                                         .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white)
                                     
                                     
                                     Text(" - ")
                                         .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white)
                                 }
                                 
                                 if let runtime = episode.runtime, runtime > 0 {
                                     Text(episode.runtimeFormatted)
                                         .font(.caption2)
+                                        .foregroundColor(.white)
                                 }
                             }
                         }
                         .padding(.horizontal, 4)
                         .padding(.vertical, 2)
-                        .background(Color.gray.opacity(0.2))
+                        .applyLiquidGlassBackground(
+                            cornerRadius: 16,
+                            fallbackFill: Color.gray.opacity(0.2),
+                            fallbackMaterial: .thinMaterial,
+                            glassTint: Color.gray.opacity(0.15)
+                        )
                         .clipShape(Capsule())
-                        .foregroundColor(.secondary)
                     }
                     
                     if !episode.name.isEmpty {
                         Text(episode.name)
                             .font(.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.white)
                             .lineLimit(1)
                     }
                     
@@ -127,6 +132,7 @@ struct EpisodeCell: View {
         .onAppear {
             loadEpisodeProgress()
         }
+        .preferredColorScheme(.dark)
     }
     
     @MainActor private var verticalLayout: some View {
@@ -179,12 +185,12 @@ struct EpisodeCell: View {
                                         .foregroundColor(.yellow)
                                     Text(String(format: "%.1f", episode.voteAverage))
                                         .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white)
                                     
                                     
                                     Text(" - ")
                                         .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white)
                                 }
                                 
                                 if let runtime = episode.runtime, runtime > 0 {
@@ -195,9 +201,13 @@ struct EpisodeCell: View {
                         }
                         .padding(.horizontal, 4)
                         .padding(.vertical, 2)
-                        .background(Color.gray.opacity(0.2))
+                        .applyLiquidGlassBackground(
+                            cornerRadius: 16,
+                            fallbackFill: Color.gray.opacity(0.2),
+                            fallbackMaterial: .thinMaterial,
+                            glassTint: Color.gray.opacity(0.15)
+                        )
                         .clipShape(Capsule())
-                        .foregroundColor(.secondary)
                     }
                     
                     if !episode.name.isEmpty {
@@ -205,7 +215,7 @@ struct EpisodeCell: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .lineLimit(1)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.white)
                     }
                     
                     if let overview = episode.overview, !overview.isEmpty {
@@ -231,6 +241,7 @@ struct EpisodeCell: View {
         .onAppear {
             loadEpisodeProgress()
         }
+        .preferredColorScheme(.dark)
     }
     
     private var episodeContextMenu: some View {

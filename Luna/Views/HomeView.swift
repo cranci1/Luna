@@ -41,7 +41,7 @@ struct HomeView: View {
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var contentFilter = TMDBContentFilter.shared
     
-    private let heroHeight: CGFloat = 500
+    private let heroHeight: CGFloat = 580
     
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -277,8 +277,7 @@ struct HomeView: View {
                         let filteredTrending = trendingContent.filter { $0.id != heroContent?.id }
                         MediaSection(
                             title: section.title,
-                            items: Array(filteredTrending.prefix(15)),
-                            isLarge: true
+                            items: Array(filteredTrending.prefix(15))
                         )
                     }
                 case "popularMovies":
@@ -380,7 +379,6 @@ struct HomeView: View {
                 
                 await MainActor.run {
                     withAnimation(.easeInOut(duration: 0.5)) {
-                        // Apply content filtering
                         self.trendingContent = contentFilter.filterSearchResults(trendingResult)
                         self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
                         self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
