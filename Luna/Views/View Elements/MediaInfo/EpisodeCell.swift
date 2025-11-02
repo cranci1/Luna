@@ -218,14 +218,7 @@ struct EpisodeCell: View {
                 }
             }
             .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.black.opacity(0.2))
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(.ultraThinMaterial)
-                    )
-            )
+            .applyLiquidGlassBackground(cornerRadius: 12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)

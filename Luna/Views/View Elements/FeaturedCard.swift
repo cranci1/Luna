@@ -66,10 +66,7 @@ struct FeaturedCard: View {
                             }
                             .padding(.horizontal, 6)
                             .padding(.vertical, 3)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.ultraThinMaterial.opacity(0.9))
-                            )
+                            .applyLiquidGlassBackground(cornerRadius: 12)
                         }
                         Spacer()
                     }

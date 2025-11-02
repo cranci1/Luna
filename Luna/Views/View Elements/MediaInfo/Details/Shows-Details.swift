@@ -75,15 +75,7 @@ struct TVShowSeasonsSection: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.black.opacity(0.2))
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.ultraThinMaterial)
-                        )
-                )
-                .padding(.horizontal)
+                .applyLiquidGlassBackground(cornerRadius: 12)
                 
                 if !tvShow.seasons.isEmpty {
                     if isGroupedBySeasons && !useSeasonMenu {

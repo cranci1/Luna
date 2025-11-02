@@ -326,14 +326,7 @@ struct ModernTextFieldStyle: TextFieldStyle {
         configuration
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.black.opacity(0.1))
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(.ultraThinMaterial)
-                    )
-            )
+            .applyLiquidGlassBackground(cornerRadius: 10)
     }
 }
 

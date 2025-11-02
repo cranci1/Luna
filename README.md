@@ -27,6 +27,8 @@ Luna has been made to improve speed and stability over the old version, [Sora 1]
 - [ ] macOS 13+ support
 - [x] iOS & iPadOS 15+ support
 - [x] Customizable Home Sections
+- [x] Custom mpv based video player
+- [ ] Chromecast and AirPlay support
 - [x] Bookmarks & Collections for Media Items
 - [x] Support for personal media servers (Jellyfin, Emby)
 - [x] Background playback and Picture-in-Picture (PiP) support
@@ -53,11 +55,12 @@ You can download Luna using Xcode or using the .ipa file, which you can find in 
 ## Acknowledgements
 
 Frameworks:
-- [SoraCore](https://github.com/cranci1/SoraCore) – Custom License  
+- [MPVKit](https://github.com/mpvkit/MPVKit) - GPLv3.0 License
+- [SoraCore](https://github.com/cranci1/SoraCore) – Custom License
+- [KingFisher](https://github.com/onevcat/Kingfisher) - MIT License
 
 Misc:
 - [50/50](https://github.com/50n50) for the app icon  
-- [Ciro](https://github.com/CiroHoodLove) for the episode banners  
 
 ## License
 

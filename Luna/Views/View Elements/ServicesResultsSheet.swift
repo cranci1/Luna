@@ -383,10 +383,7 @@ struct ModulesSearchResultsSheet: View {
                         }
                     }
                     .padding(30)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(.ultraThinMaterial)
-                    )
+                    .applyLiquidGlassBackground(cornerRadius: 16)
                     .padding(.horizontal, 40)
                 }
             }

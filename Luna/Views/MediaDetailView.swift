@@ -155,10 +155,7 @@ struct MediaDetailView: View {
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.primary)
                         .frame(width: 32, height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(.ultraThinMaterial.opacity(0.9))
-                        )
+                        .applyLiquidGlassBackground(cornerRadius: 16)
                 }
                 
                 Spacer()
@@ -319,14 +316,7 @@ struct MediaDetailView: View {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title2)
                     .frame(width: 42, height: 42)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.2))
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.ultraThinMaterial)
-                            )
-                    )
+                    .applyLiquidGlassBackground(cornerRadius: 12)
                     .foregroundColor(isBookmarked ? .yellow : .primary)
                     .cornerRadius(8)
             }
@@ -337,14 +327,7 @@ struct MediaDetailView: View {
                 Image(systemName: "plus")
                     .font(.title2)
                     .frame(width: 42, height: 42)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.2))
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.ultraThinMaterial)
-                            )
-                    )
+                    .applyLiquidGlassBackground(cornerRadius: 12)
                     .foregroundColor(.primary)
                     .cornerRadius(8)
             }

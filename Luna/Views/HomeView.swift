@@ -187,10 +187,7 @@ struct HomeView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.ultraThinMaterial.opacity(0.9))
-                        )
+                        .applyLiquidGlassBackground(cornerRadius: 12)
                     
                     if (hero.voteAverage ?? 0.0) > 0 {
                         HStack(spacing: 2) {
@@ -236,10 +233,7 @@ struct HomeView: View {
                                 .foregroundColor(.white)
                         }
                         .frame(width: 140, height: 42)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.ultraThinMaterial.opacity(0.9))
-                        )
+                        .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                     .buttonStyle(PlainButtonStyle())
                     
@@ -496,10 +490,7 @@ struct MediaCard: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.ultraThinMaterial.opacity(0.9))
-                            )
+                            .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
                 .frame(width: 120, alignment: .leading)

@@ -137,10 +137,12 @@ final class MPVSoftwareRenderer {
         setOption(name: "gpu-context", value: "metal")
         setOption(name: "demuxer-thread", value: "yes")
         setOption(name: "ytdl", value: "yes")
+        setOption(name: "profile", value: "fast")
         setOption(name: "vd-lavc-threads", value: "8")
         setOption(name: "cache", value: "yes")
         setOption(name: "demuxer-max-bytes", value: "150M")
         setOption(name: "demuxer-readahead-secs", value: "20")
+        setOption(name: "subs-fallback", value: "yes")
         
         let initStatus = mpv_initialize(handle)
         guard initStatus >= 0 else {
