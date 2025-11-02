@@ -67,10 +67,12 @@ struct StretchyHeaderView: View {
                 KingfisherManager.shared.retrieveImage(with: url) { result in
                     switch result {
                     case .success(let value):
-                        backdropImage = value.image
-                        let extractedColor = Color.ambientColor(from: value.image)
-                        localAmbientColor = extractedColor
-                        onAmbientColorExtracted?(extractedColor)
+                        Task { @MainActor in
+                            backdropImage = value.image
+                            let extractedColor = Color.ambientColor(from: value.image)
+                            localAmbientColor = extractedColor
+                            onAmbientColorExtracted?(extractedColor)
+                        }
                     case .failure:
                         break
                     }

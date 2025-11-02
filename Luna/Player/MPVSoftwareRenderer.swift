@@ -109,8 +109,16 @@ final class MPVSoftwareRenderer {
     }
     
     init(displayLayer: AVSampleBufferDisplayLayer) {
+        guard
+            let screen = UIApplication.shared.connectedScenes
+                .compactMap({ ($0 as? UIWindowScene)?.screen })
+                .first
+        else {
+            fatalError("⚠️ No active screen found — app may not have a visible window yet.")
+        }
+
         self.displayLayer = displayLayer
-        let maxFPS = UIScreen.main.maximumFramesPerSecond
+        let maxFPS = screen.maximumFramesPerSecond
         let cappedFPS = min(maxFPS, 60)
         self.minRenderInterval = 1.0 / CFTimeInterval(cappedFPS)
 
@@ -213,7 +221,12 @@ final class MPVSoftwareRenderer {
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.displayLayer.flushAndRemoveImage()
+
+            if #available(iOS 18.0, *) {
+                self.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
+            } else {
+                self.displayLayer.flushAndRemoveImage()
+            }
         }
         
         isStopping = false
@@ -542,7 +555,15 @@ final class MPVSoftwareRenderer {
     
     private func targetRenderSize(for videoSize: CGSize) -> CGSize {
         guard videoSize.width > 0, videoSize.height > 0 else { return videoSize }
-        let screen = UIScreen.main
+
+        guard
+            let screen = UIApplication.shared.connectedScenes
+                .compactMap({ ($0 as? UIWindowScene)?.screen })
+                .first
+        else {
+            fatalError("⚠️ No active screen found — app may not have a visible window yet.")
+        }
+
         var scale = screen.scale
         if scale <= 0 { scale = 1 }
         let maxWidth = max(screen.bounds.width * scale, 1.0)
@@ -882,19 +903,45 @@ final class MPVSoftwareRenderer {
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            
-            if self.displayLayer.status == .failed {
-                if let error = self.displayLayer.error {
+
+            let (status, error): (AVQueuedSampleBufferRenderingStatus?, Error?) = {
+                if #available(iOS 18.0, *) {
+                    return (
+                        self.displayLayer.sampleBufferRenderer.status,
+                        self.displayLayer.sampleBufferRenderer.error
+                    )
+                } else {
+                    return (
+                        self.displayLayer.status,
+                        self.displayLayer.error
+                    )
+                }
+            }()
+
+            if status == .failed {
+                if let error = error {
                     Logger.shared.log("Display layer in failed state: \(error.localizedDescription)", type: "Error")
                 }
-                self.displayLayer.flushAndRemoveImage()
+                if #available(iOS 18.0, *) {
+                    self.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
+                } else {
+                    self.displayLayer.flushAndRemoveImage()
+                }
             }
             
             if needsFlush {
-                self.displayLayer.flushAndRemoveImage()
+                if #available(iOS 18.0, *) {
+                    self.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
+                } else {
+                    self.displayLayer.flushAndRemoveImage()
+                }
                 self.didFlushForFormatChange = true
             } else if self.didFlushForFormatChange {
-                self.displayLayer.flush()
+                if #available(iOS 18.0, *) {
+                    self.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: false, completionHandler: nil)
+                } else {
+                    self.displayLayer.flush()
+                }
                 self.didFlushForFormatChange = false
             }
             
@@ -912,8 +959,12 @@ final class MPVSoftwareRenderer {
             if shouldNotifyLoadingEnd {
                 self.delegate?.renderer(self, didChangeLoading: false)
             }
-            
-            self.displayLayer.enqueue(sample)
+
+            if #available(iOS 18.0, *) {
+                self.displayLayer.sampleBufferRenderer.enqueue(sample)
+            } else {
+                self.displayLayer.enqueue(sample)
+            }
         }
     }
     

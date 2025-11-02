@@ -201,10 +201,13 @@ class LoggerManager: ObservableObject {
             name: NSNotification.Name("LoggerNotification"),
             object: nil
         )
-        
-        loadExistingLogs()
+
+        DispatchQueue.main.async {
+            self.loadExistingLogs()
+        }
     }
-    
+
+    @MainActor
     private func loadExistingLogs() {
         Task {
             let existingLogsString = await Logger.shared.getLogsAsync()

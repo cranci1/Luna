@@ -57,7 +57,15 @@ struct SearchView: View {
     
     private var columnsCount: Int {
         if UIDevice.current.userInterfaceIdiom == .pad {
-            let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
+            guard
+                let screen = UIApplication.shared.connectedScenes
+                    .compactMap({ ($0 as? UIWindowScene)?.screen })
+                    .first
+            else {
+                fatalError("⚠️ No active screen found — app may not have a visible window yet.")
+            }
+
+            let isLandscape = screen.bounds.width > screen.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
             return verticalSizeClass == .compact ? mediaColumnsLandscape : mediaColumnsPortrait

@@ -202,14 +202,16 @@ class ServiceManager: ObservableObject {
             for service in activeServicesList {
                 group.addTask { [weak self] in
                     guard let self = self else { return (service.id, []) }
-                    return await withTaskCancellationHandler(handler: {
-                    }, operation: {
-                        let timeoutSeconds: UInt64 = 10
-                        return await ServiceManager.withTimeout(seconds: timeoutSeconds) {
-                            let found = await self.searchInService(service: service, query: query)
-                            return (service.id, found)
-                        } ?? (service.id, [])
-                    })
+                    return await withTaskCancellationHandler(
+                        operation: {
+                            let timeoutSeconds: UInt64 = 10
+                            return await ServiceManager.withTimeout(seconds: timeoutSeconds) {
+                                let found = await self.searchInService(service: service, query: query)
+                                return (service.id, found)
+                            } ?? (service.id, [])
+                        },
+                        onCancel: {}
+                    )
                 }
             }
             
