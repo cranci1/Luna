@@ -339,7 +339,7 @@ struct HomeView: View {
         /*
          VStack(alignment: .leading, spacing: 16) {
          HStack {
-         Text("ontinue Watching")
+         Text("Continue Watching")
          .font(.title2)
          .fontWeight(.bold)
          .foregroundColor(.primary)
@@ -407,27 +407,28 @@ struct MediaSection: View {
     let title: String
     let items: [TMDBSearchResult]
     let isLarge: Bool
-    
+
+    var gap: Double { isTvOS ? (isLarge ? 80.0 : 50.0) : (isLarge ? 20.0 : 10.0) }
+
     init(title: String, items: [TMDBSearchResult], isLarge: Bool = false) {
         self.title = title
         self.items = items
         self.isLarge = isLarge
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text(title)
-                    .font(.title2)
+                    .font(isTvOS ? .headline : .title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
-                
                 Spacer()
             }
-            .padding(.horizontal)
-            
+            .padding(.horizontal, isTvOS ? 40 : 16)
+
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: isLarge ? 20 : 10) {
+                LazyHStack(spacing: gap) {
                     ForEach(items) { item in
                         if isLarge {
                             FeaturedCard(result: item, isLarge: true)
@@ -436,17 +437,20 @@ struct MediaSection: View {
                         }
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, isTvOS ? 40 : 16)
             }
+            .scrollClipDisabled()
+            .buttonStyle(.borderless)
         }
-        .padding(.vertical, 24)
+        .padding(.vertical, isTvOS ? 40 : 24)
         .opacity(items.isEmpty ? 0 : 1)
     }
 }
 
 struct MediaCard: View {
     let result: TMDBSearchResult
-    
+    @State private var isHovering: Bool = false
+
     var body: some View {
         NavigationLink(destination: MediaDetailView(searchResult: result)) {
             VStack(alignment: .leading, spacing: 6) {
@@ -459,42 +463,79 @@ struct MediaCard: View {
                     }
                     .resizable()
                     .aspectRatio(2/3, contentMode: .fill)
-                    .frame(width: 120, height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
-                
+                    .tvos({ view in
+                        view
+                            .frame(width: 280, height: 380)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .hoverEffect(.highlight)
+                            .onContinuousHover { phase in
+                                switch phase {
+                                    case .active(_):
+                                        isHovering = true
+                                    case .ended:
+                                        isHovering = false
+                                }
+                            }
+                            .padding(.vertical, 20)
+                    }, else: { view in
+                        view
+                            .frame(width: 120, height: 180)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
+                    })
+
                 VStack(alignment: .leading, spacing: 3) {
                     Text(result.displayTitle)
+                        .tvos({ view in
+                            view
+                                .foregroundColor(isHovering ? .white : .secondary)
+                                .fontWeight(.semibold)
+                                .padding(.bottom, 10)
+                        }, else: { view in
+                            view
+                                .foregroundColor(.white)
+                                .fontWeight(.medium)
+                        })
                         .font(.caption)
-                        .fontWeight(.medium)
                         .lineLimit(1)
-                        .foregroundColor(.white)
-                    
-                    HStack(alignment: .center,spacing: 3) {
-                        HStack(spacing: 2) {
+
+                    HStack(alignment: .center, spacing: 3) {
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Image(systemName: "star.fill")
                                 .font(.caption2)
                                 .foregroundColor(.yellow)
-                            
+
                             Text(String(format: "%.1f", result.voteAverage ?? 0.0))
                                 .font(.caption2)
                                 .foregroundColor(.white)
+                                .lineLimit(1)
+                                .fixedSize()
                         }
-                        
+                            .padding(.horizontal, isTvOS ? 20 : 5)
+                            .padding(.vertical, isTvOS ? 10 : 2)
+                            .applyLiquidGlassBackground(cornerRadius: 12)
+
+
                         Spacer()
-                        
+
                         Text(result.isMovie ? "Movie" : "TV")
                             .font(.caption2)
                             .foregroundColor(.white)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 2)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .padding(.horizontal, isTvOS ? 20 : 5)
+                            .padding(.vertical, isTvOS ? 10 : 2)
                             .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
-                .frame(width: 120, alignment: .leading)
+                .frame(width: isTvOS ? 280 : 120, alignment: .leading)
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .tvos({ view in
+            view.buttonStyle(BorderlessButtonStyle())
+        }, else: { view in
+            view.buttonStyle(PlainButtonStyle())
+        })
     }
 }
 
