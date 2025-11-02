@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "tvos_appstoreicon_front.png",
+      "idiom" : "tv"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
