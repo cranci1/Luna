@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Logger {
+class Logger: @unchecked Sendable {
     static let shared = Logger()
     
     struct LogEntry {
