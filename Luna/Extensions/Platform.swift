@@ -16,7 +16,7 @@ extension View {
         #if os(tvOS)
             transform(self)
         #else
-            elseTransform?(self)
+            elseTransform(self)
         #endif
     }
 

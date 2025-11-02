@@ -511,8 +511,8 @@ struct MediaCard: View {
                                 .lineLimit(1)
                                 .fixedSize()
                         }
-                            .padding(.horizontal, isTvOS ? 20 : 5)
-                            .padding(.vertical, isTvOS ? 10 : 2)
+                            .padding(.horizontal, isTvOS ? 16 : 6)
+                            .padding(.vertical, isTvOS ? 6 : 2)
                             .applyLiquidGlassBackground(cornerRadius: 12)
 
 
@@ -523,8 +523,8 @@ struct MediaCard: View {
                             .foregroundColor(.white)
                             .lineLimit(1)
                             .fixedSize()
-                            .padding(.horizontal, isTvOS ? 20 : 5)
-                            .padding(.vertical, isTvOS ? 10 : 2)
+                            .padding(.horizontal, isTvOS ? 16 : 6)
+                            .padding(.vertical, isTvOS ? 6 : 2)
                             .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
