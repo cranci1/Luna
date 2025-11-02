@@ -912,7 +912,7 @@ final class PlayerViewController: UIViewController {
             #endif
 
             let close: UIBarButtonItem
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, tvOS 26.0, *) {
                 close = UIBarButtonItem(title: "Close", style: .prominent, target: self, action: #selector(dismissLogs))
             } else {
                 close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
