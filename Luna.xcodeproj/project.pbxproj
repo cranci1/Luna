@@ -31,7 +31,6 @@
 		13E34D2A2E535CB500C7BF07 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13E34D292E535CB500C7BF07 /* Kingfisher */; };
 		13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0725E2E4B2D3300EF90EB /* SoraApp.swift */; };
 		13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13F072622E4B2D3700EF90EB /* Assets.xcassets */; };
-		13F072672E4B2D3700EF90EB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13F072662E4B2D3700EF90EB /* Preview Assets.xcassets */; };
 		13F0729B2E4B2D9200EF90EB /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726E2E4B2D9000EF90EB /* Services.swift */; };
 		13F0729C2E4B2D9200EF90EB /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726F2E4B2D9000EF90EB /* JavaScriptCore+Extensions.swift */; };
 		13F0729D2E4B2D9200EF90EB /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F072702E4B2D9000EF90EB /* JSController-Search.swift */; };
@@ -115,7 +114,6 @@
 		13F0725E2E4B2D3300EF90EB /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		13F072622E4B2D3700EF90EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		13F072642E4B2D3700EF90EB /* Luna.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Luna.entitlements; sourceTree = "<group>"; };
-		13F072662E4B2D3700EF90EB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		13F0726E2E4B2D9000EF90EB /* Services.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
 		13F0726F2E4B2D9000EF90EB /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 		13F072702E4B2D9000EF90EB /* JSController-Search.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
@@ -247,17 +245,8 @@
 				13F0727D2E4B2D9000EF90EB /* ContentView.swift */,
 				13F072622E4B2D3700EF90EB /* Assets.xcassets */,
 				13F072642E4B2D3700EF90EB /* Luna.entitlements */,
-				13F072652E4B2D3700EF90EB /* Preview Content */,
 			);
 			path = Luna;
-			sourceTree = "<group>";
-		};
-		13F072652E4B2D3700EF90EB /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				13F072662E4B2D3700EF90EB /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		13F0726D2E4B2D9000EF90EB /* JSLoader */ = {
@@ -526,7 +515,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13F072672E4B2D3700EF90EB /* Preview Assets.xcassets in Resources */,
 				13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */,
 				120B0E142EB7BC7D008EA699 /* AppIcon.icon in Resources */,
 			);
@@ -736,7 +724,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Luna/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -791,7 +778,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Luna/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
