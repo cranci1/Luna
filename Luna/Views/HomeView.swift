@@ -408,9 +408,9 @@ struct MediaSection: View {
     let items: [TMDBSearchResult]
     let isLarge: Bool
 
-    var gap: Double { isTvOS ? (isLarge ? 80.0 : 50.0) : (isLarge ? 20.0 : 10.0) }
+    var gap: Double { isTvOS ? (isLarge ? 50.0 : 50.0) : (isLarge ? 20.0 : 10.0) }
 
-    init(title: String, items: [TMDBSearchResult], isLarge: Bool = false) {
+    init(title: String, items: [TMDBSearchResult], isLarge: Bool = true) {
         self.title = title
         self.items = items
         self.isLarge = isLarge
@@ -431,7 +431,7 @@ struct MediaSection: View {
                 LazyHStack(spacing: gap) {
                     ForEach(items) { item in
                         if isLarge {
-                            FeaturedCard(result: item, isLarge: true)
+                            FeaturedCard(result: item, isLarge: isLarge)
                         } else {
                             MediaCard(result: item)
                         }
