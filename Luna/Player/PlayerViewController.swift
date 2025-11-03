@@ -922,8 +922,9 @@ final class PlayerViewController: UIViewController {
             } else {
                 close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
             }
-#endif
+#else
             close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
+#endif
             vc.navigationItem.rightBarButtonItem = close
             self.present(nav, animated: true, completion: nil)
         }
