@@ -408,9 +408,9 @@ struct MediaSection: View {
     let items: [TMDBSearchResult]
     let isLarge: Bool
 
-    var gap: Double { isTvOS ? (isLarge ? 50.0 : 50.0) : (isLarge ? 20.0 : 10.0) }
+    var gap: Double { isTvOS ? 50.0 : 20.0 }
 
-    init(title: String, items: [TMDBSearchResult], isLarge: Bool = true) {
+    init(title: String, items: [TMDBSearchResult], isLarge: Bool = Bool.random()) {
         self.title = title
         self.items = items
         self.isLarge = isLarge
@@ -485,21 +485,17 @@ struct MediaCard: View {
                     })
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(result.displayTitle)
-                        .tvos({ view in
-                            view
-                                .foregroundColor(isHovering ? .white : .secondary)
-                                .fontWeight(.semibold)
-                                .padding(.bottom, 10)
-                        }, else: { view in
-                            view
-                                .foregroundColor(.white)
-                                .fontWeight(.medium)
-                        })
-                        .font(.caption)
-                        .lineLimit(1)
 
-                    HStack(alignment: .center, spacing: 3) {
+                    HStack(alignment: .center, spacing: isTvOS ? 18 : 8) {
+                        Text(result.isMovie ? "Movie" : "TV")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .padding(.horizontal, isTvOS ? 16 : 6)
+                            .padding(.vertical, isTvOS ? 6 : 2)
+                            .applyLiquidGlassBackground(cornerRadius: 12)
+
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Image(systemName: "star.fill")
                                 .font(.caption2)
@@ -512,21 +508,24 @@ struct MediaCard: View {
                                 .fixedSize()
                         }
                             .padding(.horizontal, isTvOS ? 16 : 6)
-                            .padding(.vertical, isTvOS ? 6 : 2)
+                            .padding(.vertical, isTvOS ? 10 : 2)
                             .applyLiquidGlassBackground(cornerRadius: 12)
-
 
                         Spacer()
-
-                        Text(result.isMovie ? "Movie" : "TV")
-                            .font(.caption2)
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                            .fixedSize()
-                            .padding(.horizontal, isTvOS ? 16 : 6)
-                            .padding(.vertical, isTvOS ? 6 : 2)
-                            .applyLiquidGlassBackground(cornerRadius: 12)
                     }
+                    
+                    Text(result.displayTitle)
+                        .tvos({ view in
+                            view
+                                .foregroundColor(isHovering ? .white : .secondary)
+                                .fontWeight(.semibold)
+                        }, else: { view in
+                            view
+                                .foregroundColor(.white)
+                                .fontWeight(.medium)
+                        })
+                        .font(.caption)
+                        .lineLimit(1)
                 }
                 .frame(width: isTvOS ? 280 : 120, alignment: .leading)
             }
