@@ -430,11 +430,7 @@ struct MediaSection: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: gap) {
                     ForEach(items) { item in
-                        if isLarge {
-                            FeaturedCard(result: item, isLarge: isLarge)
-                        } else {
-                            MediaCard(result: item)
-                        }
+                        MediaCard(result: item)
                     }
                 }
                 .padding(.horizontal, isTvOS ? 40 : 16)

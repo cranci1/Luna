@@ -1,5 +1,4 @@
 {
-  "originHash" : "559c05f32fe6bb44569b253460cda2da114613f59f2f9cf6104ff13c001de40b",
   "pins" : [
     {
       "identity" : "fakewebkit",
@@ -7,7 +6,7 @@
       "location" : "https://github.com/undeaDD/FakeWebKit",
       "state" : {
         "branch" : "main",
-        "revision" : "d0c32ecfff9f7bbe158ff0a1e0f4414648872d6b"
+        "revision" : "851ab88f8558e5af93d4f4f7160586ad0aa5e93b"
       }
     },
     {
@@ -25,9 +24,9 @@
       "location" : "https://github.com/cranci1/MPVKit/",
       "state" : {
         "branch" : "main",
-        "revision" : "a75cb31f32681b36f10207c59dc6d671372fd3da"
+        "revision" : "a8929d866e715a275310e39553a43a6ff993d2c2"
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

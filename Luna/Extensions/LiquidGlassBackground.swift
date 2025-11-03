@@ -10,6 +10,7 @@ import SwiftUI
 extension View {
     @ViewBuilder
     func applyLiquidGlassBackground(cornerRadius: CGFloat, fallbackFill: Color = Color.black.opacity(0.2), fallbackMaterial: Material = .ultraThinMaterial, glassTint: Color? = nil) -> some View {
+#if compiler(>=6.0)
         if #available(iOS 26.0, macOS 15.0, tvOS 20.0, *) {
             self
                 .glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
@@ -21,15 +22,23 @@ extension View {
                     }
                 }
         } else {
-            self
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(fallbackFill)
-                        .background(
-                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                                .fill(fallbackMaterial)
-                        )
-                )
+            oldBackground(cornerRadius: cornerRadius, fallbackFill: fallbackFill, fallbackMaterial: fallbackMaterial)
         }
+#else
+        oldBackground(cornerRadius: cornerRadius, fallbackFill: fallbackFill, fallbackMaterial: fallbackMaterial)
+#endif
+    }
+    
+    @ViewBuilder
+    private func oldBackground(cornerRadius: CGFloat, fallbackFill: Color, fallbackMaterial: Material) -> some View {
+        self
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(fallbackFill)
+                    .background(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(fallbackMaterial)
+                    )
+            )
     }
 }

@@ -368,13 +368,16 @@ final class PlayerViewController: UIViewController {
         
         displayLayer.frame = videoContainer.bounds
         displayLayer.videoGravity = .resizeAspect
-        #if !os(tvOS)
-            if #available(iOS 26.0, *) {
-                displayLayer.preferredDynamicRange = .automatic
-            } else {
-                displayLayer.wantsExtendedDynamicRangeContent = true
-            }
-        #endif
+#if compiler(>=6.0)
+#if !os(tvOS)
+        if #available(iOS 26.0, *) {
+            displayLayer.preferredDynamicRange = .automatic
+        } else {
+            displayLayer.wantsExtendedDynamicRangeContent = true
+        }
+#endif
+        displayLayer.wantsExtendedDynamicRangeContent = true
+#endif
         displayLayer.backgroundColor = UIColor.black.cgColor
         
         videoContainer.layer.addSublayer(displayLayer)
@@ -912,11 +915,15 @@ final class PlayerViewController: UIViewController {
             #endif
 
             let close: UIBarButtonItem
+            
+#if compiler(>=6.0)
             if #available(iOS 26.0, tvOS 26.0, *) {
                 close = UIBarButtonItem(title: "Close", style: .prominent, target: self, action: #selector(dismissLogs))
             } else {
                 close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
             }
+#endif
+            close = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(dismissLogs))
             vc.navigationItem.rightBarButtonItem = close
             self.present(nav, animated: true, completion: nil)
         }
