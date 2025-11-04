@@ -368,12 +368,18 @@ final class PlayerViewController: UIViewController {
         
         displayLayer.frame = videoContainer.bounds
         displayLayer.videoGravity = .resizeAspect
-#if compiler(>=6.0) && !os(tvOS)
-        if #available(iOS 26.0, *) {
-            displayLayer.preferredDynamicRange = .automatic
-        } else {
+#if compiler(>=6.0)
+    if #available(iOS 26.0, tvOS 26.0, *) {
+        displayLayer.preferredDynamicRange = .automatic
+    } else {
+        #if !os(tvOS)
             displayLayer.wantsExtendedDynamicRangeContent = true
-        }
+        #endif
+    }
+#else
+    #if !os(tvOS)
+        displayLayer.wantsExtendedDynamicRangeContent = true
+    #endif
 #endif
         displayLayer.backgroundColor = UIColor.black.cgColor
         
