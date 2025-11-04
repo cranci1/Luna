@@ -45,7 +45,7 @@ struct SettingsView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 500, height: 500)
-                        .clipShape(RoundedRectangle(cornerRadius: 90, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                         .shadow(radius: 10)
 
                     VStack(spacing: 15) {
@@ -64,7 +64,6 @@ struct SettingsView: View {
 
                 NavigationStack {
                     settingsContent
-                        .padding(60)
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -97,7 +96,7 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-                
+
                 NavigationLink(destination: TMDBFiltersView()) {
                     Text("Content Filters")
                 }
@@ -144,7 +143,12 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("Settings")
+        #if !os(tvOS)
+            .navigationTitle("Settings")
+        #else
+            .listStyle(.grouped)
+            .scrollClipDisabled()
+        #endif
     }
 }
 

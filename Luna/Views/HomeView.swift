@@ -223,7 +223,7 @@ struct HomeView: View {
                 
                 if let overview = hero.overview, !overview.isEmpty {
                     Text(String(overview.prefix(100)) + (overview.count > 100 ? "..." : ""))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isTvOS ? .secondary : .white.opacity(0.9))
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
