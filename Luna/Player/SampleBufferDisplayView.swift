@@ -40,11 +40,13 @@ final class SampleBufferDisplayView: UIView {
 #if compiler(>=6.0)
         if #available(iOS 26.0, *) {
             displayLayer.preferredDynamicRange = .automatic
-        } else {
+        } else if #available(iOS 17.0, *) {
             displayLayer.wantsExtendedDynamicRangeContent = true
         }
 #endif
-        displayLayer.wantsExtendedDynamicRangeContent = true
+        if #available(iOS 17.0, *) {
+            displayLayer.wantsExtendedDynamicRangeContent = true
+        }
 #endif
         setupPictureInPicture()
     }

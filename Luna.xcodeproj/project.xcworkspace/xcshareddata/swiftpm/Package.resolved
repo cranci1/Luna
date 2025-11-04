@@ -26,6 +26,15 @@
         "branch" : "main",
         "revision" : "a8929d866e715a275310e39553a43a6ff993d2c2"
       }
+    },
+    {
+      "identity" : "soracore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cranci1/SoraCore",
+      "state" : {
+        "branch" : "main",
+        "revision" : "50ddc160fd606e9708adefc1d9fc7003b574446b"
+      }
     }
   ],
   "version" : 2

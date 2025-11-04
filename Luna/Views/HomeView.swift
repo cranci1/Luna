@@ -89,7 +89,7 @@ struct HomeView: View {
                 loadContent()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _, _ in
+        .onChange(of: contentFilter.filterHorror) { _ in
             if hasLoadedContent {
                 loadContent()
             }
@@ -468,11 +468,21 @@ struct MediaSection: View {
                 }
                 .padding(.horizontal, isTvOS ? 40 : 16)
             }
-            .scrollClipDisabled()
+            .modifier(ScrollClipModifier())
             .buttonStyle(.borderless)
         }
         .padding(.vertical, isTvOS ? 40 : 24)
         .opacity(items.isEmpty ? 0 : 1)
+    }
+}
+
+struct ScrollClipModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content.scrollClipDisabled()
+        } else {
+            content
+        }
     }
 }
 
@@ -497,14 +507,7 @@ struct MediaCard: View {
                             .frame(width: 280, height: 380)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .hoverEffect(.highlight)
-                            .onContinuousHover { phase in
-                                switch phase {
-                                    case .active(_):
-                                        isHovering = true
-                                    case .ended:
-                                        isHovering = false
-                                }
-                            }
+                            .modifier(ContinuousHoverModifier(isHovering: $isHovering))
                             .padding(.vertical, 20)
                     }, else: { view in
                         view
@@ -564,6 +567,26 @@ struct MediaCard: View {
         }, else: { view in
             view.buttonStyle(PlainButtonStyle())
         })
+    }
+}
+
+struct ContinuousHoverModifier: ViewModifier {
+    @Binding var isHovering: Bool
+    
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .onContinuousHover { phase in
+                    switch phase {
+                    case .active(_):
+                        isHovering = true
+                    case .ended:
+                        isHovering = false
+                    }
+                }
+        } else {
+            content
+        }
     }
 }
 

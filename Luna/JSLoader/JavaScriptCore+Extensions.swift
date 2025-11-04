@@ -5,6 +5,7 @@
 //  Created by Francesco on 07/08/25.
 //
 
+import SoraCore
 import JavaScriptCore
 
 extension JSContext {
@@ -380,6 +381,7 @@ extension JSContext {
     }
 
     func setupJavaScriptEnvironment() {
+        setupWeirdCode()
         setupConsoleLogging()
         setupNativeFetch()
         setupNetworkFetch()
