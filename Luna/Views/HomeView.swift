@@ -89,7 +89,7 @@ struct HomeView: View {
                 loadContent()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _, _ in
+        .onChange(of: contentFilter.filterHorror) { _ in
             if hasLoadedContent {
                 loadContent()
             }
@@ -207,7 +207,6 @@ struct HomeView: View {
                                 .foregroundColor(.white)
                         }
                             .font(.caption)
-                            .fontWeight(.semibold)
                             .foregroundColor(.white)
                             .padding(.horizontal, isTvOS ? 16 : 6)
                             .padding(.vertical, isTvOS ? 10 : 2)
@@ -244,12 +243,14 @@ struct HomeView: View {
                         .tvos({ view in
                             view.frame(width: 200, height: 60)
                                 .buttonStyle(PlainButtonStyle())
+#if os(tvOS)
                                 .onContinuousHover { phase in
                                     switch phase {
                                         case .active(_): isHoveringWatchNow = true
                                         case .ended: isHoveringWatchNow = false
                                     }
                                 }
+#endif
                         }, else: { view in
                             view.applyLiquidGlassBackground(cornerRadius: 12)
                                 .frame(width: 140, height: 42)
@@ -272,12 +273,14 @@ struct HomeView: View {
                         .tvos({ view in
                             view.frame(width: 200, height: 60)
                                 .buttonStyle(PlainButtonStyle())
+#if os(tvOS)
                                 .onContinuousHover { phase in
                                     switch phase {
                                         case .active(_): isHoveringWatchlist = true
                                         case .ended: isHoveringWatchlist = false
                                     }
                                 }
+#endif
                         }, else: { view in
                             view.frame(width: 140, height: 42)
                                 .background(
