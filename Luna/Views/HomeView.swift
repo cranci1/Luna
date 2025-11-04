@@ -252,9 +252,10 @@ struct HomeView: View {
                                 }
 #endif
                         }, else: { view in
-                            view.applyLiquidGlassBackground(cornerRadius: 12)
+                            view
                                 .frame(width: 140, height: 42)
                                 .buttonStyle(PlainButtonStyle())
+                                .applyLiquidGlassBackground(cornerRadius: 12)
                         })
                     }
 
