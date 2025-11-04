@@ -105,14 +105,14 @@ struct MusicProgressSlider<T: BinaryFloatingPoint>: View {
                     }
             )
             #endif
-            .onChange(of: isActive) { newValue in
+            .onChange(of: isActive) { _, newValue in
                 value = max(min(getPrgValue(), inRange.upperBound), inRange.lowerBound)
                 onEditingChanged(newValue)
             }
             .onAppear {
                 localRealProgress = getPrgPercentage(value)
             }
-            .onChange(of: value) { newValue in
+            .onChange(of: value) { _, newValue in
                 if !isActive {
                     localRealProgress = getPrgPercentage(newValue)
                     progressDuration = inRange.upperBound * localRealProgress

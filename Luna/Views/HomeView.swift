@@ -89,7 +89,7 @@ struct HomeView: View {
                 loadContent()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _ in
+        .onChange(of: contentFilter.filterHorror) { _, _ in
             if hasLoadedContent {
                 loadContent()
             }
@@ -508,7 +508,7 @@ struct MediaCard: View {
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .hoverEffect(.highlight)
                             .modifier(ContinuousHoverModifier(isHovering: $isHovering))
-                            .padding(.vertical, 20)
+                            .padding(.vertical, 30)
                     }, else: { view in
                         view
                             .frame(width: 120, height: 180)
@@ -516,7 +516,7 @@ struct MediaCard: View {
                             .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
                     })
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: isTvOS ? 10 : 3) {
 
                     HStack(alignment: .center, spacing: isTvOS ? 18 : 8) {
                         Text(result.isMovie ? "Movie" : "TV")
@@ -525,7 +525,7 @@ struct MediaCard: View {
                             .lineLimit(1)
                             .fixedSize()
                             .padding(.horizontal, isTvOS ? 16 : 6)
-                            .padding(.vertical, isTvOS ? 6 : 2)
+                            .padding(.vertical, isTvOS ? 10 : 2)
                             .applyLiquidGlassBackground(cornerRadius: 12)
 
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
