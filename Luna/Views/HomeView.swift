@@ -41,8 +41,14 @@ struct HomeView: View {
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var contentFilter = TMDBContentFilter.shared
     
-    private let heroHeight: CGFloat = 580
-    
+    private var heroHeight: CGFloat {
+        #if os(tvOS)
+            UIScreen.main.bounds.height * 0.8
+        #else
+            580
+        #endif
+    }
+
     var body: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
@@ -179,36 +185,36 @@ struct HomeView: View {
     @ViewBuilder
     private var heroContentInfo: some View {
         if let hero = heroContent {
-            VStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .center, spacing: isTvOS ? 30 : 12) {
                 HStack {
                     Text(hero.isMovie ? "Movie" : "TV Series")
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, isTvOS ? 16 : 6)
+                        .padding(.vertical, isTvOS ? 10 : 2)
                         .applyLiquidGlassBackground(cornerRadius: 12)
                     
                     if (hero.voteAverage ?? 0.0) > 0 {
-                        HStack(spacing: 2) {
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Image(systemName: "star.fill")
-                                .font(.caption)
                                 .foregroundColor(.yellow)
                             
                             Text(String(format: "%.1f", hero.voteAverage ?? 0.0))
-                                .font(.caption)
                                 .fontWeight(.medium)
                                 .foregroundColor(.white)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.black.opacity(0.3))
-                        .clipShape(Capsule())
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, isTvOS ? 16 : 6)
+                            .padding(.vertical, isTvOS ? 10 : 2)
+                            .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
                 
                 Text(hero.displayTitle)
-                    .font(.system(size: 25))
+                    .font(.system(size: isTvOS ? 40 : 25))
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .lineLimit(2)
@@ -231,12 +237,19 @@ struct HomeView: View {
                             Text("Watch Now")
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
+                                .fixedSize()
+                                .lineLimit(1)
                         }
-                        .frame(width: 140, height: 42)
-                        .applyLiquidGlassBackground(cornerRadius: 12)
+                        .tvos({ view in
+                            view.frame(width: 200, height: 60)
+                                .buttonStyle(PlainButtonStyle())
+                        }, else: { view in
+                            view.applyLiquidGlassBackground(cornerRadius: 12)
+                                .frame(width: 140, height: 42)
+                                .buttonStyle(PlainButtonStyle())
+                        })
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
+
                     Button(action: {
                         // TODO: Add to watchlist
                     }) {
@@ -245,16 +258,24 @@ struct HomeView: View {
                                 .font(.subheadline)
                             Text("Watchlist")
                                 .fontWeight(.semibold)
+                                .fixedSize()
+                                .lineLimit(1)
                         }
-                        .frame(width: 140, height: 42)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.black.opacity(0.3))
+                        .tvos({ view in
+                            view.frame(width: 200, height: 60)
+                                .buttonStyle(PlainButtonStyle())
+                        }, else: { view in
+                            view.frame(width: 140, height: 42)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(.white.opacity(0.3), lineWidth: 1)
-                                )
-                        )
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.black.opacity(0.3))
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                                    )
+                            )
+                        })
+
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                     }
