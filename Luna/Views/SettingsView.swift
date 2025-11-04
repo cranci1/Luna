@@ -38,18 +38,50 @@ struct SettingsView: View {
     ]
     
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                settingsContent
+        #if os(tvOS)
+            HStack(spacing: 0) {
+                VStack(spacing: 30) {
+                    Image("Luna")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 500, height: 500)
+                        .clipShape(RoundedRectangle(cornerRadius: 90, style: .continuous))
+                        .shadow(radius: 10)
+
+                    VStack(spacing: 15) {
+                        Text("Version \(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
+                            .font(.footnote)
+                            .fontWeight(.regular)
+                            .foregroundColor(.secondary)
+
+                        Text("Copyright © \(Calendar.current.component(.year, from: Date())) Luna by Cranci")
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                    }
+                }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                NavigationStack {
+                    settingsContent
+                        .padding(60)
+                }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        } else {
-            NavigationView {
-                settingsContent
+        #else
+            if #available(iOS 16.0, *) {
+                NavigationStack {
+                    settingsContent
+                }
+            } else {
+                NavigationView {
+                    settingsContent
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
             }
-            .navigationViewStyle(StackNavigationViewStyle())
-        }
+        #endif
     }
-    
+
     private var settingsContent: some View {
         List {
             Section {

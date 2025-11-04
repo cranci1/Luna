@@ -21,6 +21,8 @@ struct HomeView: View {
     @State private var errorMessage: String?
     @State private var heroContent: TMDBSearchResult?
     @State private var ambientColor: Color = Color.black
+    @State private var isHoveringWatchNow = false
+    @State private var isHoveringWatchlist = false
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
     @State private var hasLoadedContent = false
     
@@ -222,7 +224,7 @@ struct HomeView: View {
                 
                 if let overview = hero.overview, !overview.isEmpty {
                     Text(String(overview.prefix(100)) + (overview.count > 100 ? "..." : ""))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.secondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
@@ -233,16 +235,21 @@ struct HomeView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "play.fill")
                                 .font(.subheadline)
-                                .foregroundColor(.white)
                             Text("Watch Now")
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white)
                                 .fixedSize()
                                 .lineLimit(1)
                         }
+                        .foregroundColor(isHoveringWatchNow ? .black : .white)
                         .tvos({ view in
                             view.frame(width: 200, height: 60)
                                 .buttonStyle(PlainButtonStyle())
+                                .onContinuousHover { phase in
+                                    switch phase {
+                                        case .active(_): isHoveringWatchNow = true
+                                        case .ended: isHoveringWatchNow = false
+                                    }
+                                }
                         }, else: { view in
                             view.applyLiquidGlassBackground(cornerRadius: 12)
                                 .frame(width: 140, height: 42)
@@ -261,9 +268,16 @@ struct HomeView: View {
                                 .fixedSize()
                                 .lineLimit(1)
                         }
+                        .foregroundColor(isHoveringWatchlist ? .black : .white)
                         .tvos({ view in
                             view.frame(width: 200, height: 60)
                                 .buttonStyle(PlainButtonStyle())
+                                .onContinuousHover { phase in
+                                    switch phase {
+                                        case .active(_): isHoveringWatchlist = true
+                                        case .ended: isHoveringWatchlist = false
+                                    }
+                                }
                         }, else: { view in
                             view.frame(width: 140, height: 42)
                                 .background(
@@ -275,8 +289,6 @@ struct HomeView: View {
                                     )
                             )
                         })
-
-                        .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                     }
                 }
