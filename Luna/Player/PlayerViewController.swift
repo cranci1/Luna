@@ -373,7 +373,9 @@ final class PlayerViewController: UIViewController {
         displayLayer.preferredDynamicRange = .automatic
     } else {
         #if !os(tvOS)
-            displayLayer.wantsExtendedDynamicRangeContent = true
+            if #available(iOS 17.0, *) {
+                displayLayer.wantsExtendedDynamicRangeContent = true
+            }
         #endif
     }
 #elseif !os(tvOS)

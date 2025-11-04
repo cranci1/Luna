@@ -124,7 +124,7 @@ struct SearchView: View {
                             .onSubmit {
                                 performSearchOrDownloadService()
                             }
-                            .onChange(of: searchText) { _, newValue in
+                            .onChange(of: searchText) { newValue in
                                 if newValue.isEmpty {
                                     searchResults = []
                                     errorMessage = nil
@@ -341,12 +341,12 @@ struct SearchView: View {
         } message: {
             Text(serviceDownloadError ?? "")
         }
-        .onChange(of: selectedLanguage) { _, _ in
+        .onChange(of: selectedLanguage) { _ in
             if !searchText.isEmpty && !searchResults.isEmpty {
                 performSearch()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _, _ in
+        .onChange(of: contentFilter.filterHorror) { _ in
             if !searchText.isEmpty && !searchResults.isEmpty {
                 performSearch()
             }

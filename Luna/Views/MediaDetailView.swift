@@ -89,7 +89,7 @@ struct MediaDetailView: View {
             loadMediaDetails()
             updateBookmarkStatus()
         }
-        .onChange(of: libraryManager.collections) { _, _ in
+        .onChange(of: libraryManager.collections) { _ in
             updateBookmarkStatus()
         }
         .sheet(isPresented: $showingSearchResults) {
