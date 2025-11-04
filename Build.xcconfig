@@ -1,0 +1,13 @@
+//
+//  Build.xcconfig
+//  Luna
+//
+//  Created by Dominic on 04.11.25.
+//
+
+APP_NAME = Luna
+DEVELOPMENT_TEAM = 399LMK6Q2Y
+BUNDLE_IDENTIFIER = me.cranci.solar
+
+// Optional local overrides (ignored in Git)
+#include? "Build.local.xcconfig"

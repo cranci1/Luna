@@ -1,0 +1,10 @@
+//
+//  Build.xcconfig
+//  Luna
+//
+//  Created by Dominic on 04.11.25.
+//
+
+APP_NAME = Luna
+DEVELOPMENT_TEAM = AXLC3PQNC8
+BUNDLE_IDENTIFIER = de.devsforge.luna
