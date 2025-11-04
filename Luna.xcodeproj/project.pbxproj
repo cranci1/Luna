@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		121C829B2EB8166B0000D62C /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 121C829A2EB8166B0000D62C /* FakeWebKit */; };
 		129CC9072EBA1D4600D2D84B /* Build.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 129CC9062EBA1D4600D2D84B /* Build.xcconfig */; };
-		129CC9092EBA1F8400D2D84B /* Build.local.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */; };
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
 		1324E7BB2E940BD70036B5F5 /* PlayerPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */; };
@@ -523,7 +522,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */,
-				129CC9092EBA1F8400D2D84B /* Build.local.xcconfig in Resources */,
 				129CC9072EBA1D4600D2D84B /* Build.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
