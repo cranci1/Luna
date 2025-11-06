@@ -1,5 +1,4 @@
 {
-  "originHash" : "2323e322e1bb28e2d55d23abe6d171cc8133a9e1fa500bf2ff9e13de136e72c6",
   "pins" : [
     {
       "identity" : "fakewebkit",
@@ -7,7 +6,7 @@
       "location" : "https://github.com/undeaDD/FakeWebKit",
       "state" : {
         "branch" : "main",
-        "revision" : "d0c32ecfff9f7bbe158ff0a1e0f4414648872d6b"
+        "revision" : "851ab88f8558e5af93d4f4f7160586ad0aa5e93b"
       }
     },
     {
@@ -38,5 +37,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

@@ -379,7 +379,9 @@ final class PlayerViewController: UIViewController {
         #endif
     }
 #elseif !os(tvOS)
-    displayLayer.wantsExtendedDynamicRangeContent = true
+        if #available(iOS 17.0, *) {
+            displayLayer.wantsExtendedDynamicRangeContent = true
+        }
 #endif
         displayLayer.backgroundColor = UIColor.black.cgColor
         
