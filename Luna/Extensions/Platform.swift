@@ -36,4 +36,19 @@ extension View {
             false
         #endif
     }
+
+    func onChangeComp<V: Equatable>(
+        of value: V,
+        perform action: @escaping (V?, V) -> Void
+    ) -> some View {
+        if #available(tvOS 17.0, iOS 17.0, macOS 14.0, *) {
+            return self.onChange(of: value) { oldValue, newValue in
+                action(oldValue, newValue)
+            }
+        } else {
+            return self.onChange(of: value) { newValue in
+                action(nil, newValue)
+            }
+        }
+    }
 }

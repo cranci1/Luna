@@ -65,7 +65,7 @@ struct ServicesView: View {
 }
 
 struct ServiceRow: View {
-    let service: Services
+    let service: Service
     @ObservedObject var serviceManager: ServiceManager
     @State private var showingSettings = false
     

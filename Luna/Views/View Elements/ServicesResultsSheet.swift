@@ -24,7 +24,7 @@ struct ModulesSearchResultsSheet: View {
     let tmdbId: Int
     
     @Environment(\.presentationMode) var presentationMode
-    @State private var moduleResults: [(service: Services, results: [SearchItem])] = []
+    @State private var moduleResults: [(service: Service, results: [SearchItem])] = []
     @State private var selectedResult: SearchItem?
     @State private var showingPlayAlert = false
     @State private var expandedServices: Set<UUID> = []
@@ -36,7 +36,7 @@ struct ModulesSearchResultsSheet: View {
     @State private var playerViewController: NormalPlayer?
     @State private var streamOptions: [StreamOption] = []
     @State private var pendingSubtitles: [String]?
-    @State private var pendingService: Services?
+    @State private var pendingService: Service?
     @State private var showingStreamMenu = false
     @State private var isFetchingStreams = false
     @State private var currentFetchingTitle = ""
@@ -55,7 +55,7 @@ struct ModulesSearchResultsSheet: View {
     @StateObject private var serviceManager = ServiceManager.shared
     @StateObject private var algorithmManager = AlgorithmManager.shared
     
-    private var servicesWithResults: [(service: Services, results: [SearchItem])] {
+    private var servicesWithResults: [(service: Service, results: [SearchItem])] {
         moduleResults.filter { !$0.results.isEmpty }
     }
     
@@ -196,7 +196,7 @@ struct ModulesSearchResultsSheet: View {
     }
     
     @ViewBuilder
-    private func serviceSection(service: Services) -> some View {
+    private func serviceSection(service: Service) -> some View {
         let moduleResult = moduleResults.first { $0.service.id == service.id }
         let hasSearched = searchedServices.contains(service.id)
         let isCurrentlySearching = isSearching && !hasSearched
@@ -259,7 +259,7 @@ struct ModulesSearchResultsSheet: View {
     }
     
     @ViewBuilder
-    private func serviceResultsContent(filteredResults: (highQuality: [SearchItem], lowQuality: [SearchItem]), service: Services) -> some View {
+    private func serviceResultsContent(filteredResults: (highQuality: [SearchItem], lowQuality: [SearchItem]), service: Service) -> some View {
         ForEach(filteredResults.highQuality, id: \.id) { searchResult in
             EnhancedMediaResultRow(
                 result: searchResult,
@@ -279,7 +279,7 @@ struct ModulesSearchResultsSheet: View {
     }
     
     @ViewBuilder
-    private func lowQualityResultsSection(filteredResults: (highQuality: [SearchItem], lowQuality: [SearchItem]), service: Services) -> some View {
+    private func lowQualityResultsSection(filteredResults: (highQuality: [SearchItem], lowQuality: [SearchItem]), service: Service) -> some View {
         let isExpanded = expandedServices.contains(service.id)
         
         Button(action: {
@@ -654,7 +654,7 @@ struct ModulesSearchResultsSheet: View {
     }
     
     @ViewBuilder
-    private func serviceHeader(for service: Services, highQualityCount: Int, lowQualityCount: Int, isSearching: Bool = false) -> some View {
+    private func serviceHeader(for service: Service, highQualityCount: Int, lowQualityCount: Int, isSearching: Bool = false) -> some View {
         HStack {
             KFImage(URL(string: service.metadata.iconUrl))
                 .placeholder {
@@ -710,7 +710,7 @@ struct ModulesSearchResultsSheet: View {
         }
     }
     
-    private func getResultCount(for service: Services) -> Int {
+    private func getResultCount(for service: Service) -> Int {
         return moduleResults.first { $0.service.id == service.id }?.results.count ?? 0
     }
     
@@ -743,7 +743,7 @@ struct ModulesSearchResultsSheet: View {
         fetchStreamForEpisode(episode.href, jsController: jsController, service: service)
     }
     
-    private func fetchStreamForEpisode(_ episodeHref: String, jsController: JSController, service: Services) {
+    private func fetchStreamForEpisode(_ episodeHref: String, jsController: JSController, service: Service) {
         jsController.fetchStreamUrlJS(episodeUrl: episodeHref, module: service) { streamResult in
             DispatchQueue.main.async {
                 let (streams, subtitles, sources) = streamResult
@@ -774,29 +774,11 @@ struct ModulesSearchResultsSheet: View {
         
         Logger.shared.log("Using service: \(service.metadata.sourceName)", type: "Stream")
         streamFetchProgress = "Loading service: \(service.metadata.sourceName)"
-        
+
         let jsController = JSController()
-        let servicePath = serviceManager.servicesDirectory.appendingPathComponent(service.localPath)
-        let jsPath = servicePath.appendingPathComponent("script.js")
-        
-        Logger.shared.log("JavaScript path: \(jsPath.path)", type: "Stream")
-        
-        guard FileManager.default.fileExists(atPath: jsPath.path) else {
-            Logger.shared.log("JavaScript file not found for service: \(service.metadata.sourceName)", type: "Error")
-            isFetchingStreams = false
-            return
-        }
-        
-        do {
-            let jsContent = try String(contentsOf: jsPath, encoding: .utf8)
-            jsController.loadScript(jsContent)
-            Logger.shared.log("JavaScript loaded successfully", type: "Stream")
-            streamFetchProgress = "JavaScript loaded successfully"
-        } catch {
-            Logger.shared.log("Failed to load JavaScript for service \(service.metadata.sourceName): \(error.localizedDescription)", type: "Error")
-            isFetchingStreams = false
-            return
-        }
+
+        jsController.loadScript(service.jsScript)
+        Logger.shared.log("JavaScript loaded successfully", type: "Stream")
         
         streamFetchProgress = "Fetching episodes..."
         
@@ -944,7 +926,7 @@ struct ModulesSearchResultsSheet: View {
         }
     }
     
-    private func processStreamResult(streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?, service: Services) {
+    private func processStreamResult(streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?, service: Service) {
         Logger.shared.log("Stream fetch result - Streams: \(streams?.count ?? 0), Sources: \(sources?.count ?? 0)", type: "Stream")
         self.streamFetchProgress = "Processing stream data..."
         
@@ -1067,7 +1049,7 @@ struct ModulesSearchResultsSheet: View {
         }
     }
     
-    private func playStreamURL(_ url: String, service: Services, subtitles: [String]?, headers: [String: String]?) {
+    private func playStreamURL(_ url: String, service: Service, subtitles: [String]?, headers: [String: String]?) {
         isFetchingStreams = false
         showingStreamMenu = false
         pendingSubtitles = nil
