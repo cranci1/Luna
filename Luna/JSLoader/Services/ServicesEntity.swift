@@ -57,6 +57,15 @@ extension ServiceEntity {
     @NSManaged public var url: String?
     @NSManaged public var isActive: Bool
     @NSManaged public var sortIndex: Int64
+
+    override public func awakeFromInsert() {
+        super.awakeFromInsert()
+        if id == nil {
+            let temp = UUID()
+            id = temp
+            Logger.shared.log("CloudKit added empty ServiceEntity: \(temp)", type: "CloudKit")
+        }
+    }
 }
 
 extension ServiceEntity: Identifiable { }
