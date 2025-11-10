@@ -16,14 +16,14 @@ public final class ServiceStore {
 
     private init() {
         guard let containerID = Bundle.main.iCloudContainerID else {
-            print("Missing iCloud container id")
+            Logger.shared.log("Missing iCloud container id", type: "CloudKit")
             return
         }
 
         container = NSPersistentCloudKitContainer(name: "ServiceModels")
 
         guard let description = container?.persistentStoreDescriptions.first else {
-            print("Missing store description")
+            Logger.shared.log("Missing store description", type: "CloudKit")
             return
         }
 
@@ -36,7 +36,7 @@ public final class ServiceStore {
 
         container?.loadPersistentStores { _, error in
             if let error = error {
-                print("Failed to load persistent store:", error)
+                Logger.shared.log("Failed to load persistent store: \(error.localizedDescription)", type: "CloudKit")
             }
         }
 
@@ -64,7 +64,7 @@ public final class ServiceStore {
 
     public func storeService(id: UUID, url: String, jsonMetadata: String, jsScript: String, isActive: Bool) {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: storeService", type: "CloudKit")
             return
         }
 
@@ -80,7 +80,7 @@ public final class ServiceStore {
 
     public func getEntities() -> [ServiceEntity] {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: getEntities", type: "CloudKit")
             return []
         }
 
@@ -90,7 +90,7 @@ public final class ServiceStore {
             request.sortDescriptors = [sort]
             return try container.viewContext.fetch(request)
         } catch {
-            print("Cloudkit fetch failed:", error)
+            Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
         }
 
         return []
@@ -98,7 +98,7 @@ public final class ServiceStore {
 
     public func getServices() -> [Service] {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: getServices", type: "CloudKit")
             return []
         }
 
@@ -107,10 +107,10 @@ public final class ServiceStore {
             let sort = NSSortDescriptor(key: "sortIndex", ascending: true)
             request.sortDescriptors = [sort]
             let entities = try container.viewContext.fetch(request)
-            print("Loaded \(entities.count) ServiceEntities")
+            Logger.shared.log("Loaded \(entities.count) ServiceEntities", type: "CloudKit")
             return entities.compactMap { $0.asModel }
         } catch {
-            print("Cloudkit fetch failed:", error)
+            Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
         }
 
         return []
@@ -118,7 +118,7 @@ public final class ServiceStore {
 
     public func remove(_ service: Service) {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: remove", type: "CloudKit")
             return
         }
 
@@ -129,16 +129,16 @@ public final class ServiceStore {
                 container.viewContext.delete(entity)
                 save()
             } else {
-                print("ServiceEntity not found for id:", service.id)
+                Logger.shared.log("ServiceEntity not found for id: \(service.id)", type: "CloudKit")
             }
         } catch {
-            print("Failed to fetch ServiceEntity to delete:", error)
+            Logger.shared.log("Failed to fetch ServiceEntity to delete: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 
     public func save() {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: save", type: "CloudKit")
             return
         }
 
@@ -147,13 +147,13 @@ public final class ServiceStore {
                 try container.viewContext.save()
             }
         } catch {
-            print("Cloudkit save failed:", error)
+            Logger.shared.log("Cloudkit save failed: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 
     public func syncManually() async {
         guard let container = container else {
-            print("Cloudkit container not initialized")
+            Logger.shared.log("Cloudkit container not initialized: syncManually", type: "CloudKit")
             return
         }
 
@@ -163,7 +163,7 @@ public final class ServiceStore {
                 let _ = ServiceStore.shared.getServices()
             }
         } catch {
-            print("Cloudkit sync failed:", error)
+            Logger.shared.log("Cloudkit sync failed: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 }

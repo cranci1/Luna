@@ -73,7 +73,7 @@ extension ServiceEntity {
         }
 
         guard let data = jsonMetadata.data(using: .utf8) else {
-            print("ServiceEntity jsonMetadata is empty")
+            Logger.shared.log("ServiceEntity jsonMetadata is empty", type: "CloudKit")
             return nil
         }
 
@@ -81,12 +81,12 @@ extension ServiceEntity {
         do {
             metadata = try JSONDecoder().decode(ServiceMetadata.self, from: data)
         } catch {
-            print("Failed to decode ServicesMetadata for ServiceEntity \(id.uuidString): \(error)")
+            Logger.shared.log("Failed to decode ServicesMetadata for ServiceEntity \(id.uuidString): \(error.localizedDescription)", type: "CloudKit")
             return nil
         }
 
         guard let metadata else {
-            print("ServiceEntity jsonMetadata is malformed")
+            Logger.shared.log("ServiceEntity jsonMetadata is malformed", type: "CloudKit")
             return nil
         }
 
