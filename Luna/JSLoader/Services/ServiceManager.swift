@@ -178,7 +178,12 @@ class ServiceManager: ObservableObject {
      func updateServiceSettings(_ service: Service, settings: [ServiceSetting]) -> Bool {
          let jsScript = updateSettingsInJS(service.jsScript, with: settings)
 
-         // TODO: add ability to store changes
+         guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return false }
+         entity.jsScript = jsScript
+
+         ServiceStore.shared.save()
+         loadServicesFromCloud()
+         
          return true
      }
 
