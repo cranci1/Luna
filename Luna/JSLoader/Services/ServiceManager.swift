@@ -87,15 +87,15 @@ class ServiceManager: ObservableObject {
     func toggleServiceState(_ service: Service) {
         guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return }
         entity.isActive.toggle()
-
-        // TODO: add ability to store changes
+        ServiceStore.shared.save()
+        loadServicesFromCloud()
     }
 
     func setServiceState(_ service: Service, isActive: Bool) {
         guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return }
         entity.isActive = isActive
-
-        // TODO: add ability to store changes
+        ServiceStore.shared.save()
+        loadServicesFromCloud()
     }
 
     func moveServices(fromOffsets offsets: IndexSet, toOffset: Int) {
@@ -176,7 +176,8 @@ class ServiceManager: ObservableObject {
      }
 
      func updateServiceSettings(_ service: Service, settings: [ServiceSetting]) -> Bool {
-         let _ = updateSettingsInJS(service.jsScript, with: settings)
+         let jsScript = updateSettingsInJS(service.jsScript, with: settings)
+
          // TODO: add ability to store changes
          return true
      }
