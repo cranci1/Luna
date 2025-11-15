@@ -35,10 +35,24 @@ struct MediaDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
-    
-    private let headerHeight: CGFloat = 550
-    private let minHeaderHeight: CGFloat = 400
-    
+
+    private var headerHeight: CGFloat {
+#if os(tvOS)
+        UIScreen.main.bounds.height * 0.8
+#else
+        550
+#endif
+    }
+
+
+    private var minHeaderHeight: CGFloat {
+#if os(tvOS)
+        UIScreen.main.bounds.height * 0.8
+#else
+        400
+#endif
+    }
+
     private var isCompactLayout: Bool {
         return verticalSizeClass == .compact
     }
@@ -71,8 +85,9 @@ struct MediaDetailView: View {
             } else {
                 mainScrollView
             }
-            
+#if !os(tvOS)
             navigationOverlay
+#endif
         }
         .navigationBarHidden(true)
 #if !os(tvOS)
@@ -84,12 +99,16 @@ struct MediaDetailView: View {
                     }
                 }
         )
+#else
+        .onExitCommand {
+            presentationMode.wrappedValue.dismiss()
+        }
 #endif
         .onAppear {
             loadMediaDetails()
             updateBookmarkStatus()
         }
-        .onChange(of: libraryManager.collections) { _ in
+        .onChangeComp(of: libraryManager.collections) { _, _ in
             updateBookmarkStatus()
         }
         .sheet(isPresented: $showingSearchResults) {

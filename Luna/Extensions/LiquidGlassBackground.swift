@@ -13,7 +13,7 @@ extension View {
 #if compiler(>=6.0)
         if #available(iOS 26.0, macOS 15.0, tvOS 20.0, *) {
             self
-                .glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 .overlay(alignment: .center) {
                     if let glassTint {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)

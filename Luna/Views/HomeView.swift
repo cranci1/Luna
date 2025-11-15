@@ -89,7 +89,7 @@ struct HomeView: View {
                 loadContent()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _ in
+        .onChangeComp(of: contentFilter.filterHorror) { _, _ in
             if hasLoadedContent {
                 loadContent()
             }
@@ -193,8 +193,8 @@ struct HomeView: View {
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
-                        .padding(.horizontal, isTvOS ? 16 : 6)
-                        .padding(.vertical, isTvOS ? 10 : 2)
+                        .padding(.horizontal, isTvOS ? 16 : 8)
+                        .padding(.vertical, isTvOS ? 10 : 4)
                         .applyLiquidGlassBackground(cornerRadius: 12)
                     
                     if (hero.voteAverage ?? 0.0) > 0 {
@@ -208,22 +208,25 @@ struct HomeView: View {
                         }
                         .font(.caption)
                         .foregroundColor(.white)
-                        .padding(.horizontal, isTvOS ? 16 : 6)
-                        .padding(.vertical, isTvOS ? 10 : 2)
+                        .padding(.horizontal, isTvOS ? 16 : 8)
+                        .padding(.vertical, isTvOS ? 10 : 4)
                         .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
                 
                 Text(hero.displayTitle)
-                    .font(.system(size: isTvOS ? 40 : 25))
                     .fontWeight(.bold)
+                    .font(.system(size: isTvOS ? 40 : 25))
+                    .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                 
                 if let overview = hero.overview, !overview.isEmpty {
                     Text(String(overview.prefix(100)) + (overview.count > 100 ? "..." : ""))
-                        .foregroundColor(isTvOS ? .secondary : .white.opacity(0.9))
+                        .font(.system(size: isTvOS ? 30 : 15))
+                        .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
+                        .foregroundColor(.white.opacity(0.9))
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
@@ -444,7 +447,7 @@ struct MediaSection: View {
             .modifier(ScrollClipModifier())
             .buttonStyle(.borderless)
         }
-        .padding(.vertical, isTvOS ? 40 : 24)
+        .padding(.top, isTvOS ? 40 : 24)
         .opacity(items.isEmpty ? 0 : 1)
     }
 }
@@ -502,17 +505,10 @@ struct MediaCard: View {
                         })
                         .font(.caption)
                         .lineLimit(1)
-                    
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
                     HStack(alignment: .center, spacing: isTvOS ? 18 : 8) {
-                        Text(result.isMovie ? "Movie" : "TV")
-                            .font(.caption2)
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                            .fixedSize()
-                            .padding(.horizontal, isTvOS ? 16 : 6)
-                            .padding(.vertical, isTvOS ? 10 : 2)
-                            .applyLiquidGlassBackground(cornerRadius: 12)
-                        
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Image(systemName: "star.fill")
                                 .font(.caption2)
@@ -524,11 +520,20 @@ struct MediaCard: View {
                                 .lineLimit(1)
                                 .fixedSize()
                         }
-                        .padding(.horizontal, isTvOS ? 16 : 6)
-                        .padding(.vertical, isTvOS ? 10 : 2)
-                        .applyLiquidGlassBackground(cornerRadius: 12)
-                        
+                            .padding(.horizontal, isTvOS ? 16 : 8)
+                            .padding(.vertical, isTvOS ? 10 : 4)
+                            .applyLiquidGlassBackground(cornerRadius: 12)
+
                         Spacer()
+
+                        Text(result.isMovie ? "Movie" : "TV")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .padding(.horizontal, isTvOS ? 16 : 8)
+                            .padding(.vertical, isTvOS ? 10 : 4)
+                            .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
                 .frame(width: isTvOS ? 280 : 120, alignment: .leading)
