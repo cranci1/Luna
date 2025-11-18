@@ -10,7 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
     @StateObject private var algorithmManager = AlgorithmManager.shared
-    
+    @AppStorage("showKanzen") private var showKanzen: Bool = false
     let languages = [
         ("en-US", "English (US)"),
         ("en-GB", "English (UK)"),
@@ -149,6 +149,15 @@ struct SettingsView: View {
                 }
             } header: {
                 Text("DATA AND STORAGE")
+            }
+            Section{
+                Text("Switch to Kanzen")
+                    .onTapGesture {
+                        showKanzen = true
+                    }
+            }
+            header:{
+                Text("Others")
             }
         }
         #if !os(tvOS)

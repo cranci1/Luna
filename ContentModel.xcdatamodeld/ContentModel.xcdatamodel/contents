@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="MangaData" representedClassName=".MangaData" syncable="YES">
+        <attribute name="imageURL" optional="YES" attributeType="String"/>
+        <attribute name="mangaId" attributeType="String"/>
+        <attribute name="sourceId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="synopsis" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="mangaId"/>
+                <constraint value="sourceId"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+</model>

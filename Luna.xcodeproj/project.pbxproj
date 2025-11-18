@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -78,6 +78,8 @@
 		13F5B5922E73090000565E75 /* HomeSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B5912E73090000565E75 /* HomeSection.swift */; };
 		13F5B5952E730CB200565E75 /* TMDBContentFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B5942E730CB200565E75 /* TMDBContentFilter.swift */; };
 		13F5B5972E730CDB00565E75 /* TMDBFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B5962E730CDB00565E75 /* TMDBFiltersView.swift */; };
+		3802B83A2ECB7E6D00CF44B4 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 3802B8392ECB7E6D00CF44B4 /* Flow */; };
+		38F669352ECC3A5700005865 /* ContentModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 38F669332ECC3A5700005865 /* ContentModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -164,7 +166,12 @@
 		13F5B5912E73090000565E75 /* HomeSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeSection.swift; sourceTree = "<group>"; };
 		13F5B5942E730CB200565E75 /* TMDBContentFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TMDBContentFilter.swift; sourceTree = "<group>"; };
 		13F5B5962E730CDB00565E75 /* TMDBFiltersView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TMDBFiltersView.swift; sourceTree = "<group>"; };
+		38F669342ECC3A5700005865 /* ContentModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ContentModel.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3802B7632ECB4C6B00CF44B4 /* Kanzen */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Kanzen; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		13F072582E4B2D3300EF90EB /* Frameworks */ = {
@@ -173,6 +180,7 @@
 			files = (
 				131BC8562EC36FD900E19F3E /* Kingfisher in Frameworks */,
 				12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */,
+				3802B83A2ECB7E6D00CF44B4 /* Flow in Frameworks */,
 				131BC8532EC36FD500E19F3E /* SoraCore in Frameworks */,
 				131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */,
 				131BC8592EC3728500E19F3E /* MPVKit-GPL in Frameworks */,
@@ -223,6 +231,8 @@
 		13F072522E4B2D3300EF90EB = {
 			isa = PBXGroup;
 			children = (
+				38F669332ECC3A5700005865 /* ContentModel.xcdatamodeld */,
+				3802B7632ECB4C6B00CF44B4 /* Kanzen */,
 				129CC9062EBA1D4600D2D84B /* Build.xcconfig */,
 				129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */,
 				13F0725D2E4B2D3300EF90EB /* Luna */,
@@ -475,6 +485,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				3802B7632ECB4C6B00CF44B4 /* Kanzen */,
+			);
 			name = Luna;
 			packageProductDependencies = (
 				12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */,
@@ -482,6 +495,7 @@
 				131BC8522EC36FD500E19F3E /* SoraCore */,
 				131BC8552EC36FD900E19F3E /* Kingfisher */,
 				131BC8582EC3728500E19F3E /* MPVKit-GPL */,
+				3802B8392ECB7E6D00CF44B4 /* Flow */,
 			);
 			productName = Sora;
 			productReference = 13F0725B2E4B2D3300EF90EB /* Luna.app */;
@@ -516,6 +530,7 @@
 				131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */,
 				131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */,
+				3802B8382ECB7E6D00CF44B4 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 			);
 			productRefGroup = 13F0725C2E4B2D3300EF90EB /* Products */;
 			projectDirPath = "";
@@ -627,6 +642,7 @@
 				13F187B12E6F38CE00747F7E /* CollectionDetailView.swift in Sources */,
 				13830AF42E55F5FF00B3CDE4 /* AccentColorManager.swift in Sources */,
 				13F072A12E4B2D9200EF90EB /* JSController.swift in Sources */,
+				38F669352ECC3A5700005865 /* ContentModel.xcdatamodeld in Sources */,
 				13F0729F2E4B2D9200EF90EB /* ServiceManager.swift in Sources */,
 				13F187AC2E6F38CE00747F7E /* LibraryManager.swift in Sources */,
 			);
@@ -767,7 +783,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "${DEVELOPMENT_TEAM}";
+				DEVELOPMENT_TEAM = C5TY8LKCH7;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -784,7 +800,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Luna/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "${APP_NAME}";
+				INFOPLIST_KEY_CFBundleDisplayName = Luna;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -802,6 +818,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_IDENTIFIER}";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = dawud.luna;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -823,7 +840,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "${DEVELOPMENT_TEAM}";
+				DEVELOPMENT_TEAM = C5TY8LKCH7;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -840,7 +857,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Luna/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "${APP_NAME}";
+				INFOPLIST_KEY_CFBundleDisplayName = Luna;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -858,6 +875,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_IDENTIFIER}";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = dawud.luna;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -925,6 +943,14 @@
 				minimumVersion = "0.40.0-xcode";
 			};
 		};
+		3802B8382ECB7E6D00CF44B4 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -952,7 +978,25 @@
 			package = 131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */;
 			productName = "MPVKit-GPL";
 		};
+		3802B8392ECB7E6D00CF44B4 /* Flow */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3802B8382ECB7E6D00CF44B4 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
+			productName = Flow;
+		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		38F669332ECC3A5700005865 /* ContentModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				38F669342ECC3A5700005865 /* ContentModel.xcdatamodel */,
+			);
+			currentVersion = 38F669342ECC3A5700005865 /* ContentModel.xcdatamodel */;
+			path = ContentModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 13F072532E4B2D3300EF90EB /* Project object */;
 }
