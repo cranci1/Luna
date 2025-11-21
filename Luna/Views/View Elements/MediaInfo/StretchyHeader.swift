@@ -24,7 +24,7 @@ struct StretchyHeaderView: View {
             let deltaY = frame.minY
             let height = headerHeight + max(0, deltaY)
             let offset = min(0, -deltaY)
-            
+
             ZStack(alignment: .bottom) {
                 Color.clear
                     .overlay(
@@ -46,7 +46,7 @@ struct StretchyHeaderView: View {
                     .clipped()
                     .frame(height: height)
                     .offset(y: offset)
-                
+
                 LinearGradient(
                     gradient: Gradient(stops: [
                         .init(color: localAmbientColor.opacity(0.0), location: 0.0),
@@ -62,6 +62,10 @@ struct StretchyHeaderView: View {
             }
         }
         .frame(height: headerHeight)
+        .clipShape(Path { path in
+            let screenWidth = UIScreen.main.bounds.width
+            path.addRect(CGRect(x: 0, y: -10000, width: screenWidth, height: headerHeight + 10000))
+        })
         .onAppear {
             if let backdropURL = backdropURL, let url = URL(string: backdropURL) {
                 KingfisherManager.shared.retrieveImage(with: url) { result in
