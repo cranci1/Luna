@@ -204,16 +204,16 @@ struct MediaDetailView: View {
     @ViewBuilder
     private var contentContainer: some View {
         VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 synopsisSection
                 playAndBookmarkSection
-                
+
                 if searchResult.isMovie {
                     MovieDetailsSection(movie: movieDetail)
                 } else {
                     episodesSection
                 }
-                
+
                 Spacer(minLength: 50)
             }
             .background(Color.clear)
@@ -262,6 +262,7 @@ struct MediaDetailView: View {
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
+                    .padding(.top, 20)
                     .onTapGesture {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showFullSynopsis.toggle()
@@ -275,6 +276,7 @@ struct MediaDetailView: View {
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
+                    .padding(.top, 20)
                     .onTapGesture {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showFullSynopsis.toggle()
