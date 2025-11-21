@@ -11,7 +11,8 @@ struct AlternativeUIView: View {
     @AppStorage("seasonMenu") private var useSeasonMenu = false
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList = false
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
-    
+    @AppStorage("appearanceMode") private var appearanceMode = "system"
+
     @StateObject private var accentColorManager = AccentColorManager.shared
     
     var body: some View {
@@ -22,7 +23,7 @@ struct AlternativeUIView: View {
                         Text("Accent Color")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                        
+
                         Text("This affects buttons, links, and other interactive elements.")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -34,6 +35,28 @@ struct AlternativeUIView: View {
                             accentColorManager.saveAccentColor(newColor)
                         }
 #endif
+                }
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Appearance")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text("Choose light, dark, or sync with system settings.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    Spacer()
+
+                    Picker("", selection: $appearanceMode) {
+                        Text("Light").tag("light")
+                        Text("Dark").tag("dark")
+                        Text("System").tag("system")
+                    }
+                    .pickerStyle(.menu)
                 }
             } header: {
                 Text("Interface")

@@ -57,7 +57,7 @@ struct MediaDetailView: View {
         ZStack {
             Group {
                 if useSolidBackgroundBehindHero {
-                    Color.background
+                    Color(UIColor.systemBackground)
                 } else {
                     ambientColor
                 }
@@ -258,7 +258,7 @@ struct MediaDetailView: View {
             if !synopsis.isEmpty {
                 Text(showFullSynopsis ? synopsis : String(synopsis.prefix(180)) + (synopsis.count > 180 ? "..." : ""))
                     .font(.body)
-                    .foregroundColor(.white)
+                    .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
@@ -271,7 +271,7 @@ struct MediaDetailView: View {
                       !overview.isEmpty {
                 Text(showFullSynopsis ? overview : String(overview.prefix(200)) + (overview.count > 200 ? "..." : ""))
                     .font(.body)
-                    .foregroundColor(.white)
+                    .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
                     .lineLimit(showFullSynopsis ? nil : 3)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)

@@ -68,7 +68,7 @@ struct HomeView: View {
         ZStack {
             Group {
                 if useSolidBackgroundBehindHero {
-                    Color.background
+                    Color(UIColor.systemBackground)
                 } else {
                     ambientColor
                 }
@@ -312,49 +312,56 @@ struct HomeView: View {
                         let filteredTrending = trendingContent.filter { $0.id != heroContent?.id }
                         MediaSection(
                             title: section.title,
-                            items: Array(filteredTrending.prefix(15))
+                            items: Array(filteredTrending.prefix(15)),
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "popularMovies":
                     if !popularMovies.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: popularMovies.prefix(15).map { $0.asSearchResult }
+                            items: popularMovies.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "popularTVShows":
                     if !popularTVShows.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: popularTVShows.prefix(15).map { $0.asSearchResult }
+                            items: popularTVShows.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "popularAnime":
                     if !popularAnime.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: popularAnime.prefix(15).map { $0.asSearchResult }
+                            items: popularAnime.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "topRatedMovies":
                     if !topRatedMovies.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: topRatedMovies.prefix(15).map { $0.asSearchResult }
+                            items: topRatedMovies.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "topRatedTVShows":
                     if !topRatedTVShows.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: topRatedTVShows.prefix(15).map { $0.asSearchResult }
+                            items: topRatedTVShows.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 case "topRatedAnime":
                     if !topRatedAnime.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: topRatedAnime.prefix(15).map { $0.asSearchResult }
+                            items: topRatedAnime.prefix(15).map { $0.asSearchResult },
+                            useSolidBackground: useSolidBackgroundBehindHero
                         )
                     }
                 default:
@@ -413,13 +420,15 @@ struct MediaSection: View {
     let title: String
     let items: [TMDBSearchResult]
     let isLarge: Bool
-    
+    let useSolidBackground: Bool
+
     var gap: Double { isTvOS ? 50.0 : 20.0 }
-    
-    init(title: String, items: [TMDBSearchResult], isLarge: Bool = Bool.random()) {
+
+    init(title: String, items: [TMDBSearchResult], isLarge: Bool = Bool.random(), useSolidBackground: Bool = false) {
         self.title = title
         self.items = items
         self.isLarge = isLarge
+        self.useSolidBackground = useSolidBackground
     }
     
     var body: some View {
@@ -428,7 +437,7 @@ struct MediaSection: View {
                 Text(title)
                     .font(isTvOS ? .headline : .title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .foregroundColor(useSolidBackground ? .primary : .white)
                 Spacer()
             }
             .padding(.horizontal, isTvOS ? 40 : 16)
@@ -436,7 +445,7 @@ struct MediaSection: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: gap) {
                     ForEach(items) { item in
-                        MediaCard(result: item)
+                        MediaCard(result: item, useSolidBackground: useSolidBackground)
                     }
                 }
                 .padding(.horizontal, isTvOS ? 40 : 16)
@@ -461,6 +470,7 @@ struct ScrollClipModifier: ViewModifier {
 
 struct MediaCard: View {
     let result: TMDBSearchResult
+    let useSolidBackground: Bool
     @State private var isHovering: Bool = false
     
     var body: some View {
@@ -497,7 +507,7 @@ struct MediaCard: View {
                                 .fontWeight(.semibold)
                         }, else: { view in
                             view
-                                .foregroundColor(.white)
+                                .foregroundColor(useSolidBackground ? .primary : .white)
                                 .fontWeight(.medium)
                         })
                         .font(.caption)
@@ -506,7 +516,7 @@ struct MediaCard: View {
                     HStack(alignment: .center, spacing: isTvOS ? 18 : 8) {
                         Text(result.isMovie ? "Movie" : "TV")
                             .font(.caption2)
-                            .foregroundColor(.white)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                             .lineLimit(1)
                             .fixedSize()
                             .padding(.horizontal, isTvOS ? 16 : 6)
@@ -520,7 +530,7 @@ struct MediaCard: View {
                             
                             Text(String(format: "%.1f", result.voteAverage ?? 0.0))
                                 .font(.caption2)
-                                .foregroundColor(.white)
+                                .foregroundColor(useSolidBackground ? .primary : .white)
                                 .lineLimit(1)
                                 .fixedSize()
                         }
