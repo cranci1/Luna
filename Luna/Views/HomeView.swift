@@ -196,12 +196,12 @@ struct HomeView: View {
                         .padding(.horizontal, isTvOS ? 16 : 6)
                         .padding(.vertical, isTvOS ? 10 : 2)
                         .applyLiquidGlassBackground(cornerRadius: 12)
-                    
+
                     if (hero.voteAverage ?? 0.0) > 0 {
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Image(systemName: "star.fill")
                                 .foregroundColor(.yellow)
-                            
+
                             Text(String(format: "%.1f", hero.voteAverage ?? 0.0))
                                 .fontWeight(.medium)
                                 .foregroundColor(.white)
@@ -213,14 +213,14 @@ struct HomeView: View {
                         .applyLiquidGlassBackground(cornerRadius: 12)
                     }
                 }
-                
+
                 Text(hero.displayTitle)
                     .font(.system(size: isTvOS ? 40 : 25))
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
-                
+
                 if let overview = hero.overview, !overview.isEmpty {
                     Text(String(overview.prefix(100)) + (overview.count > 100 ? "..." : ""))
                         .foregroundColor(isTvOS ? .secondary : .white.opacity(0.9))
@@ -228,7 +228,7 @@ struct HomeView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
                 }
-                
+
                 HStack(spacing: 16) {
                     NavigationLink(destination: MediaDetailView(searchResult: hero)) {
                         HStack(spacing: 8) {
@@ -258,7 +258,7 @@ struct HomeView: View {
                                 .applyLiquidGlassBackground(cornerRadius: 12)
                         })
                     }
-                    
+
                     Button(action: {
                         // TODO: Add to watchlist
                     }) {
@@ -299,6 +299,7 @@ struct HomeView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal)
+            .offset(y: -20)
         }
     }
     
