@@ -11,6 +11,16 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
     private var originalRate: Float = 1.0
     private var timeObserverToken: Any?
     var mediaInfo: MediaInfo?
+
+    private var subtitleURLs: [String] = []
+    private var subtitleEntries: [SubtitleEntry] = []
+    private var subtitleLabel: UILabel?
+    private var subtitleDisplayLink: CADisplayLink?
+    private var subtitleTextAttributes: [NSAttributedString.Key: Any] = [
+        .strokeColor: UIColor.black,
+        .strokeWidth: -2.0,
+        .foregroundColor: UIColor.white
+    ]
     
 #if os(iOS)
     private var holdGesture: UILongPressGestureRecognizer?
@@ -18,7 +28,6 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
 #if os(iOS)
         setupHoldGesture()
         setupPictureInPictureHandling()
@@ -27,6 +36,7 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
             setupProgressTracking(for: info)
         }
         setupAudioSession()
+        setupSubtitles()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -42,6 +52,14 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
     deinit {
         if let token = timeObserverToken {
             player?.removeTimeObserver(token)
+        }
+        subtitleDisplayLink?.invalidate()
+    }
+
+    convenience init(subtitles: [String]? = nil) {
+        self.init(nibName: nil, bundle: nil)
+        if let subs = subtitles {
+            self.subtitleURLs = subs
         }
     }
     
@@ -170,9 +188,97 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
         switch mediaInfo {
         case .movie(let id, let title):
             return ProgressManager.shared.getMovieProgress(movieId: id, title: title)
-            
+
         case .episode(let showId, let seasonNumber, let episodeNumber):
             return ProgressManager.shared.getEpisodeProgress(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
+        }
+    }
+
+    // MARK: - Subtitle Support
+
+    private func setupSubtitles() {
+        if !subtitleURLs.isEmpty {
+            loadSubtitles()
+            setupSubtitleDisplay()
+        }
+    }
+
+    private func setupSubtitleDisplay() {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.backgroundColor = .clear
+        label.alpha = 0.0
+        label.attributedText = NSAttributedString(string: "", attributes: subtitleTextAttributes)
+
+        view.addSubview(label)
+        subtitleLabel = label
+
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
+            label.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.9)
+        ])
+    }
+
+    private func loadSubtitles() {
+        guard !subtitleURLs.isEmpty else { return }
+
+        let urlString = subtitleURLs.first! 
+        guard let url = URL(string: urlString) else {
+            Logger.shared.log("Invalid subtitle URL: \(urlString)", type: "Error")
+            return
+        }
+
+        URLSession.custom.dataTask(with: url) { [weak self] data, response, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                Logger.shared.log("Failed to download subtitles: \(error.localizedDescription)", type: "Error")
+                return
+            }
+
+            guard let data = data, let subtitleContent = String(data: data, encoding: .utf8) else {
+                Logger.shared.log("Failed to parse subtitle data", type: "Error")
+                return
+            }
+
+            self.parseAndDisplaySubtitles(subtitleContent)
+        }.resume()
+    }
+
+    private func parseAndDisplaySubtitles(_ content: String) {
+        subtitleEntries = SubtitleLoader.parseSubtitles(from: content, fontSize: 24.0, foregroundColor: .white)
+        Logger.shared.log("Loaded \(subtitleEntries.count) subtitle entries for NormalPlayer", type: "Info")
+
+        if subtitleDisplayLink == nil {
+            subtitleDisplayLink = CADisplayLink(target: self, selector: #selector(updateSubtitles))
+            subtitleDisplayLink?.add(to: .main, forMode: .common)
+        }
+    }
+
+    @objc private func updateSubtitles() {
+        guard let player = player, let currentItem = player.currentItem else { return }
+
+        let currentTime = CMTimeGetSeconds(currentItem.currentTime())
+        guard currentTime.isFinite, currentTime >= 0 else { return }
+
+        if let entry = subtitleEntries.first(where: { $0.startTime <= currentTime && currentTime <= $0.endTime }) {
+            DispatchQueue.main.async {
+                self.subtitleLabel?.attributedText = NSAttributedString(string: entry.text, attributes: self.subtitleTextAttributes)
+                UIView.animate(withDuration: 0.2) {
+                    self.subtitleLabel?.alpha = 1.0
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                UIView.animate(withDuration: 0.2) {
+                    self.subtitleLabel?.alpha = 0.0
+                }
+            }
         }
     }
 }

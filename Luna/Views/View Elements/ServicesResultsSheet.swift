@@ -1135,7 +1135,7 @@ struct ModulesSearchResultsSheet: View {
                 }
                 return
             } else {
-                let playerVC = NormalPlayer()
+                let playerVC = NormalPlayer(subtitles: subtitles)
                 let asset = AVURLAsset(url: streamURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
                 let item = AVPlayerItem(asset: asset)
                 playerVC.player = AVPlayer(playerItem: item)
