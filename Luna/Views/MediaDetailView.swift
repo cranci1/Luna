@@ -256,32 +256,84 @@ struct MediaDetailView: View {
     private var synopsisSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !synopsis.isEmpty {
-                Text(showFullSynopsis ? synopsis : String(synopsis.prefix(180)) + (synopsis.count > 180 ? "..." : ""))
-                    .font(.body)
-                    .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
-                    .lineLimit(showFullSynopsis ? nil : 3)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showFullSynopsis.toggle()
+                if showFullSynopsis && synopsis.count > 180 {
+                    let attributedString = {
+                        let mainColor = useSolidBackgroundBehindHero ? UIColor.label : UIColor.white
+                        var attr = AttributedString(synopsis, attributes: AttributeContainer([.foregroundColor: mainColor]))
+                        attr.append(AttributedString("  Show less...", attributes: AttributeContainer([.foregroundColor: UIColor(Color.accentColor)])))
+                        return attr
+                    }()
+                    Text(attributedString)
+                        .font(.body)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showFullSynopsis.toggle()
+                            }
                         }
+                } else {
+                    Text(showFullSynopsis ? synopsis : String(synopsis.prefix(180)) + (synopsis.count > 180 ? "..." : ""))
+                        .font(.body)
+                        .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
+                        .lineLimit(showFullSynopsis ? nil : 3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    if !showFullSynopsis && synopsis.count > 180 {
+                        Text("Show more...")
+                            .font(.body)
+                            .foregroundColor(Color.accentColor)
+                            .padding(.horizontal)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showFullSynopsis.toggle()
+                                }
+                            }
                     }
+                }
             } else if let overview = searchResult.isMovie ? movieDetail?.overview : tvShowDetail?.overview,
                       !overview.isEmpty {
-                Text(showFullSynopsis ? overview : String(overview.prefix(200)) + (overview.count > 200 ? "..." : ""))
-                    .font(.body)
-                    .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
-                    .lineLimit(showFullSynopsis ? nil : 3)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showFullSynopsis.toggle()
+                if showFullSynopsis && overview.count > 200 {
+                    let attributedString = {
+                        let mainColor = useSolidBackgroundBehindHero ? UIColor.label : UIColor.white
+                        var attr = AttributedString(overview, attributes: AttributeContainer([.foregroundColor: mainColor]))
+                        attr.append(AttributedString("  Show less...", attributes: AttributeContainer([.foregroundColor: UIColor(Color.accentColor)])))
+                        return attr
+                    }()
+                    Text(attributedString)
+                        .font(.body)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showFullSynopsis.toggle()
+                            }
                         }
+                } else {
+                    Text(showFullSynopsis ? overview : String(overview.prefix(200)) + (overview.count > 200 ? "..." : ""))
+                        .font(.body)
+                        .foregroundColor(useSolidBackgroundBehindHero ? .primary : .white)
+                        .lineLimit(showFullSynopsis ? nil : 3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    if !showFullSynopsis && overview.count > 200 {
+                        Text("Show more...")
+                            .font(.body)
+                            .foregroundColor(Color.accentColor)
+                            .padding(.horizontal)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showFullSynopsis.toggle()
+                                }
+                            }
                     }
+                }
             }
         }
     }
