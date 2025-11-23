@@ -16,6 +16,7 @@ struct EpisodeCell: View {
     let onTap: () -> Void
     let onMarkWatched: () -> Void
     let onResetProgress: () -> Void
+    let useSolidBackground: Bool
     
     @State private var isWatched: Bool = false
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList: Bool = false
@@ -69,7 +70,7 @@ struct EpisodeCell: View {
                     HStack {
                         Text("Episode \(episode.episodeNumber)")
                             .font(.caption)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                         
                         Spacer()
                         
@@ -81,7 +82,7 @@ struct EpisodeCell: View {
                                         .foregroundColor(.yellow)
                                     Text(String(format: "%.1f", episode.voteAverage))
                                         .font(.caption2)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(useSolidBackground ? .primary : .white)
                                     
                                     
                                     Text(" - ")
@@ -110,14 +111,14 @@ struct EpisodeCell: View {
                     if !episode.name.isEmpty {
                         Text(episode.name)
                             .font(.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                             .lineLimit(1)
                     }
                     
                     if let overview = episode.overview, !overview.isEmpty {
                         Text(overview)
                             .font(.caption2)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                             .lineLimit(3)
                             .multilineTextAlignment(.leading)
                     }
@@ -171,7 +172,7 @@ struct EpisodeCell: View {
                     HStack {
                         Text("Episode \(episode.episodeNumber)")
                             .font(.caption)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                             .fontWeight(.medium)
                         
                         Spacer()
@@ -184,12 +185,12 @@ struct EpisodeCell: View {
                                         .foregroundColor(.yellow)
                                     Text(String(format: "%.1f", episode.voteAverage))
                                         .font(.caption2)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(useSolidBackground ? .primary : .white)
                                     
                                     
                                     Text(" - ")
                                         .font(.caption2)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(useSolidBackground ? .primary : .white)
                                 }
                                 
                                 if let runtime = episode.runtime, runtime > 0 {
@@ -214,13 +215,13 @@ struct EpisodeCell: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .lineLimit(1)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                     }
                     
                     if let overview = episode.overview, !overview.isEmpty {
                         Text(overview)
                             .font(.caption)
-                            .foregroundColor(.primary)
+                            .foregroundColor(useSolidBackground ? .primary : .white)
                             .lineLimit(3)
                             .fixedSize(horizontal: false, vertical: true)
                     }

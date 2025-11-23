@@ -209,9 +209,16 @@ struct MediaDetailView: View {
                 playAndBookmarkSection
 
                 if searchResult.isMovie {
-                    MovieDetailsSection(movie: movieDetail)
+                    MovieDetailsSection(movie: movieDetail, useSolidBackground: useSolidBackgroundBehindHero)
                 } else {
-                    episodesSection
+                    TVShowSeasonsSection(
+                        tvShow: tvShowDetail,
+                        selectedSeason: $selectedSeason,
+                        seasonDetail: $seasonDetail,
+                        selectedEpisodeForSearch: $selectedEpisodeForSearch,
+                        tmdbService: tmdbService,
+                        useSolidBackground: useSolidBackgroundBehindHero
+                    )
                 }
 
                 Spacer(minLength: 50)
@@ -373,11 +380,13 @@ struct MediaDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 25)
-                .applyLiquidGlassBackground(
-                    cornerRadius: 12,
-                    fallbackFill: serviceManager.activeServices.isEmpty ? Color.gray.opacity(0.3) : Color.black.opacity(0.2),
-                    fallbackMaterial: serviceManager.activeServices.isEmpty ? .thinMaterial : .ultraThinMaterial,
-                    glassTint: serviceManager.activeServices.isEmpty ? Color.gray.opacity(0.3) : nil
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.black)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
                 )
                 .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .white)
                 .cornerRadius(8)
@@ -390,8 +399,34 @@ struct MediaDetailView: View {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title2)
                     .frame(width: 42, height: 42)
-                    .applyLiquidGlassBackground(cornerRadius: 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            )
+                    )
                     .foregroundColor(isBookmarked ? .yellow : .white)
+                    .cornerRadius(8)
+            }
+
+            Button(action: {
+                // Watchlist action - same as bookmark for now
+                toggleBookmark()
+            }) {
+                Image(systemName: "list.star")
+                    .font(.title2)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                    .foregroundColor(.white)
                     .cornerRadius(8)
             }
 
@@ -401,7 +436,14 @@ struct MediaDetailView: View {
                 Image(systemName: "plus")
                     .font(.title2)
                     .frame(width: 42, height: 42)
-                    .applyLiquidGlassBackground(cornerRadius: 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            )
+                    )
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
@@ -417,7 +459,8 @@ struct MediaDetailView: View {
                 selectedSeason: $selectedSeason,
                 seasonDetail: $seasonDetail,
                 selectedEpisodeForSearch: $selectedEpisodeForSearch,
-                tmdbService: tmdbService
+                tmdbService: tmdbService,
+                useSolidBackground: useSolidBackgroundBehindHero
             )
         }
     }

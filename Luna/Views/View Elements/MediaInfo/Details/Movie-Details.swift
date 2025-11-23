@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MovieDetailsSection: View {
     let movie: TMDBMovieDetail?
+    let useSolidBackground: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -18,31 +19,31 @@ struct MovieDetailsSection: View {
                     .fontWeight(.bold)
                     .padding(.horizontal)
                     .padding(.top)
-                    .foregroundColor(.white)
+                    .foregroundColor(useSolidBackground ? .primary : .white)
                 
                 VStack(spacing: 12) {
                     if let runtime = movie.runtime, runtime > 0 {
-                        DetailRow(title: "Runtime", value: movie.runtimeFormatted)
+                        DetailRow(title: "Runtime", value: movie.runtimeFormatted, useSolidBackground: useSolidBackground)
                     }
-                    
+
                     if !movie.genres.isEmpty {
-                        DetailRow(title: "Genres", value: movie.genres.map { $0.name }.joined(separator: ", "))
+                        DetailRow(title: "Genres", value: movie.genres.map { $0.name }.joined(separator: ", "), useSolidBackground: useSolidBackground)
                     }
-                    
+
                     if let releaseDate = movie.releaseDate, !releaseDate.isEmpty {
-                        DetailRow(title: "Release Date", value: releaseDate)
+                        DetailRow(title: "Release Date", value: releaseDate, useSolidBackground: useSolidBackground)
                     }
-                    
+
                     if movie.voteAverage > 0 {
-                        DetailRow(title: "Rating", value: String(format: "%.1f/10", movie.voteAverage))
+                        DetailRow(title: "Rating", value: String(format: "%.1f/10", movie.voteAverage), useSolidBackground: useSolidBackground)
                     }
-                    
+
                     if let ageRating = getAgeRating(from: movie.releaseDates) {
-                        DetailRow(title: "Age Rating", value: ageRating)
+                        DetailRow(title: "Age Rating", value: ageRating, useSolidBackground: useSolidBackground)
                     }
-                    
+
                     if let tagline = movie.tagline, !tagline.isEmpty {
-                        DetailRow(title: "Tagline", value: tagline)
+                        DetailRow(title: "Tagline", value: tagline, useSolidBackground: useSolidBackground)
                     }
                 }
                 .padding(.horizontal)
