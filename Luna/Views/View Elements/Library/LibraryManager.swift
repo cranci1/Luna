@@ -25,7 +25,7 @@ final class LibraryManager: ObservableObject {
     private init() {
         load()
         createDefaultBookmarksCollection()
-        
+
         collections.forEach { observeCollection($0) }
     }
     
@@ -48,6 +48,7 @@ final class LibraryManager: ObservableObject {
             collections.insert(bookmarksCollection, at: 0)
         }
     }
+
     
     func createCollection(name: String, description: String? = nil) {
         let new = LibraryCollection(name: name, description: description)
@@ -100,6 +101,7 @@ final class LibraryManager: ObservableObject {
         guard let bookmarksCollection = collections.first(where: { $0.name == "Bookmarks" }) else { return false }
         return isItemInCollection(bookmarksCollection.id, item: item)
     }
+
     
     // MARK: - Observation
     private func observeCollection(_ collection: LibraryCollection) {

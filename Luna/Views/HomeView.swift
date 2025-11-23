@@ -42,6 +42,7 @@ struct HomeView: View {
     
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var contentFilter = TMDBContentFilter.shared
+    @ObservedObject private var libraryManager = LibraryManager.shared
     
     private var heroHeight: CGFloat {
 #if os(tvOS)
@@ -260,10 +261,12 @@ struct HomeView: View {
                     }
 
                     Button(action: {
-                        // TODO: Add to watchlist
+                        if let hero = heroContent {
+                            libraryManager.toggleBookmark(for: hero)
+                        }
                     }) {
                         HStack(spacing: 8) {
-                            Image(systemName: "plus")
+                            Image(systemName: heroContent != nil && libraryManager.isBookmarked(heroContent!) ? "checkmark" : "plus")
                                 .font(.subheadline)
                             Text("Watchlist")
                                 .fontWeight(.semibold)
@@ -284,14 +287,7 @@ struct HomeView: View {
 #endif
                         }, else: { view in
                             view.frame(width: 140, height: 42)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.black.opacity(0.3))
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(.white.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
+                                .applyLiquidGlassBackground(cornerRadius: 12)
                         })
                         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                     }

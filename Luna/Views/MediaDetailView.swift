@@ -366,7 +366,7 @@ struct MediaDetailView: View {
             }) {
                 HStack {
                     Image(systemName: serviceManager.activeServices.isEmpty ? "exclamationmark.triangle" : "play.fill")
-                    
+
                     Text(serviceManager.activeServices.isEmpty ? "No Services" : playButtonText)
                         .fontWeight(.semibold)
                 }
@@ -383,7 +383,7 @@ struct MediaDetailView: View {
                 .cornerRadius(8)
             }
             .disabled(serviceManager.activeServices.isEmpty)
-            
+
             Button(action: {
                 toggleBookmark()
             }) {
@@ -394,7 +394,7 @@ struct MediaDetailView: View {
                     .foregroundColor(isBookmarked ? .yellow : .white)
                     .cornerRadius(8)
             }
-            
+
             Button(action: {
                 showingAddToCollection = true
             }) {

@@ -63,7 +63,7 @@ struct LibraryView: View {
                 }
             }
             .padding(.horizontal)
-            
+
             if let bookmarksCollection = libraryManager.collections.first(where: { $0.name == "Bookmarks" }),
                !bookmarksCollection.items.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -96,6 +96,7 @@ struct LibraryView: View {
             }
         }
     }
+
     
     private var collectionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
