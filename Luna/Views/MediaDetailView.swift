@@ -34,6 +34,7 @@ struct MediaDetailView: View {
     
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.colorScheme) var colorScheme
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
     
     private let headerHeight: CGFloat = 550
@@ -383,10 +384,10 @@ struct MediaDetailView: View {
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.black)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
                 )
                 .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .white)
                 .cornerRadius(8)
@@ -402,10 +403,10 @@ struct MediaDetailView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.black)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.5)
                     )
                     .foregroundColor(isBookmarked ? .yellow : .white)
                     .cornerRadius(8)
@@ -421,10 +422,10 @@ struct MediaDetailView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.black)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
                     )
                     .foregroundColor(.white)
                     .cornerRadius(8)
@@ -439,10 +440,10 @@ struct MediaDetailView: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.black)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
                     )
                     .foregroundColor(.white)
                     .cornerRadius(8)

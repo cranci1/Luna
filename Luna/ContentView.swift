@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var accentColorManager = AccentColorManager.shared
+    @EnvironmentObject var settings: Settings
     
     var body: some View {
 #if compiler(>=6.0)
@@ -17,18 +18,21 @@ struct ContentView: View {
                 Tab("Home", systemImage: "house.fill") {
                     HomeView()
                 }
-                
+    
                 Tab("Library", systemImage: "books.vertical.fill") {
                     LibraryView()
                 }
-                
+    
                 Tab("Search", systemImage: "magnifyingglass", role: .search) {
                     SearchView()
                 }
-                
+    
                 Tab("Settings", systemImage: "gear") {
                     SettingsView()
                 }
+            }
+            .onAppear {
+                settings.updateAppearance()
             }
 #if !os(tvOS)
             .tabBarMinimizeBehavior(.onScrollDown)
@@ -50,19 +54,19 @@ struct ContentView: View {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
-            
+
             LibraryView()
                 .tabItem {
                     Image(systemName: "books.vertical.fill")
                     Text("Library")
                 }
-            
+
             SearchView()
                 .tabItem {
                     Image(systemName: "magnifyingglass")
                     Text("Search")
                 }
-            
+
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
@@ -70,6 +74,9 @@ struct ContentView: View {
                 }
         }
         .accentColor(accentColorManager.currentAccentColor)
+        .onAppear {
+            settings.updateAppearance()
+        }
     }
 }
 

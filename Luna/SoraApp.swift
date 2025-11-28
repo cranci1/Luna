@@ -25,7 +25,7 @@ struct SoraApp: App {
                     .accentColor(settings.accentColor)
             }
             else{
-                ContentView()
+                ContentView().environmentObject(settings)
             }
         }
     }

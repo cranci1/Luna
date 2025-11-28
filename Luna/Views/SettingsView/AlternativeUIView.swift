@@ -11,8 +11,8 @@ struct AlternativeUIView: View {
     @AppStorage("seasonMenu") private var useSeasonMenu = false
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList = false
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
-    @AppStorage("appearanceMode") private var appearanceMode = "system"
 
+    @EnvironmentObject var settings: Settings
     @StateObject private var accentColorManager = AccentColorManager.shared
     
     var body: some View {
@@ -51,10 +51,10 @@ struct AlternativeUIView: View {
 
                     Spacer()
 
-                    Picker("", selection: $appearanceMode) {
-                        Text("Light").tag("light")
-                        Text("Dark").tag("dark")
-                        Text("System").tag("system")
+                    Picker("", selection: $settings.selectedAppearance) {
+                        Text("Light").tag(Appearance.light)
+                        Text("Dark").tag(Appearance.dark)
+                        Text("System").tag(Appearance.system)
                     }
                     .pickerStyle(.menu)
                 }
