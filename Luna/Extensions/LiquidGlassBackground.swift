@@ -9,7 +9,15 @@ import SwiftUI
 
 extension View {
     @ViewBuilder
-    func applyLiquidGlassBackground(cornerRadius: CGFloat, fallbackFill: Color = Color.black.opacity(0.2), fallbackMaterial: Material = .ultraThinMaterial, glassTint: Color? = nil) -> some View {
+    func applyLiquidGlassBackground(cornerRadius: CGFloat, fallbackMaterial: Material = .ultraThinMaterial, glassTint: Color? = nil) -> some View {
+        let adaptiveFallbackFill = Color(UIColor { trait -> UIColor in
+            return trait.userInterfaceStyle == .dark ? UIColor.black.withAlphaComponent(0.2) : UIColor.white.withAlphaComponent(0.5)
+        })
+        applyLiquidGlassBackground(cornerRadius: cornerRadius, fallbackFill: adaptiveFallbackFill, fallbackMaterial: fallbackMaterial, glassTint: glassTint)
+    }
+
+    @ViewBuilder
+    func applyLiquidGlassBackground(cornerRadius: CGFloat, fallbackFill: Color, fallbackMaterial: Material = .ultraThinMaterial, glassTint: Color? = nil) -> some View {
 #if compiler(>=6.0)
         if #available(iOS 26.0, macOS 15.0, tvOS 20.0, *) {
             self

@@ -368,7 +368,7 @@ struct MediaDetailView: View {
     
     @ViewBuilder
     private var playAndBookmarkSection: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             Button(action: {
                 searchInServices()
             }) {
@@ -379,18 +379,10 @@ struct MediaDetailView: View {
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, 14)
                 .padding(.horizontal, 25)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.black)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
-                )
-                .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .white)
-                .cornerRadius(8)
+                .foregroundColor(serviceManager.activeServices.isEmpty ? .secondary : .primary)
+                .applyLiquidGlassBackground(cornerRadius: 12)
             }
             .disabled(serviceManager.activeServices.isEmpty)
 
@@ -399,17 +391,9 @@ struct MediaDetailView: View {
             }) {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title2)
-                    .frame(width: 42, height: 42)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.5)
-                    )
-                    .foregroundColor(isBookmarked ? .yellow : .white)
-                    .cornerRadius(8)
+                    .frame(width: 48, height: 48)
+                    .foregroundColor(isBookmarked ? .yellow : .primary)
+                    .applyLiquidGlassBackground(cornerRadius: 12)
             }
 
             Button(action: {
@@ -418,17 +402,9 @@ struct MediaDetailView: View {
             }) {
                 Image(systemName: "list.star")
                     .font(.title2)
-                    .frame(width: 42, height: 42)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .frame(width: 48, height: 48)
+                    .foregroundColor(.primary)
+                    .applyLiquidGlassBackground(cornerRadius: 12)
             }
 
             Button(action: {
@@ -436,17 +412,9 @@ struct MediaDetailView: View {
             }) {
                 Image(systemName: "plus")
                     .font(.title2)
-                    .frame(width: 42, height: 42)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(colorScheme == .dark ? Color.white : Color.white.opacity(0.3), lineWidth: colorScheme == .dark ? 1 : 0.3)
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .frame(width: 48, height: 48)
+                    .foregroundColor(.primary)
+                    .applyLiquidGlassBackground(cornerRadius: 12)
             }
         }
         .padding(.horizontal)
