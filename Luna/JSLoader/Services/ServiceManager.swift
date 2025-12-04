@@ -35,8 +35,7 @@ class ServiceManager: ObservableObject {
 
     // MARK: - Public Functions
 
-    // Shared delay for download progress ( in milliseconds)
-    let delay: UInt64 = 300_000_000
+    let delay: UInt64 = 300_000_000 // 300ms
 
     func updateServices() {
         guard !services.isEmpty else { return }
@@ -186,8 +185,11 @@ class ServiceManager: ObservableObject {
         await withTaskGroup(of: (UUID, [SearchItem]).self) { group in
             for service in activeList {
                 group.addTask {
-                    let results = await self.searchInService(service: service, query: query)
-                    return (service.id, results)
+                    let timeoutSeconds: UInt64 = 20_000_000_000 // 20sec
+                    return await self.withTimeout(nanoseconds: timeoutSeconds) {
+                        let found = await self.searchInService(service: service, query: query)
+                        return (service.id, found)
+                    } ?? (service.id, [])
                 }
             }
 
@@ -217,8 +219,11 @@ class ServiceManager: ObservableObject {
         await withTaskGroup(of: (Service, [SearchItem]?).self) { group in
             for service in activeList {
                 group.addTask {
-                    let results = await self.searchInService(service: service, query: query)
-                    return (service, results)
+                    let timeoutSeconds: UInt64 = 20_000_000_000 // 20sec
+                    return await self.withTimeout(nanoseconds: timeoutSeconds) {
+                        let found = await self.searchInService(service: service, query: query)
+                        return (service, found)
+                    } ?? (service, [])
                 }
             }
 
@@ -460,6 +465,27 @@ class ServiceManager: ObservableObject {
             return "\"\(setting.value)\""
         case .bool, .int, .float:
             return setting.value
+        }
+    }
+
+    func withTimeout<T>(nanoseconds: UInt64, operation: @escaping @Sendable () async throws -> T) async -> T? {
+        await withTaskGroup(of: T?.self) { group in
+
+            // Main task
+            group.addTask {
+                try? await operation()
+            }
+
+            // Timeout task
+            group.addTask {
+                try? await Task.sleep(nanoseconds: nanoseconds)
+                return nil
+            }
+
+            // Return the first completed result and cancel all other tasks
+            let result = await group.next() ?? nil
+            group.cancelAll()
+            return result
         }
     }
 }
