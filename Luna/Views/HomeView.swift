@@ -23,7 +23,7 @@ struct HomeView: View {
     @State private var ambientColor: Color = Color.black
     @State private var isHoveringWatchNow = false
     @State private var isHoveringWatchlist = false
-    @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
+    
     @State private var hasLoadedContent = false
     
     @AppStorage("homeSections") private var homeSectionsData: Data = {
@@ -67,11 +67,7 @@ struct HomeView: View {
     private var homeContent: some View {
         ZStack {
             Group {
-                if useSolidBackgroundBehindHero {
-                    Color.background
-                } else {
-                    ambientColor
-                }
+                ambientColor
             }
             .ignoresSafeArea(.all)
             

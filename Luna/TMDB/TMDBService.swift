@@ -27,7 +27,7 @@ class TMDBService: ObservableObject {
         guard !query.isEmpty else { return [] }
         
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "\(baseURL)/search/multi?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)"
+        let urlString = "\(baseURL)/search/multi?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -47,7 +47,7 @@ class TMDBService: ObservableObject {
         guard !query.isEmpty else { return [] }
         
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)"
+        let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -67,7 +67,7 @@ class TMDBService: ObservableObject {
         guard !query.isEmpty else { return [] }
         
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "\(baseURL)/search/tv?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)"
+        let urlString = "\(baseURL)/search/tv?api_key=\(apiKey)&query=\(encodedQuery)&language=\(currentLanguage)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -186,7 +186,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Trending Movies and TV Shows
     func getTrending(mediaType: String = "all", timeWindow: String = "week") async throws -> [TMDBSearchResult] {
-        let urlString = "\(baseURL)/trending/\(mediaType)/\(timeWindow)?api_key=\(apiKey)&language=\(currentLanguage)"
+        let urlString = "\(baseURL)/trending/\(mediaType)/\(timeWindow)?api_key=\(apiKey)&language=\(currentLanguage)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -203,7 +203,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Popular Movies
     func getPopularMovies(page: Int = 1) async throws -> [TMDBMovie] {
-        let urlString = "\(baseURL)/movie/popular?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)"
+        let urlString = "\(baseURL)/movie/popular?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -220,7 +220,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Popular TV Shows
     func getPopularTVShows(page: Int = 1) async throws -> [TMDBTVShow] {
-        let urlString = "\(baseURL)/tv/popular?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)"
+        let urlString = "\(baseURL)/tv/popular?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -237,7 +237,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Top Rated Movies
     func getTopRatedMovies(page: Int = 1) async throws -> [TMDBMovie] {
-        let urlString = "\(baseURL)/movie/top_rated?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)"
+        let urlString = "\(baseURL)/movie/top_rated?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -254,7 +254,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Top Rated TV Shows
     func getTopRatedTVShows(page: Int = 1) async throws -> [TMDBTVShow] {
-        let urlString = "\(baseURL)/tv/top_rated?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)"
+        let urlString = "\(baseURL)/tv/top_rated?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -271,7 +271,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Popular Anime (Animation TV Shows from Japan)
     func getPopularAnime(page: Int = 1) async throws -> [TMDBTVShow] {
-        let urlString = "\(baseURL)/discover/tv?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&with_genres=16&with_origin_country=JP&sort_by=popularity.desc"
+        let urlString = "\(baseURL)/discover/tv?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL
@@ -288,7 +288,7 @@ class TMDBService: ObservableObject {
     
     // MARK: - Get Top Rated Anime (Animation TV Shows from Japan)
     func getTopRatedAnime(page: Int = 1) async throws -> [TMDBTVShow] {
-        let urlString = "\(baseURL)/discover/tv?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&with_genres=16&with_origin_country=JP&sort_by=vote_average.desc&vote_count.gte=100"
+        let urlString = "\(baseURL)/discover/tv?api_key=\(apiKey)&language=\(currentLanguage)&page=\(page)&with_genres=16&with_origin_country=JP&sort_by=vote_average.desc&vote_count.gte=100&include_adult=false"
         
         guard let url = URL(string: urlString) else {
             throw TMDBError.invalidURL

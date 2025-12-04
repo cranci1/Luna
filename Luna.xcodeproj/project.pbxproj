@@ -14,6 +14,10 @@
 		12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */; };
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
+		131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC84F2EC36FCF00E19F3E /* FakeWebKit */; };
+		131BC8532EC36FD500E19F3E /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8522EC36FD500E19F3E /* SoraCore */; };
+		131BC8562EC36FD900E19F3E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8552EC36FD900E19F3E /* Kingfisher */; };
+		131BC8592EC3728500E19F3E /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8582EC3728500E19F3E /* MPVKit-GPL */; };
 		1324E7BB2E940BD70036B5F5 /* PlayerPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */; };
 		1324E7BC2E940BD70036B5F5 /* MPVSoftwareRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */; };
 		1324E7BD2E940BD70036B5F5 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B52E940BD70036B5F5 /* PlayerViewController.swift */; };
@@ -31,6 +35,40 @@
 		13B2E5742E7597B9009F3271 /* JSController-NetworkFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B2E5732E7597B9009F3271 /* JSController-NetworkFetch.swift */; };
 		13B6F3452EA4C6BC00DECD2B /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B6F3442EA4C6BC00DECD2B /* ProgressManager.swift */; };
 		13DCC4F62E58B40F0028AE91 /* HybridSimilarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DCC4F52E58B40F0028AE91 /* HybridSimilarity.swift */; };
+		13E1EDD12ED9E65F00087629 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1ED9C2ED9E65F00087629 /* Module.swift */; };
+		13E1EDD22ED9E65F00087629 /* ModuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1ED9E2ED9E65F00087629 /* ModuleManager.swift */; };
+		13E1EDD32ED9E65F00087629 /* mangaModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 13E1ED9F2ED9E65F00087629 /* mangaModel.xcdatamodeld */; };
+		13E1EDD42ED9E65F00087629 /* mangaData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA22ED9E65F00087629 /* mangaData.swift */; };
+		13E1EDD52ED9E65F00087629 /* readingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA32ED9E65F00087629 /* readingMode.swift */; };
+		13E1EDD62ED9E65F00087629 /* readerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA42ED9E65F00087629 /* readerManager.swift */; };
+		13E1EDD72ED9E65F00087629 /* favouriteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA52ED9E65F00087629 /* favouriteManager.swift */; };
+		13E1EDD82ED9E65F00087629 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA62ED9E65F00087629 /* Settings.swift */; };
+		13E1EDD92ED9E65F00087629 /* pageData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDA72ED9E65F00087629 /* pageData.swift */; };
+		13E1EDDA2ED9E65F00087629 /* bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = 13E1EDAB2ED9E65F00087629 /* bundle.js */; };
+		13E1EDDB2ED9E65F00087629 /* ErrorDefinitions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDAC2ED9E65F00087629 /* ErrorDefinitions.swift */; };
+		13E1EDDC2ED9E65F00087629 /* JavaScriptCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDAE2ED9E65F00087629 /* JavaScriptCore.swift */; };
+		13E1EDDD2ED9E66000087629 /* KanzenOutputFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB02ED9E65F00087629 /* KanzenOutputFormatter.swift */; };
+		13E1EDDE2ED9E66000087629 /* KanzenModuleRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB12ED9E65F00087629 /* KanzenModuleRunner.swift */; };
+		13E1EDDF2ED9E66000087629 /* KanzenEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB22ED9E65F00087629 /* KanzenEngine.swift */; };
+		13E1EDE02ED9E66000087629 /* KanzenRunnerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB42ED9E65F00087629 /* KanzenRunnerController.swift */; };
+		13E1EDE12ED9E66000087629 /* readerManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB72ED9E65F00087629 /* readerManagerView.swift */; };
+		13E1EDE22ED9E66000087629 /* chapterList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDB92ED9E65F00087629 /* chapterList.swift */; };
+		13E1EDE32ED9E66000087629 /* readerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDBA2ED9E65F00087629 /* readerSettingsView.swift */; };
+		13E1EDE42ED9E66000087629 /* pagedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDBC2ED9E65F00087629 /* pagedViewController.swift */; };
+		13E1EDE52ED9E66000087629 /* webToonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDBE2ED9E65F00087629 /* webToonViewController.swift */; };
+		13E1EDE62ED9E66000087629 /* kanzenSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC02ED9E65F00087629 /* kanzenSettings.swift */; };
+		13E1EDE72ED9E66000087629 /* kanzenGeneralSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC22ED9E65F00087629 /* kanzenGeneralSettings.swift */; };
+		13E1EDE82ED9E66000087629 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC32ED9E65F00087629 /* MainMenu.swift */; };
+		13E1EDE92ED9E66000087629 /* customSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC52ED9E65F00087629 /* customSlider.swift */; };
+		13E1EDEA2ED9E66000087629 /* favouriteViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC62ED9E65F00087629 /* favouriteViewWrapper.swift */; };
+		13E1EDEB2ED9E66000087629 /* contentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC72ED9E65F00087629 /* contentCell.swift */; };
+		13E1EDEC2ED9E66000087629 /* circularLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC82ED9E65F00087629 /* circularLoading.swift */; };
+		13E1EDED2ED9E66000087629 /* contentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDC92ED9E65F00087629 /* contentView.swift */; };
+		13E1EDEE2ED9E66000087629 /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDCB2ED9E65F00087629 /* Library.swift */; };
+		13E1EDEF2ED9E66000087629 /* search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDCD2ED9E65F00087629 /* search.swift */; };
+		13E1EDF02ED9E66000087629 /* browseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDCF2ED9E65F00087629 /* browseView.swift */; };
+		13E1EDF12ED9E66000087629 /* kanzenModuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */; };
+		13E1EDF42ED9E67000087629 /* ContentModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */; };
 		13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0725E2E4B2D3300EF90EB /* SoraApp.swift */; };
 		13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13F072622E4B2D3700EF90EB /* Assets.xcassets */; };
 		13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726E2E4B2D9000EF90EB /* ServicesEntity.swift */; };
@@ -72,10 +110,6 @@
 		13F187B02E6F38CE00747F7E /* CreateCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F187AA2E6F38CE00747F7E /* CreateCollectionView.swift */; };
 		13F187B12E6F38CE00747F7E /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F187AB2E6F38CE00747F7E /* CollectionDetailView.swift */; };
 		13F315B02EAD03F70025BD7A /* SubtitleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F315AF2EAD03F70025BD7A /* SubtitleLoader.swift */; };
-		13F518382EBCE02F00DEF778 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13F518372EBCE02F00DEF778 /* SoraCore */; };
-		13F5183B2EBCE03400DEF778 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13F5183A2EBCE03400DEF778 /* FakeWebKit */; };
-		13F5183E2EBCE03C00DEF778 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13F5183D2EBCE03C00DEF778 /* Kingfisher */; };
-		13F518412EBCE1A100DEF778 /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 13F518402EBCE1A100DEF778 /* MPVKit-GPL */; };
 		13F518432EBCE42B00DEF778 /* StorageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F518422EBCE42B00DEF778 /* StorageView.swift */; };
 		13F5B58F2E7308F300565E75 /* HomeSectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B58E2E7308F300565E75 /* HomeSectionsView.swift */; };
 		13F5B5922E73090000565E75 /* HomeSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F5B5912E73090000565E75 /* HomeSection.swift */; };
@@ -122,6 +156,40 @@
 		13B6F3442EA4C6BC00DECD2B /* ProgressManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgressManager.swift; sourceTree = "<group>"; };
 		13B6F3472EA4C82600DECD2B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13DCC4F52E58B40F0028AE91 /* HybridSimilarity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HybridSimilarity.swift; sourceTree = "<group>"; };
+		13E1ED9C2ED9E65F00087629 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
+		13E1ED9E2ED9E65F00087629 /* ModuleManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModuleManager.swift; sourceTree = "<group>"; };
+		13E1EDA02ED9E65F00087629 /* mangaModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = mangaModel.xcdatamodel; sourceTree = "<group>"; };
+		13E1EDA22ED9E65F00087629 /* mangaData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mangaData.swift; sourceTree = "<group>"; };
+		13E1EDA32ED9E65F00087629 /* readingMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = readingMode.swift; sourceTree = "<group>"; };
+		13E1EDA42ED9E65F00087629 /* readerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = readerManager.swift; sourceTree = "<group>"; };
+		13E1EDA52ED9E65F00087629 /* favouriteManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = favouriteManager.swift; sourceTree = "<group>"; };
+		13E1EDA62ED9E65F00087629 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		13E1EDA72ED9E65F00087629 /* pageData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pageData.swift; sourceTree = "<group>"; };
+		13E1EDAB2ED9E65F00087629 /* bundle.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = bundle.js; sourceTree = "<group>"; };
+		13E1EDAC2ED9E65F00087629 /* ErrorDefinitions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorDefinitions.swift; sourceTree = "<group>"; };
+		13E1EDAE2ED9E65F00087629 /* JavaScriptCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptCore.swift; sourceTree = "<group>"; };
+		13E1EDB02ED9E65F00087629 /* KanzenOutputFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KanzenOutputFormatter.swift; sourceTree = "<group>"; };
+		13E1EDB12ED9E65F00087629 /* KanzenModuleRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KanzenModuleRunner.swift; sourceTree = "<group>"; };
+		13E1EDB22ED9E65F00087629 /* KanzenEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KanzenEngine.swift; sourceTree = "<group>"; };
+		13E1EDB42ED9E65F00087629 /* KanzenRunnerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KanzenRunnerController.swift; sourceTree = "<group>"; };
+		13E1EDB72ED9E65F00087629 /* readerManagerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = readerManagerView.swift; sourceTree = "<group>"; };
+		13E1EDB92ED9E65F00087629 /* chapterList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = chapterList.swift; sourceTree = "<group>"; };
+		13E1EDBA2ED9E65F00087629 /* readerSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = readerSettingsView.swift; sourceTree = "<group>"; };
+		13E1EDBC2ED9E65F00087629 /* pagedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pagedViewController.swift; sourceTree = "<group>"; };
+		13E1EDBE2ED9E65F00087629 /* webToonViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = webToonViewController.swift; sourceTree = "<group>"; };
+		13E1EDC02ED9E65F00087629 /* kanzenSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kanzenSettings.swift; sourceTree = "<group>"; };
+		13E1EDC22ED9E65F00087629 /* kanzenGeneralSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kanzenGeneralSettings.swift; sourceTree = "<group>"; };
+		13E1EDC32ED9E65F00087629 /* MainMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		13E1EDC52ED9E65F00087629 /* customSlider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = customSlider.swift; sourceTree = "<group>"; };
+		13E1EDC62ED9E65F00087629 /* favouriteViewWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = favouriteViewWrapper.swift; sourceTree = "<group>"; };
+		13E1EDC72ED9E65F00087629 /* contentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = contentCell.swift; sourceTree = "<group>"; };
+		13E1EDC82ED9E65F00087629 /* circularLoading.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = circularLoading.swift; sourceTree = "<group>"; };
+		13E1EDC92ED9E65F00087629 /* contentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = contentView.swift; sourceTree = "<group>"; };
+		13E1EDCB2ED9E65F00087629 /* Library.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		13E1EDCD2ED9E65F00087629 /* search.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = search.swift; sourceTree = "<group>"; };
+		13E1EDCF2ED9E65F00087629 /* browseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = browseView.swift; sourceTree = "<group>"; };
+		13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kanzenModuleView.swift; sourceTree = "<group>"; };
+		13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ContentModel.xcdatamodel; sourceTree = "<group>"; };
 		13F0725B2E4B2D3300EF90EB /* Luna.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luna.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13F0725E2E4B2D3300EF90EB /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		13F072622E4B2D3700EF90EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -177,11 +245,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13F5183E2EBCE03C00DEF778 /* Kingfisher in Frameworks */,
-				13F518382EBCE02F00DEF778 /* SoraCore in Frameworks */,
-				13F5183B2EBCE03400DEF778 /* FakeWebKit in Frameworks */,
+				131BC8562EC36FD900E19F3E /* Kingfisher in Frameworks */,
 				12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */,
-				13F518412EBCE1A100DEF778 /* MPVKit-GPL in Frameworks */,
+				131BC8532EC36FD500E19F3E /* SoraCore in Frameworks */,
+				131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */,
+				131BC8592EC3728500E19F3E /* MPVKit-GPL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,12 +294,222 @@
 			path = Progress;
 			sourceTree = "<group>";
 		};
+		13E1ED992ED9E65F00087629 /* Kanzen */ = {
+			isa = PBXGroup;
+			children = (
+				13E1ED9A2ED9E65F00087629 /* KanzenModule */,
+				13E1ED9F2ED9E65F00087629 /* mangaModel.xcdatamodeld */,
+				13E1EDA12ED9E65F00087629 /* Models */,
+				13E1EDA82ED9E65F00087629 /* KanzenEngine */,
+				13E1EDB52ED9E65F00087629 /* Views */,
+			);
+			path = Kanzen;
+			sourceTree = "<group>";
+		};
+		13E1ED9A2ED9E65F00087629 /* KanzenModule */ = {
+			isa = PBXGroup;
+			children = (
+				13E1ED9B2ED9E65F00087629 /* Models */,
+				13E1ED9D2ED9E65F00087629 /* Controllers */,
+			);
+			path = KanzenModule;
+			sourceTree = "<group>";
+		};
+		13E1ED9B2ED9E65F00087629 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				13E1ED9C2ED9E65F00087629 /* Module.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		13E1ED9D2ED9E65F00087629 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				13E1ED9E2ED9E65F00087629 /* ModuleManager.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		13E1EDA12ED9E65F00087629 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDA22ED9E65F00087629 /* mangaData.swift */,
+				13E1EDA32ED9E65F00087629 /* readingMode.swift */,
+				13E1EDA42ED9E65F00087629 /* readerManager.swift */,
+				13E1EDA52ED9E65F00087629 /* favouriteManager.swift */,
+				13E1EDA62ED9E65F00087629 /* Settings.swift */,
+				13E1EDA72ED9E65F00087629 /* pageData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		13E1EDA82ED9E65F00087629 /* KanzenEngine */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDA92ED9E65F00087629 /* Utils */,
+				13E1EDAF2ED9E65F00087629 /* Model */,
+				13E1EDB32ED9E65F00087629 /* Controllers */,
+			);
+			path = KanzenEngine;
+			sourceTree = "<group>";
+		};
+		13E1EDA92ED9E65F00087629 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDAA2ED9E65F00087629 /* Bundle */,
+				13E1EDAC2ED9E65F00087629 /* ErrorDefinitions.swift */,
+				13E1EDAD2ED9E65F00087629 /* Extensions */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		13E1EDAA2ED9E65F00087629 /* Bundle */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDAB2ED9E65F00087629 /* bundle.js */,
+			);
+			path = Bundle;
+			sourceTree = "<group>";
+		};
+		13E1EDAD2ED9E65F00087629 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDAE2ED9E65F00087629 /* JavaScriptCore.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		13E1EDAF2ED9E65F00087629 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDB02ED9E65F00087629 /* KanzenOutputFormatter.swift */,
+				13E1EDB12ED9E65F00087629 /* KanzenModuleRunner.swift */,
+				13E1EDB22ED9E65F00087629 /* KanzenEngine.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		13E1EDB32ED9E65F00087629 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDB42ED9E65F00087629 /* KanzenRunnerController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		13E1EDB52ED9E65F00087629 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDB62ED9E65F00087629 /* Reader */,
+				13E1EDBF2ED9E65F00087629 /* Settings */,
+				13E1EDC32ED9E65F00087629 /* MainMenu.swift */,
+				13E1EDC42ED9E65F00087629 /* Util */,
+				13E1EDCA2ED9E65F00087629 /* Library */,
+				13E1EDCC2ED9E65F00087629 /* Search */,
+				13E1EDCE2ED9E65F00087629 /* Browse */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		13E1EDB62ED9E65F00087629 /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDB72ED9E65F00087629 /* readerManagerView.swift */,
+				13E1EDB82ED9E65F00087629 /* utils */,
+				13E1EDBB2ED9E65F00087629 /* Paged */,
+				13E1EDBD2ED9E65F00087629 /* WebToon */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		13E1EDB82ED9E65F00087629 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDB92ED9E65F00087629 /* chapterList.swift */,
+				13E1EDBA2ED9E65F00087629 /* readerSettingsView.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		13E1EDBB2ED9E65F00087629 /* Paged */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDBC2ED9E65F00087629 /* pagedViewController.swift */,
+			);
+			path = Paged;
+			sourceTree = "<group>";
+		};
+		13E1EDBD2ED9E65F00087629 /* WebToon */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDBE2ED9E65F00087629 /* webToonViewController.swift */,
+			);
+			path = WebToon;
+			sourceTree = "<group>";
+		};
+		13E1EDBF2ED9E65F00087629 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDC02ED9E65F00087629 /* kanzenSettings.swift */,
+				13E1EDC12ED9E65F00087629 /* subSettings */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		13E1EDC12ED9E65F00087629 /* subSettings */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDC22ED9E65F00087629 /* kanzenGeneralSettings.swift */,
+			);
+			path = subSettings;
+			sourceTree = "<group>";
+		};
+		13E1EDC42ED9E65F00087629 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDC52ED9E65F00087629 /* customSlider.swift */,
+				13E1EDC62ED9E65F00087629 /* favouriteViewWrapper.swift */,
+				13E1EDC72ED9E65F00087629 /* contentCell.swift */,
+				13E1EDC82ED9E65F00087629 /* circularLoading.swift */,
+				13E1EDC92ED9E65F00087629 /* contentView.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		13E1EDCA2ED9E65F00087629 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDCB2ED9E65F00087629 /* Library.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		13E1EDCC2ED9E65F00087629 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDCD2ED9E65F00087629 /* search.swift */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
+		13E1EDCE2ED9E65F00087629 /* Browse */ = {
+			isa = PBXGroup;
+			children = (
+				13E1EDCF2ED9E65F00087629 /* browseView.swift */,
+				13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */,
+			);
+			path = Browse;
+			sourceTree = "<group>";
+		};
 		13F072522E4B2D3300EF90EB = {
 			isa = PBXGroup;
 			children = (
-				129CC9062EBA1D4600D2D84B /* Build.xcconfig */,
-				129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */,
 				13F0725D2E4B2D3300EF90EB /* Luna */,
+				13E1ED992ED9E65F00087629 /* Kanzen */,
+				129CC9062EBA1D4600D2D84B /* Build.xcconfig */,
+				13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */,
+				129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */,
 				13F0725C2E4B2D3300EF90EB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -487,10 +765,10 @@
 			name = Luna;
 			packageProductDependencies = (
 				12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */,
-				13F518372EBCE02F00DEF778 /* SoraCore */,
-				13F5183A2EBCE03400DEF778 /* FakeWebKit */,
-				13F5183D2EBCE03C00DEF778 /* Kingfisher */,
-				13F518402EBCE1A100DEF778 /* MPVKit-GPL */,
+				131BC84F2EC36FCF00E19F3E /* FakeWebKit */,
+				131BC8522EC36FD500E19F3E /* SoraCore */,
+				131BC8552EC36FD900E19F3E /* Kingfisher */,
+				131BC8582EC3728500E19F3E /* MPVKit-GPL */,
 			);
 			productName = Sora;
 			productReference = 13F0725B2E4B2D3300EF90EB /* Luna.app */;
@@ -521,10 +799,10 @@
 			);
 			mainGroup = 13F072522E4B2D3300EF90EB;
 			packageReferences = (
-				13F518362EBCE02F00DEF778 /* XCRemoteSwiftPackageReference "SoraCore" */,
-				13F518392EBCE03400DEF778 /* XCRemoteSwiftPackageReference "FakeWebKit" */,
-				13F5183C2EBCE03C00DEF778 /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				13F5183F2EBCE1A100DEF778 /* XCRemoteSwiftPackageReference "MPVKit" */,
+				131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */,
+				131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */,
+				131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */,
 			);
 			productRefGroup = 13F0725C2E4B2D3300EF90EB /* Products */;
 			projectDirPath = "";
@@ -542,6 +820,7 @@
 			files = (
 				13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */,
 				129CC9072EBA1D4600D2D84B /* Build.xcconfig in Resources */,
+				13E1EDDA2ED9E65F00087629 /* bundle.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -578,22 +857,32 @@
 				12E7AF602EB80775003B7664 /* Platform.swift in Sources */,
 				129CC90C2EBA920C00D2D84B /* Bundle.swift in Sources */,
 				13DCC4F62E58B40F0028AE91 /* HybridSimilarity.swift in Sources */,
+				13E1EDE92ED9E66000087629 /* customSlider.swift in Sources */,
+				13E1EDE42ED9E66000087629 /* pagedViewController.swift in Sources */,
 				13F072A32E4B2D9200EF90EB /* SearchView.swift in Sources */,
 				13830AEC2E55BD9200B3CDE4 /* AlgorithmManager.swift in Sources */,
 				13F072AD2E4B2D9200EF90EB /* DetailRow.swift in Sources */,
 				139509A22E7DDAE100CB60D4 /* PlayerSettingsView.swift in Sources */,
+				13E1EDDB2ED9E65F00087629 /* ErrorDefinitions.swift in Sources */,
 				13F072B02E4B2D9200EF90EB /* SearchResultCard.swift in Sources */,
 				136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */,
 				13B6F3452EA4C6BC00DECD2B /* ProgressManager.swift in Sources */,
+				13E1EDF42ED9E67000087629 /* ContentModel.xcdatamodeld in Sources */,
 				13F072B42E4B2D9200EF90EB /* resized.swift in Sources */,
+				13E1EDDF2ED9E66000087629 /* KanzenEngine.swift in Sources */,
 				13F5B5952E730CB200565E75 /* TMDBContentFilter.swift in Sources */,
 				13F072B12E4B2D9200EF90EB /* NormalPlayer.swift in Sources */,
 				13F072AF2E4B2D9200EF90EB /* StretchyHeader.swift in Sources */,
 				13F0729D2E4B2D9200EF90EB /* JSController-Search.swift in Sources */,
+				13E1EDE72ED9E66000087629 /* kanzenGeneralSettings.swift in Sources */,
 				13F072A02E4B2D9200EF90EB /* JSController-Streams.swift in Sources */,
+				13E1EDE52ED9E66000087629 /* webToonViewController.swift in Sources */,
 				13F072AC2E4B2D9200EF90EB /* Shows-Details.swift in Sources */,
+				13E1EDDD2ED9E66000087629 /* KanzenOutputFormatter.swift in Sources */,
 				13830AF22E55F51300B3CDE4 /* AlternativeUIView.swift in Sources */,
 				13F072BA2E4B2D9200EF90EB /* TMDBService.swift in Sources */,
+				13E1EDE82ED9E66000087629 /* MainMenu.swift in Sources */,
+				13E1EDE32ED9E66000087629 /* readerSettingsView.swift in Sources */,
 				13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */,
 				13F187AD2E6F38CE00747F7E /* LibraryItem.swift in Sources */,
 				13F187B02E6F38CE00747F7E /* CreateCollectionView.swift in Sources */,
@@ -602,12 +891,21 @@
 				13F072A92E4B2D9200EF90EB /* LoggerView.swift in Sources */,
 				13F072A72E4B2D9200EF90EB /* MediaDetailView.swift in Sources */,
 				13F072A22E4B2D9200EF90EB /* SettingsView.swift in Sources */,
+				13E1EDE02ED9E66000087629 /* KanzenRunnerController.swift in Sources */,
+				13E1EDEC2ED9E66000087629 /* circularLoading.swift in Sources */,
+				13E1EDEB2ED9E66000087629 /* contentCell.swift in Sources */,
 				13F072AE2E4B2D9200EF90EB /* EpisodeCell.swift in Sources */,
+				13E1EDEA2ED9E66000087629 /* favouriteViewWrapper.swift in Sources */,
+				13E1EDD62ED9E65F00087629 /* readerManager.swift in Sources */,
+				13E1EDDE2ED9E66000087629 /* KanzenModuleRunner.swift in Sources */,
 				13F518432EBCE42B00DEF778 /* StorageView.swift in Sources */,
 				1324E7C12E940BD70036B5F5 /* PiPController.swift in Sources */,
+				13E1EDEF2ED9E66000087629 /* search.swift in Sources */,
 				13F072AB2E4B2D9200EF90EB /* Movie-Details.swift in Sources */,
+				13E1EDF02ED9E66000087629 /* browseView.swift in Sources */,
 				1324E7BD2E940BD70036B5F5 /* PlayerViewController.swift in Sources */,
 				1324E7BE2E940BD70036B5F5 /* SampleBufferDisplayView.swift in Sources */,
+				13E1EDD32ED9E65F00087629 /* mangaModel.xcdatamodeld in Sources */,
 				13F5B58F2E7308F300565E75 /* HomeSectionsView.swift in Sources */,
 				12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */,
 				13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */,
@@ -615,32 +913,46 @@
 				13F0729C2E4B2D9200EF90EB /* JavaScriptCore+Extensions.swift in Sources */,
 				13F072B22E4B2D9200EF90EB /* FallbackImageView.swift in Sources */,
 				13F072B62E4B2D9200EF90EB /* AmbientColor.swift in Sources */,
+				13E1EDD22ED9E65F00087629 /* ModuleManager.swift in Sources */,
+				13E1EDEE2ED9E66000087629 /* Library.swift in Sources */,
+				13E1EDD82ED9E65F00087629 /* Settings.swift in Sources */,
 				13F187AE2E6F38CE00747F7E /* LibraryCollection.swift in Sources */,
 				13830AF02E55C04F00B3CDE4 /* AlgorithmSelectionView.swift in Sources */,
 				13F0729E2E4B2D9200EF90EB /* JSController-Details.swift in Sources */,
 				13F187AF2E6F38CE00747F7E /* AddToCollectionView.swift in Sources */,
+				13E1EDD12ED9E65F00087629 /* Module.swift in Sources */,
 				13830AEE2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift in Sources */,
 				12201F542EBE922D0033073C /* ServiceModels.xcdatamodeld in Sources */,
+				13E1EDE62ED9E66000087629 /* kanzenSettings.swift in Sources */,
 				13F072B92E4B2D9200EF90EB /* TMDBModels.swift in Sources */,
 				13F5B5972E730CDB00565E75 /* TMDBFiltersView.swift in Sources */,
+				13E1EDE22ED9E66000087629 /* chapterList.swift in Sources */,
 				13F072AA2E4B2D9200EF90EB /* CircularProgressBar.swift in Sources */,
 				13F072B52E4B2D9200EF90EB /* URLSession.swift in Sources */,
 				1324E7BC2E940BD70036B5F5 /* MPVSoftwareRenderer.swift in Sources */,
+				13E1EDE12ED9E66000087629 /* readerManagerView.swift in Sources */,
 				1324E7BF2E940BD70036B5F5 /* MusicProgressSlider.swift in Sources */,
+				13E1EDD92ED9E65F00087629 /* pageData.swift in Sources */,
 				1324E7BB2E940BD70036B5F5 /* PlayerPreset.swift in Sources */,
 				13F072A82E4B2D9200EF90EB /* ContentView.swift in Sources */,
 				13F072B72E4B2D9200EF90EB /* Logger.swift in Sources */,
+				13E1EDD72ED9E65F00087629 /* favouriteManager.swift in Sources */,
 				13B2E5742E7597B9009F3271 /* JSController-NetworkFetch.swift in Sources */,
 				13F315B02EAD03F70025BD7A /* SubtitleLoader.swift in Sources */,
 				13F072B82E4B2D9200EF90EB /* LevenshteinDistance.swift in Sources */,
 				13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */,
+				13E1EDD42ED9E65F00087629 /* mangaData.swift in Sources */,
 				13F072B32E4B2D9200EF90EB /* ServicesResultsSheet.swift in Sources */,
 				13F072A52E4B2D9200EF90EB /* HomeView.swift in Sources */,
+				13E1EDDC2ED9E65F00087629 /* JavaScriptCore.swift in Sources */,
 				13F187B12E6F38CE00747F7E /* CollectionDetailView.swift in Sources */,
+				13E1EDF12ED9E66000087629 /* kanzenModuleView.swift in Sources */,
 				13830AF42E55F5FF00B3CDE4 /* AccentColorManager.swift in Sources */,
 				13F072A12E4B2D9200EF90EB /* JSController.swift in Sources */,
 				13F0729F2E4B2D9200EF90EB /* ServiceManager.swift in Sources */,
 				12201F512EBE918D0033073C /* ServiceStore.swift in Sources */,
+				13E1EDD52ED9E65F00087629 /* readingMode.swift in Sources */,
+				13E1EDED2ED9E66000087629 /* contentView.swift in Sources */,
 				13F187AC2E6F38CE00747F7E /* LibraryManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -906,15 +1218,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		13F518362EBCE02F00DEF778 /* XCRemoteSwiftPackageReference "SoraCore" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cranci1/SoraCore";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-		13F518392EBCE03400DEF778 /* XCRemoteSwiftPackageReference "FakeWebKit" */ = {
+		131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/undeaDD/FakeWebKit";
 			requirement = {
@@ -922,7 +1226,15 @@
 				kind = branch;
 			};
 		};
-		13F5183C2EBCE03C00DEF778 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+		131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cranci1/SoraCore";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
 			requirement = {
@@ -930,12 +1242,12 @@
 				minimumVersion = 8.6.1;
 			};
 		};
-		13F5183F2EBCE1A100DEF778 /* XCRemoteSwiftPackageReference "MPVKit" */ = {
+		131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cranci1/MPVKit/";
+			repositoryURL = "https://github.com/mpvkit/MPVKit";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = "0.40.0-xcode";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -945,24 +1257,24 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FakeWebKit;
 		};
-		13F518372EBCE02F00DEF778 /* SoraCore */ = {
+		131BC84F2EC36FCF00E19F3E /* FakeWebKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 13F518362EBCE02F00DEF778 /* XCRemoteSwiftPackageReference "SoraCore" */;
-			productName = SoraCore;
-		};
-		13F5183A2EBCE03400DEF778 /* FakeWebKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 13F518392EBCE03400DEF778 /* XCRemoteSwiftPackageReference "FakeWebKit" */;
+			package = 131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */;
 			productName = FakeWebKit;
 		};
-		13F5183D2EBCE03C00DEF778 /* Kingfisher */ = {
+		131BC8522EC36FD500E19F3E /* SoraCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 13F5183C2EBCE03C00DEF778 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			package = 131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */;
+			productName = SoraCore;
+		};
+		131BC8552EC36FD900E19F3E /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
-		13F518402EBCE1A100DEF778 /* MPVKit-GPL */ = {
+		131BC8582EC3728500E19F3E /* MPVKit-GPL */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 13F5183F2EBCE1A100DEF778 /* XCRemoteSwiftPackageReference "MPVKit" */;
+			package = 131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */;
 			productName = "MPVKit-GPL";
 		};
 /* End XCSwiftPackageProductDependency section */
@@ -975,6 +1287,23 @@
 			);
 			currentVersion = 12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */;
 			path = ServiceModels.xcdatamodeld;
+		13E1ED9F2ED9E65F00087629 /* mangaModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				13E1EDA02ED9E65F00087629 /* mangaModel.xcdatamodel */,
+			);
+			currentVersion = 13E1EDA02ED9E65F00087629 /* mangaModel.xcdatamodel */;
+			path = mangaModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+		13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */,
+			);
+			currentVersion = 13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */;
+			path = ContentModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

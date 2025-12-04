@@ -70,11 +70,7 @@ struct MediaDetailView: View {
     var body: some View {
         ZStack {
             Group {
-                if useSolidBackgroundBehindHero {
-                    Color.background
-                } else {
-                    ambientColor
-                }
+                ambientColor
             }
             .ignoresSafeArea(.all)
             
