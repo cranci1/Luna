@@ -90,7 +90,7 @@ extension ServiceEntity {
         do {
             metadata = try JSONDecoder().decode(ServiceMetadata.self, from: data)
         } catch {
-            Logger.shared.log("Failed to decode ServicesMetadata for ServiceEntity \(id.uuidString): \(error.localizedDescription)", type: "CloudKit")
+            Logger.shared.log("Failed to decode ServiceMetadata for ServiceEntity \(id.uuidString): \(error.localizedDescription)", type: "CloudKit")
             return nil
         }
 

@@ -86,6 +86,13 @@ public final class ServiceStore {
                 // Create new service
                 service = ServiceEntity(context: context)
                 service.id = id
+
+                // Assign proper sort index so new services go to the bottom
+                let countRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+                countRequest.includesSubentities = false
+                let count = try context.count(for: countRequest)
+
+                service.sortIndex = Int64(count)
             }
 
             service.url = url
