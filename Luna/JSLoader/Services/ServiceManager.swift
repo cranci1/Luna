@@ -37,52 +37,51 @@ class ServiceManager: ObservableObject {
 
     let delay: UInt64 = 300_000_000 // 300ms
 
-    func updateServices() {
+    func updateServices() async {
         guard !services.isEmpty else { return }
 
-        Task {
-            isDownloading = true
-            downloadProgress = 0.0
-            downloadMessage = "Updating services..."
+        isDownloading = true
+        downloadProgress = 0.0
+        downloadMessage = "Updating services..."
 
-            let total = Double(services.count)
-            var completed: Double = 0
+        let total = Double(services.count)
+        var completed: Double = 0
 
-            for service in services {
-                await updateProgress(downloadProgress, "Updating \(service.metadata.sourceName)...")
+        for service in services {
+            await updateProgress(downloadProgress, "Updating \(service.metadata.sourceName)...")
+            try? await Task.sleep(nanoseconds: delay)
+
+            do {
+                // Download metadata
+                await updateProgress(downloadProgress + 0.1 / total, "Downloading metadata for \(service.metadata.sourceName)...")
+                let metadata = try await downloadAndParseMetadata(from: service.url)
                 try? await Task.sleep(nanoseconds: delay)
 
-                do {
-                    // Download metadata
-                    await updateProgress(downloadProgress + 0.1 / total, "Downloading metadata for \(service.metadata.sourceName)...")
-                    let metadata = try await downloadAndParseMetadata(from: service.url)
-                    try? await Task.sleep(nanoseconds: delay)
-
-                    // Download JavaScript
-                    await updateProgress(downloadProgress + 0.5 / total, "Downloading JavaScript for \(service.metadata.sourceName)...")
-                    let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
-                    try? await Task.sleep(nanoseconds: delay)
-
-                    // Save service using existing ID
-                    ServiceStore.shared.storeService(
-                        id: service.id,
-                        url: service.url,
-                        jsonMetadata: String(data: try JSONEncoder().encode(metadata), encoding: .utf8) ?? "",
-                        jsScript: jsContent,
-                        isActive: service.isActive
-                    )
-
-                    Logger.shared.log("Service \(service.metadata.sourceName) updated successfully", type: "ServiceManager")
-                } catch {
-                    Logger.shared.log("Failed to update service \(service.metadata.sourceName): \(error.localizedDescription)", type: "ServiceManager")
-                }
-
-                // Update global progress
-                completed += 1
-                downloadProgress = completed / total
+                // Download JavaScript
+                await updateProgress(downloadProgress + 0.5 / total, "Downloading JavaScript for \(service.metadata.sourceName)...")
+                let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
                 try? await Task.sleep(nanoseconds: delay)
+
+                // Save service using existing ID
+                ServiceStore.shared.storeService(
+                    id: service.id,
+                    url: service.url,
+                    jsonMetadata: String(data: try JSONEncoder().encode(metadata), encoding: .utf8) ?? "",
+                    jsScript: jsContent,
+                    isActive: service.isActive
+                )
+
+                Logger.shared.log("Service \(service.metadata.sourceName) updated successfully", type: "ServiceManager")
+            } catch {
+                Logger.shared.log("Failed to update service \(service.metadata.sourceName): \(error.localizedDescription)", type: "ServiceManager")
             }
 
+            // Update global progress
+            completed += 1
+            downloadProgress = completed / total
+            try? await Task.sleep(nanoseconds: delay)
+
+            // Cleanup
             loadServicesFromCloud()
             await resetDownloadState()
             downloadMessage = "All services updated!"
@@ -247,7 +246,7 @@ class ServiceManager: ObservableObject {
 
          ServiceStore.shared.save()
          loadServicesFromCloud()
-         
+
          return true
      }
 

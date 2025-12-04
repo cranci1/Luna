@@ -27,7 +27,9 @@ struct ServicesView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if editMode?.wrappedValue != .active {
                         Button {
-                            serviceManager.updateServices()
+                            Task {
+                                await serviceManager.updateServices()
+                            }
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }

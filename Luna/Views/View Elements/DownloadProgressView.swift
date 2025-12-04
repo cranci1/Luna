@@ -16,20 +16,34 @@ struct DownloadProgressView: View {
             Color.black.opacity(0.4)
                 .edgesIgnoringSafeArea(.all)
 
-            VStack(spacing: 20) {
-                ProgressView(value: progress)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .frame(width: 200)
-
+            VStack(spacing: 8) {
                 Text(message)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.primary)
-                    .font(.body)
+                    .font(.system(.body))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.9)
+                    .frame(minHeight: 40)
+                    .padding(.bottom, 8)
+
+                ProgressView(value: progress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: .accentColor))
+                    .scaleEffect(y: 1.2, anchor: .center)
+
+                Text("\(Int(progress * 100))%")
+                    .foregroundColor(.secondary)
+                    .font(.system(.caption))
+                    .fontWeight(.semibold)
             }
-            .padding(20)
+            .frame(maxWidth: .infinity, minHeight: 150)
+            .padding(16)
             .background(.ultraThinMaterial)
-            .cornerRadius(12)
-            .shadow(radius: 10)
+            .cornerRadius(24)
+            .padding(32)
         }
     }
+}
+
+#Preview {
+    DownloadProgressView(progress: 0.65, message: "Downloading JavaScript for My Awesome Service...")
 }

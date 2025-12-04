@@ -30,7 +30,7 @@ class FavouriteManager: ObservableObject {
     }
     func addFavourite(module: ModuleDataContainer?, content: Manga) {
         print("add favourite called")
-        let newFavourite = createFavouriteEntity(module: module, content: content)
+        let _ = createFavouriteEntity(module: module, content: content)
     }
     func removeFavourite(moduleId: UUID, contentId: String)
     {

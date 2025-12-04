@@ -211,8 +211,8 @@ struct HomeView: View {
                 }
                 
                 Text(hero.displayTitle)
-                    .fontWeight(.bold)
                     .font(.system(size: isTvOS ? 40 : 25))
+                    .fontWeight(.bold)
                     .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
                     .foregroundColor(.white)
                     .lineLimit(2)

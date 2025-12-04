@@ -39,13 +39,6 @@ var nextControllers: [UIViewController]?
 
     
     var currRange: ClosedRange<CGFloat> {
-        //print("currChapter type: \(type(of: currChapter))")
-        //print("currChapter value: \(currChapter)")
-        
-        guard currChapter is [PageData] else {
-            print("ERROR: currChapter is not [PageData]!")
-            return 0...0
-        }
         if currChapter.count > 0 {
            return 0...CGFloat(currChapter.count - 1)
         } else {
@@ -78,9 +71,9 @@ var nextControllers: [UIViewController]?
         nextControllers = nil
         if let selectedChapter = selectedChapter, let chapters = chapters
         {
-            if let currSources = selectedChapter.chapterData, currSources.count > 0
-            {
+            if let currSources = selectedChapter.chapterData, currSources.count > 0,
                 let currParams = currSources[0].params
+            {
                 loadPages(params: currParams, position: .curr)
             }
             let idx = selectedChapter.idx
@@ -89,9 +82,9 @@ var nextControllers: [UIViewController]?
             if idx > 0
             {
                 let prevChapter = chapters[idx - 1]
-                if let prevSources = prevChapter.chapterData, prevSources.count > 0
-                {
+                if let prevSources = prevChapter.chapterData, prevSources.count > 0,
                     let prevParams = prevSources[0].params
+                {
                     loadPages(params: prevParams, position: .prev)
                     
                 }
@@ -100,9 +93,10 @@ var nextControllers: [UIViewController]?
             if idx < chapters.count - 1
             {
                 let nextChapters = chapters[idx + 1]
-                if let nextSources = nextChapters.chapterData, nextSources.count > 0
-                {
+                if let nextSources = nextChapters.chapterData, nextSources.count > 0,
                     let nextParams = nextSources[0].params
+                {
+
                     loadPages(params: nextParams, position: .next)
                 }
             }
@@ -175,7 +169,7 @@ var nextControllers: [UIViewController]?
     func shiftLeft() {
         // Cancel next chapter loading since it's no longer needed
         cancelLoadPagesTask(for: .next)
-        if let currChapter = selectedChapter, let idx = currChapter.idx as? Int, let chapters = chapters, currChapter.idx == 0
+        if let currChapter = selectedChapter, currChapter.idx == 0
         {
             print("End of chapters reached - no more chapters to load")
             return
@@ -203,7 +197,9 @@ var nextControllers: [UIViewController]?
     func shiftRight() {
         // Cancel prev chapter loading since it's no longer needed
         cancelLoadPagesTask(for: .prev)
-        if let currChapter = selectedChapter, let idx = currChapter.idx as? Int, let chapters = chapters, currChapter.idx == chapters.count - 1
+        if let currChapter = selectedChapter,
+            let chapters = chapters,
+            currChapter.idx == chapters.count - 1
         {
             print("End of chapters reached - no more chapters to load")
             return
@@ -377,9 +373,9 @@ var nextControllers: [UIViewController]?
             let idx = selectedChapter.idx
             if idx > 0 {
                 let prevChapter = chapters[idx - 1]
-                if let prevSources = prevChapter.chapterData, prevSources.count > 0
-                {
+                if let prevSources = prevChapter.chapterData, prevSources.count > 0,
                     let prevParams = prevSources[0].params
+                {
                     loadPages(params: prevParams, position: .prev,completion: completion)
                     
                 }
@@ -392,9 +388,9 @@ var nextControllers: [UIViewController]?
         let idx = selectedChapter.idx
         if idx < chapters.count - 1 {
             let nextChapters = chapters[idx + 1]
-            if let nextSources = nextChapters.chapterData, nextSources.count > 0
-            {
+            if let nextSources = nextChapters.chapterData, nextSources.count > 0,
                 let nextParams = nextSources[0].params
+            {
                 loadPages(params: nextParams, position: .next,completion: completion)
             }
             

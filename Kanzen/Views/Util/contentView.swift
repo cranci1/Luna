@@ -187,8 +187,6 @@ struct contentView: View {
                 result in
                 
                 self.contentData = result
-                print("contentData is ")
-                print(result)
             }
             kanzen.getChapters(params: self.params){
                 result in
@@ -202,7 +200,7 @@ struct contentView: View {
                             for (idx,chapter) in chapters.enumerated() {
                                 print("chapter is ")
                                 print(idx)
-                                print(chapter)
+                                print(chapter ?? "")
                                 if let chapter = chapter as? [Any?], let chapterName = chapter[0] as? String, let rawData = chapter[1] as? [[String: Any?]], let chapterData = rawData.compactMap({ChapterData(dict: $0 as [String : Any])}) as? [ChapterData] {
                                     let tempChapter: Chapter = Chapter(chapterNumber: chapterName, idx:idx,chapterData: chapterData)
                                     tempChapters.append(tempChapter)
@@ -216,7 +214,7 @@ struct contentView: View {
                     }
                     self.contentChapters = temp
                     print("contentChapters is")
-                    print(contentChapters)
+                    print(contentChapters ?? [] )
                 }
                 
                 loadingState = false
@@ -233,8 +231,8 @@ struct contentView: View {
     
     @ViewBuilder
     func chaptersView() -> some View {
-        if var chaptersData = self.contentChapters, chaptersData.count > 0 {
-            var selectedLanguage = chaptersData[langaugeIdx]
+        if let chaptersData = self.contentChapters, chaptersData.count > 0 {
+            let selectedLanguage = chaptersData[langaugeIdx]
             var displayedChapters: Array<EnumeratedSequence<[Chapter]>.Element> {
                 if reverseChapterlist
                 {
@@ -263,7 +261,7 @@ struct contentView: View {
                     
                         .contentShape(Rectangle())
                         .contextMenu{
-                            if let contentChapters = contentChapters as? [Chapters], contentChapters.count > 0 {
+                            if let contentChapters = contentChapters, contentChapters.count > 0 {
                                 Menu{
                                     ForEach(Array(contentChapters.enumerated()),id: \.offset)
                                     {
@@ -305,7 +303,6 @@ struct contentView: View {
                                 DispatchQueue.main.async {
                                     selectedChapterData = item
                                 }
-                                print("idx is \(selectedChapterIdx)")
                                 
                             }label:{
                                 HStack{

@@ -68,41 +68,49 @@ public final class ServiceStore {
             return
         }
 
-        let context = container.viewContext
+        container.viewContext.performAndWait {
+            let context = container.viewContext
 
-        // Check if a service with the same ID already exists
-        let fetchRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        fetchRequest.fetchLimit = 1
+            // Check if a service with the same ID already exists
+            let fetchRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            fetchRequest.fetchLimit = 1
 
-        do {
-            let results = try context.fetch(fetchRequest)
-            let service: ServiceEntity
+            do {
+                let results = try context.fetch(fetchRequest)
+                let service: ServiceEntity
 
-            if let existing = results.first {
-                // Update existing service
-                service = existing
-            } else {
-                // Create new service
-                service = ServiceEntity(context: context)
-                service.id = id
+                if let existing = results.first {
+                    // Update existing service
+                    service = existing
+                } else {
+                    // Create new service
+                    service = ServiceEntity(context: context)
+                    service.id = id
 
-                // Assign proper sort index so new services go to the bottom
-                let countRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
-                countRequest.includesSubentities = false
-                let count = try context.count(for: countRequest)
+                    // Assign proper sort index so new services go to the bottom
+                    let countRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+                    countRequest.includesSubentities = false
+                    let count = try context.count(for: countRequest)
 
-                service.sortIndex = Int64(count)
+                    service.sortIndex = Int64(count)
+                }
+
+                service.url = url
+                service.jsonMetadata = jsonMetadata
+                service.jsScript = jsScript
+                service.isActive = isActive
+
+                do {
+                    if context.hasChanges {
+                        try context.save()
+                    }
+                } catch {
+                    Logger.shared.log("Cloudkit save failed: \(error.localizedDescription)", type: "CloudKit")
+                }
+            } catch {
+                Logger.shared.log("Failed to fetch existing service: \(error.localizedDescription)", type: "CloudKit")
             }
-
-            service.url = url
-            service.jsonMetadata = jsonMetadata
-            service.jsScript = jsScript
-            service.isActive = isActive
-
-            save()
-        } catch {
-            Logger.shared.log("Failed to fetch existing service: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 
@@ -112,16 +120,20 @@ public final class ServiceStore {
             return []
         }
 
-        do {
-            let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
-            let sort = NSSortDescriptor(key: "sortIndex", ascending: true)
-            request.sortDescriptors = [sort]
-            return try container.viewContext.fetch(request)
-        } catch {
-            Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
+        var result: [ServiceEntity] = []
+
+        container.viewContext.performAndWait {
+            do {
+                let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+                let sort = NSSortDescriptor(key: "sortIndex", ascending: true)
+                request.sortDescriptors = [sort]
+                result = try container.viewContext.fetch(request)
+            } catch {
+                Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
+            }
         }
 
-        return []
+        return result
     }
 
     public func getServices() -> [Service] {
@@ -130,18 +142,22 @@ public final class ServiceStore {
             return []
         }
 
-        do {
-            let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
-            let sort = NSSortDescriptor(key: "sortIndex", ascending: true)
-            request.sortDescriptors = [sort]
-            let entities = try container.viewContext.fetch(request)
-            Logger.shared.log("Loaded \(entities.count) ServiceEntities", type: "CloudKit")
-            return entities.compactMap { $0.asModel }
-        } catch {
-            Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
+        var result: [Service] = []
+
+        container.viewContext.performAndWait {
+            do {
+                let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+                let sort = NSSortDescriptor(key: "sortIndex", ascending: true)
+                request.sortDescriptors = [sort]
+                let entities = try container.viewContext.fetch(request)
+                Logger.shared.log("Loaded \(entities.count) ServiceEntities", type: "CloudKit")
+                result = entities.compactMap { $0.asModel }
+            } catch {
+                Logger.shared.log("Cloudkit fetch failed: \(error.localizedDescription)", type: "CloudKit")
+            }
         }
 
-        return []
+        return result
     }
 
     public func remove(_ service: Service) {
@@ -150,17 +166,21 @@ public final class ServiceStore {
             return
         }
 
-        let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", service.id as CVarArg)
-        do {
-            if let entity = try container.viewContext.fetch(request).first {
-                container.viewContext.delete(entity)
-                save()
-            } else {
-                Logger.shared.log("ServiceEntity not found for id: \(service.id)", type: "CloudKit")
+        container.viewContext.performAndWait {
+            let request: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", service.id as CVarArg)
+            do {
+                if let entity = try container.viewContext.fetch(request).first {
+                    container.viewContext.delete(entity)
+                    if container.viewContext.hasChanges {
+                        try container.viewContext.save()
+                    }
+                } else {
+                    Logger.shared.log("ServiceEntity not found for id: \(service.id)", type: "CloudKit")
+                }
+            } catch {
+                Logger.shared.log("Failed to fetch ServiceEntity to delete: \(error.localizedDescription)", type: "CloudKit")
             }
-        } catch {
-            Logger.shared.log("Failed to fetch ServiceEntity to delete: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 
@@ -170,12 +190,14 @@ public final class ServiceStore {
             return
         }
 
-        do {
-            if container.viewContext.hasChanges {
-                try container.viewContext.save()
+        container.viewContext.performAndWait {
+            do {
+                if container.viewContext.hasChanges {
+                    try container.viewContext.save()
+                }
+            } catch {
+                Logger.shared.log("Cloudkit save failed: \(error.localizedDescription)", type: "CloudKit")
             }
-        } catch {
-            Logger.shared.log("Cloudkit save failed: \(error.localizedDescription)", type: "CloudKit")
         }
     }
 
