@@ -154,7 +154,6 @@ struct WebtoonView: UIViewRepresentable {
                 if !loadingNext {
                     
                     if bottomPath == nil || bottomPath?.section == chapters.count - 1  && bottomPath?.item == chapters[chapters.count - 1].count - 1 {
-                        print("bottom path (section, idx) is (\(bottomPath?.section),\(bottomPath?.item)")
                         if reader_manager.nextChapter.count  == 0 {
                             loadingNext = true
                             self.reader_manager.fetchTask(bool: true){
@@ -264,7 +263,7 @@ struct WebtoonView: UIViewRepresentable {
                 
                 // Store current offset and content size
                 let oldOffset = collectionView.contentOffset
-                let oldContentSize = collectionView.collectionViewLayout.collectionViewContentSize
+                let _ = collectionView.collectionViewLayout.collectionViewContentSize
                 let removedSectionHeight = getHeightForSection(0, collectionView: collectionView)
                 if chapters.count >= 3 {
                     // Sliding window: replace first chapter with new one
@@ -533,8 +532,8 @@ class ChapterCollectionViewCell: UICollectionViewCell {
                 
                 // Handle the special case where image loaded but task was cancelled
                 if case .imageSettingError(let reason) = error,
-                   case .notCurrentSourceTask(let result) = reason,
-                   let retrieveResult = result.result {
+                   case .notCurrentSourceTask(let result, _, _) = reason,
+                   let retrieveResult = result {
                     // Image actually loaded successfully, we can still use the size info
                     let imageSize = retrieveResult.image.size
                     if let collectionView = self.findCollectionView() {

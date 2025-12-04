@@ -20,7 +20,7 @@ class KanzenEngine: ObservableObject
         try self.controller.loadScript(_script: script)
     }
     
-    func getContentData(params:Any?, completion: @escaping ([String:Any]?) -> Void)
+    func getContentData(params:Any, completion: @escaping ([String:Any]?) -> Void)
     {
         controller.getContentData(params: params)
         {
@@ -29,7 +29,7 @@ class KanzenEngine: ObservableObject
         }
     }
     
-    func getChapterImages(params:Any?, completion: @escaping ([String]?)-> Void)
+    func getChapterImages(params:Any, completion: @escaping ([String]?)-> Void)
     {
         controller.getChapterImages(params: params){
             result in
@@ -37,7 +37,7 @@ class KanzenEngine: ObservableObject
         }
     }
     
-    func getChapters(params: Any?, completion: @escaping ([String:Any]?)-> Void)
+    func getChapters(params: Any, completion: @escaping ([String:Any]?)-> Void)
     {
         controller.getChapters(params: params){
             result in

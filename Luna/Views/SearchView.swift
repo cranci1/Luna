@@ -91,15 +91,10 @@ struct SearchView: View {
                 HStack(spacing: 8) {
                     HStack(spacing: 8) {
                         TextField("Search...", text: $searchText)
+#if os(iOS)
                             .padding(7)
                             .padding(.horizontal, 25)
-#if os(iOS)
                             .background(Color(.systemGray6))
-#endif
-                        
-#if os(tvOS)
-                            .background(Color(.gray))
-#endif
                             .cornerRadius(8)
                             .overlay(
                                 HStack {
@@ -121,10 +116,11 @@ struct SearchView: View {
                                     }
                                 }
                             )
+#endif
                             .onSubmit {
                                 performSearchOrDownloadService()
                             }
-                            .onChange(of: searchText) { newValue in
+                            .onChangeComp(of: searchText) { _, newValue in
                                 if newValue.isEmpty {
                                     searchResults = []
                                     errorMessage = nil
@@ -164,15 +160,11 @@ struct SearchView: View {
                         .scaleEffect(1.2)
                     
                     if serviceManager.isDownloading {
-                        VStack(spacing: 8) {
-                            Text(serviceManager.downloadMessage)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            ProgressView(value: serviceManager.downloadProgress)
-                                .frame(width: 200)
-                        }
-                        .padding(.top, 8)
+                        DownloadProgressView(
+                            progress: serviceManager.downloadProgress,
+                            message: serviceManager.downloadMessage
+                        )
+                            .padding(.top, 8)
                     } else {
                         Text("Searching...")
                             .font(.caption)
@@ -341,12 +333,12 @@ struct SearchView: View {
         } message: {
             Text(serviceDownloadError ?? "")
         }
-        .onChange(of: selectedLanguage) { _ in
+        .onChangeComp(of: selectedLanguage) { _, _ in
             if !searchText.isEmpty && !searchResults.isEmpty {
                 performSearch()
             }
         }
-        .onChange(of: contentFilter.filterHorror) { _ in
+        .onChangeComp(of: contentFilter.filterHorror) { _, _ in
             if !searchText.isEmpty && !searchResults.isEmpty {
                 performSearch()
             }

@@ -66,7 +66,7 @@ extension JSContext
                 return JSValue(newErrorFromMessage: "Invalid URL", in: self)
             }
             
-            guard let promiseConstructor = self.objectForKeyedSubscript("Promise") else
+            guard let _ = self.objectForKeyedSubscript("Promise") else
             {
                 fatalError("Promise constructor not found in JSContext")
             }

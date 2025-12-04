@@ -36,7 +36,7 @@ class KanzenModuleRunner
         }
         let rejectBlock: @convention(block) (JSValue) -> Void = { error in
 
-            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString()])
+            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString() ?? "-"])
             completion(nil, err)
         }
         let resolveCallback = JSValue(object: resolveBlock, in: context)
@@ -69,7 +69,7 @@ class KanzenModuleRunner
         }
         let rejectBlock: @convention(block) (JSValue) -> Void = { error in
 
-            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString()])
+            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString() ?? "-"])
             completion(nil, err)
         }
         let resolveCallback = JSValue(object: resolveBlock, in: context)
@@ -103,7 +103,7 @@ class KanzenModuleRunner
         }
         let rejectBlock: @convention(block) (JSValue) -> Void = { error in
 
-            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString()])
+            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString() ?? "-"])
             completion(nil, err)
         }
         let resolveCallback = JSValue(object: resolveBlock, in: context)
@@ -140,7 +140,7 @@ class KanzenModuleRunner
         }
         let rejectBlock: @convention(block) (JSValue) -> Void = { error in
 
-            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString()])
+            let err = NSError(domain: "JSContext", code: 3, userInfo: [NSLocalizedDescriptionKey: error.toString() ?? "-"])
             completion(nil, err)
         }
         let resolveCallback = JSValue(object: resolveBlock, in: context)

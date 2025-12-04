@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12201F512EBE918D0033073C /* ServiceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12201F502EBE91870033073C /* ServiceStore.swift */; };
+		12201F542EBE922D0033073C /* ServiceModels.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 12201F522EBE922D0033073C /* ServiceModels.xcdatamodeld */; };
 		129CC9072EBA1D4600D2D84B /* Build.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 129CC9062EBA1D4600D2D84B /* Build.xcconfig */; };
 		129CC90C2EBA920C00D2D84B /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129CC90B2EBA920A00D2D84B /* Bundle.swift */; };
+		12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */; };
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
 		131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC84F2EC36FCF00E19F3E /* FakeWebKit */; };
@@ -68,7 +71,7 @@
 		13E1EDF42ED9E67000087629 /* ContentModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */; };
 		13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0725E2E4B2D3300EF90EB /* SoraApp.swift */; };
 		13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13F072622E4B2D3700EF90EB /* Assets.xcassets */; };
-		13F0729B2E4B2D9200EF90EB /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726E2E4B2D9000EF90EB /* Services.swift */; };
+		13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726E2E4B2D9000EF90EB /* ServicesEntity.swift */; };
 		13F0729C2E4B2D9200EF90EB /* JavaScriptCore+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726F2E4B2D9000EF90EB /* JavaScriptCore+Extensions.swift */; };
 		13F0729D2E4B2D9200EF90EB /* JSController-Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F072702E4B2D9000EF90EB /* JSController-Search.swift */; };
 		13F0729E2E4B2D9200EF90EB /* JSController-Details.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F072712E4B2D9000EF90EB /* JSController-Details.swift */; };
@@ -128,9 +131,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		12201F502EBE91870033073C /* ServiceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceStore.swift; sourceTree = "<group>"; };
+		12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ServiceModels.xcdatamodel; sourceTree = "<group>"; };
 		129CC9062EBA1D4600D2D84B /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
 		129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.local.xcconfig; sourceTree = "<group>"; };
 		129CC90B2EBA920A00D2D84B /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
 		12E7AF5F2EB80771003B7664 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
 		1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerPreset.swift; sourceTree = "<group>"; };
 		1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPVSoftwareRenderer.swift; sourceTree = "<group>"; };
@@ -188,7 +194,7 @@
 		13F0725E2E4B2D3300EF90EB /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		13F072622E4B2D3700EF90EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		13F072642E4B2D3700EF90EB /* Luna.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Luna.entitlements; sourceTree = "<group>"; };
-		13F0726E2E4B2D9000EF90EB /* Services.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
+		13F0726E2E4B2D9000EF90EB /* ServicesEntity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServicesEntity.swift; sourceTree = "<group>"; };
 		13F0726F2E4B2D9000EF90EB /* JavaScriptCore+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JavaScriptCore+Extensions.swift"; sourceTree = "<group>"; };
 		13F072702E4B2D9000EF90EB /* JSController-Search.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JSController-Search.swift"; sourceTree = "<group>"; };
 		13F072712E4B2D9000EF90EB /* JSController-Details.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "JSController-Details.swift"; sourceTree = "<group>"; };
@@ -574,6 +580,7 @@
 				13F072892E4B2D9000EF90EB /* NormalPlayer.swift */,
 				13F0728A2E4B2D9000EF90EB /* FallbackImageView.swift */,
 				13F0728B2E4B2D9000EF90EB /* ServicesResultsSheet.swift */,
+				12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */,
 			);
 			path = "View Elements";
 			sourceTree = "<group>";
@@ -677,8 +684,10 @@
 		13F072BD2E4B2ED600EF90EB /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				13F0726E2E4B2D9000EF90EB /* Services.swift */,
+				12201F502EBE91870033073C /* ServiceStore.swift */,
+				13F0726E2E4B2D9000EF90EB /* ServicesEntity.swift */,
 				13F072722E4B2D9000EF90EB /* ServiceManager.swift */,
+				12201F522EBE922D0033073C /* ServiceModels.xcdatamodeld */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -836,6 +845,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ ! -f \"${PROJECT_DIR}/Build.local.xcconfig\" ]; then\n  echo \"⚠️  No Build.local.xcconfig found — using default build config\"\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -897,7 +907,8 @@
 				1324E7BE2E940BD70036B5F5 /* SampleBufferDisplayView.swift in Sources */,
 				13E1EDD32ED9E65F00087629 /* mangaModel.xcdatamodeld in Sources */,
 				13F5B58F2E7308F300565E75 /* HomeSectionsView.swift in Sources */,
-				13F0729B2E4B2D9200EF90EB /* Services.swift in Sources */,
+				12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */,
+				13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */,
 				13F5B5922E73090000565E75 /* HomeSection.swift in Sources */,
 				13F0729C2E4B2D9200EF90EB /* JavaScriptCore+Extensions.swift in Sources */,
 				13F072B22E4B2D9200EF90EB /* FallbackImageView.swift in Sources */,
@@ -911,6 +922,7 @@
 				13F187AF2E6F38CE00747F7E /* AddToCollectionView.swift in Sources */,
 				13E1EDD12ED9E65F00087629 /* Module.swift in Sources */,
 				13830AEE2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift in Sources */,
+				12201F542EBE922D0033073C /* ServiceModels.xcdatamodeld in Sources */,
 				13E1EDE62ED9E66000087629 /* kanzenSettings.swift in Sources */,
 				13F072B92E4B2D9200EF90EB /* TMDBModels.swift in Sources */,
 				13F5B5972E730CDB00565E75 /* TMDBFiltersView.swift in Sources */,
@@ -938,6 +950,7 @@
 				13830AF42E55F5FF00B3CDE4 /* AccentColorManager.swift in Sources */,
 				13F072A12E4B2D9200EF90EB /* JSController.swift in Sources */,
 				13F0729F2E4B2D9200EF90EB /* ServiceManager.swift in Sources */,
+				12201F512EBE918D0033073C /* ServiceStore.swift in Sources */,
 				13E1EDD52ED9E65F00087629 /* readingMode.swift in Sources */,
 				13E1EDED2ED9E66000087629 /* contentView.swift in Sources */,
 				13F187AC2E6F38CE00747F7E /* LibraryManager.swift in Sources */,
@@ -1113,6 +1126,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_IDENTIFIER}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -1169,6 +1183,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "${BUNDLE_IDENTIFIER}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -1267,6 +1282,16 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
+		12201F522EBE922D0033073C /* ServiceModels.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */,
+			);
+			currentVersion = 12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */;
+			path = ServiceModels.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
 		13E1ED9F2ED9E65F00087629 /* mangaModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (

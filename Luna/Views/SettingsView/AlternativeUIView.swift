@@ -29,7 +29,7 @@ struct AlternativeUIView: View {
                     }
 #if !os(tvOS)
                     ColorPicker("", selection: $accentColorManager.currentAccentColor)
-                        .onChange(of: accentColorManager.currentAccentColor) { newColor in
+                        .onChangeComp(of: accentColorManager.currentAccentColor) { _, newColor in
                             accentColorManager.saveAccentColor(newColor)
                         }
 #endif

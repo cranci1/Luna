@@ -8,7 +8,7 @@
 import JavaScriptCore
 
 extension JSController {
-    func fetchStreamUrlJS(episodeUrl: String, softsub: Bool = false, module: Services, completion: @escaping ((streams: [String]?, subtitles: [String]?,sources: [[String:Any]]? )) -> Void) {
+    func fetchStreamUrlJS(episodeUrl: String, softsub: Bool = false, module: Service, completion: @escaping ((streams: [String]?, subtitles: [String]?,sources: [[String:Any]]? )) -> Void) {
         if let exception = context.exception {
             Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
             completion((nil, nil,nil))

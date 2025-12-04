@@ -52,7 +52,7 @@ struct KanzenModuleView: View {
                      { Section{
                          ForEach(moduleManager.modules){item in
                              let selectedModule = copySelectedModule == item.moduleurl
-                             var row = ZStack{
+                             let row = ZStack{
                                  
                                  HStack
                                  {
