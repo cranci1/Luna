@@ -1,4 +1,5 @@
 {
+  "originHash" : "4561a9088cc02d530cf0726a874107be63f44ab1ddffae049809036cedc44807",
   "pins" : [
     {
       "identity" : "fakewebkit",
@@ -37,5 +38,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

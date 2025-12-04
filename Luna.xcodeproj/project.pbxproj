@@ -1287,6 +1287,9 @@
 			);
 			currentVersion = 12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */;
 			path = ServiceModels.xcdatamodeld;
+            sourceTree = "<group>";
+            versionGroupType = wrapper.xcdatamodel;
+        };
 		13E1ED9F2ED9E65F00087629 /* mangaModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
