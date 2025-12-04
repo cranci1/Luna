@@ -68,15 +68,42 @@ public final class ServiceStore {
             return
         }
 
-        let service = ServiceEntity(context: container.viewContext)
-        service.id = id
-        service.url = url
-        service.jsonMetadata = jsonMetadata
-        service.jsScript = jsScript
-        service.isActive = isActive
+        let context = container.viewContext
 
-        save()
+        // Check if a service with the same ID already exists
+        let fetchRequest: NSFetchRequest<ServiceEntity> = ServiceEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        fetchRequest.fetchLimit = 1
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            let service: ServiceEntity
+
+            if let existing = results.first {
+                // Update existing service
+                service = existing
+            } else {
+                // Create new service
+                service = ServiceEntity(context: context)
+                service.id = id
+            }
+
+            service.url = url
+            service.jsonMetadata = jsonMetadata
+            service.jsScript = jsScript
+            service.isActive = isActive
+
+            save()
+        } catch {
+            Logger.shared.log("Failed to fetch existing service: \(error.localizedDescription)", type: "CloudKit")
+        }
     }
+
+    git commit -am "add update button to service view, add update services implementation, make download progress view reusable ( searchview -> servicesview ), add progress updating delay for readability ( if download speed is too high ), SERVICES NEED TO BE REMOVED AND READDED AFTER MERGING THIS PR !!!"
+
+
+
+    why does the terminal ask for another " xo its already in there 
 
     public func getEntities() -> [ServiceEntity] {
         guard let container = container else {

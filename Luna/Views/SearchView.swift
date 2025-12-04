@@ -160,15 +160,11 @@ struct SearchView: View {
                         .scaleEffect(1.2)
                     
                     if serviceManager.isDownloading {
-                        VStack(spacing: 8) {
-                            Text(serviceManager.downloadMessage)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            ProgressView(value: serviceManager.downloadProgress)
-                                .frame(width: 200)
-                        }
-                        .padding(.top, 8)
+                        DownloadProgressView(
+                            progress: serviceManager.downloadProgress,
+                            message: serviceManager.downloadMessage
+                        )
+                            .padding(.top, 8)
                     } else {
                         Text("Searching...")
                             .font(.caption)

@@ -35,31 +35,85 @@ class ServiceManager: ObservableObject {
 
     // MARK: - Public Functions
 
-    func handlePotentialServiceURL(_ text: String) async -> Bool {
-        guard isValidJSONURL(text) else { return false }
-        await downloadService(from: text)
-        return true
+    // Shared delay for download progress ( in milliseconds)
+    let delay: UInt64 = 300_000_000
+
+    func updateServices() {
+        guard !services.isEmpty else { return }
+
+        Task {
+            isDownloading = true
+            downloadProgress = 0.0
+            downloadMessage = "Updating services..."
+
+            let total = Double(services.count)
+            var completed: Double = 0
+
+            for service in services {
+                await updateProgress(downloadProgress, "Updating \(service.metadata.sourceName)...")
+                try? await Task.sleep(nanoseconds: delay)
+
+                do {
+                    // Download metadata
+                    await updateProgress(downloadProgress + 0.1 / total, "Downloading metadata for \(service.metadata.sourceName)...")
+                    let metadata = try await downloadAndParseMetadata(from: service.url)
+                    try? await Task.sleep(nanoseconds: delay)
+
+                    // Download JavaScript
+                    await updateProgress(downloadProgress + 0.5 / total, "Downloading JavaScript for \(service.metadata.sourceName)...")
+                    let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
+                    try? await Task.sleep(nanoseconds: delay)
+
+                    // Save service using existing ID
+                    ServiceStore.shared.storeService(
+                        id: service.id,
+                        url: service.url,
+                        jsonMetadata: String(data: try JSONEncoder().encode(metadata), encoding: .utf8) ?? "",
+                        jsScript: jsContent,
+                        isActive: service.isActive
+                    )
+
+                    Logger.shared.log("Service \(service.metadata.sourceName) updated successfully", type: "ServiceManager")
+                } catch {
+                    Logger.shared.log("Failed to update service \(service.metadata.sourceName): \(error.localizedDescription)", type: "ServiceManager")
+                }
+
+                // Update global progress
+                completed += 1
+                downloadProgress = completed / total
+                try? await Task.sleep(nanoseconds: delay)
+            }
+
+            loadServicesFromCloud()
+            await resetDownloadState()
+            downloadMessage = "All services updated!"
+        }
     }
 
+    // MARK: - Download single service from JSON URL
     func downloadService(from jsonURL: String) async {
         await updateProgress(0.0, "Starting download...")
+        try? await Task.sleep(nanoseconds: delay)
 
         do {
             await updateProgress(0.2, "Downloading metadata...")
             let metadata = try await downloadAndParseMetadata(from: jsonURL)
+            try? await Task.sleep(nanoseconds: delay)
 
             await updateProgress(0.5, "Downloading JavaScript...")
             let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
+            try? await Task.sleep(nanoseconds: delay)
 
             await updateProgress(0.8, "Saving service...")
             let serviceId = generateServiceUUID(from: metadata)
             ServiceStore.shared.storeService(
                 id: serviceId,
-                url: "", // original URL if needed
+                url: jsonURL,
                 jsonMetadata: String(data: try JSONEncoder().encode(metadata), encoding: .utf8) ?? "",
                 jsScript: jsContent,
                 isActive: false
             )
+            try? await Task.sleep(nanoseconds: delay)
 
             loadServicesFromCloud()
 
@@ -68,13 +122,18 @@ class ServiceManager: ObservableObject {
                 self.downloadMessage = "Service downloaded successfully!"
             }
 
-            try await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: delay)
             await resetDownloadState()
-
         } catch {
             await resetDownloadState()
             Logger.shared.log("Failed to download service: \(error.localizedDescription)", type: "ServiceManager")
         }
+    }
+
+    func handlePotentialServiceURL(_ text: String) async -> Bool {
+        guard isValidJSONURL(text) else { return false }
+        await downloadService(from: text)
+        return true
     }
 
     func removeService(_ service: Service) {
