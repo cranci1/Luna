@@ -99,12 +99,6 @@ public final class ServiceStore {
         }
     }
 
-    git commit -am "add update button to service view, add update services implementation, make download progress view reusable ( searchview -> servicesview ), add progress updating delay for readability ( if download speed is too high ), SERVICES NEED TO BE REMOVED AND READDED AFTER MERGING THIS PR !!!"
-
-
-
-    why does the terminal ask for another " xo its already in there 
-
     public func getEntities() -> [ServiceEntity] {
         guard let container = container else {
             Logger.shared.log("Cloudkit container not initialized: getEntities", type: "CloudKit")
