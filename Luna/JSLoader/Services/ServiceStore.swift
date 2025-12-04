@@ -37,11 +37,11 @@ public final class ServiceStore {
         container?.loadPersistentStores { _, error in
             if let error = error {
                 Logger.shared.log("Failed to load persistent store: \(error.localizedDescription)", type: "CloudKit")
+            } else {
+                self.container?.viewContext.automaticallyMergesChangesFromParent = true
+                self.container?.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
             }
         }
-
-        container?.viewContext.automaticallyMergesChangesFromParent = true
-        container?.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
 
     // MARK: public - status, add, get, remove, save, syncManually functions
