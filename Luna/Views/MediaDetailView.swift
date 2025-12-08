@@ -34,7 +34,6 @@ struct MediaDetailView: View {
     
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
     
     private let headerHeight: CGFloat = 550
     private let minHeaderHeight: CGFloat = 400
@@ -56,11 +55,7 @@ struct MediaDetailView: View {
     var body: some View {
         ZStack {
             Group {
-                if useSolidBackgroundBehindHero {
-                    Color.background
-                } else {
-                    ambientColor
-                }
+                ambientColor
             }
             .ignoresSafeArea(.all)
             

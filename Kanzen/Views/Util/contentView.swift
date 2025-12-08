@@ -4,10 +4,11 @@
 //
 //  Created by Dawud Osman on 27/05/2025.
 //
+
 import SwiftUI
 import Foundation
 import Kingfisher
-import Flow
+
 struct contentView: View {
     @State var parentModule: ModuleDataContainer?
     @State  var title: String
@@ -27,14 +28,13 @@ struct contentView: View {
     @State var reverseChapterlist: Bool = false
     @State var toggleFavourite: Bool = false
     @State var loadingState : Bool = true
-
-
+    
+    
     var body: some View {
         renderedContent().onAppear{
             getContentData()
         }
     }
-    
     
     func renderedContent() -> some View {
         ScrollView{
@@ -52,7 +52,7 @@ struct contentView: View {
                         .frame(maxWidth: width)
                         .frame(height: width * 1.5)
                         .cornerRadius(5)
-                        
+                    
                     VStack(alignment: .leading){
                         Text(title)
                             .font(.title)
@@ -68,11 +68,11 @@ struct contentView: View {
                                             .padding(.leading,3)
                                             .padding(.trailing,3)
                                             .background(Color.accentColor)
-                                            
+                                        
                                             .cornerRadius(3)
                                     }
                                 }
-
+                                
                                 
                                 
                             }
@@ -86,11 +86,11 @@ struct contentView: View {
                                             .padding(.leading,3)
                                             .padding(.trailing,3)
                                             .background(Color.accentColor)
-                                            
+                                        
                                             .cornerRadius(3)
                                     }
                                 }
-
+                                
                                 
                                 
                             }
@@ -122,23 +122,23 @@ struct contentView: View {
                     
                 }
                 .frame(maxWidth: .infinity,alignment: .leading)
-
+                
                 Divider()
                 if let contentData = contentData {
                     
                     if let description = contentData["description"] as? String{
                         
-                            Text(description)
-                                .font(.footnote)
-                                .lineLimit(expandedDescription ? nil : 3)
-                                .onTapGesture {
-                                    withAnimation{
-                                        expandedDescription.toggle()
-                                    }
-                                   
+                        Text(description)
+                            .font(.footnote)
+                            .lineLimit(expandedDescription ? nil : 3)
+                            .onTapGesture {
+                                withAnimation{
+                                    expandedDescription.toggle()
                                 }
+                                
+                            }
                         
-     
+                        
                     }
                 }
                 Divider()
@@ -151,8 +151,8 @@ struct contentView: View {
                         .padding(.trailing,5)
                         .padding(.leading,5)
                 }
-
-                    
+                
+                
             }
             .padding(.trailing,5)
             .padding(.leading,5)
@@ -170,7 +170,6 @@ struct contentView: View {
         .navigationTitle(title)
     }
     
-    
     func checkIfFavorited() -> Bool {
         if let module = parentModule
         {
@@ -181,18 +180,16 @@ struct contentView: View {
         }
     }
     
-    
-    
     func getContentData() {
         DispatchQueue.main.async{
             kanzen.getContentData(params: self.params)
-             {
-                 result in
-
-                 self.contentData = result
-                 print("contentData is ")
-                 print(result)
-             }
+            {
+                result in
+                
+                self.contentData = result
+                print("contentData is ")
+                print(result)
+            }
             kanzen.getChapters(params: self.params){
                 result in
                 if let result = result{
@@ -224,7 +221,7 @@ struct contentView: View {
                 
                 loadingState = false
             }
-
+            
         }
     }
     @ViewBuilder
@@ -245,10 +242,10 @@ struct contentView: View {
                 }
                 else
                 {Array(selectedLanguage.chapters.enumerated())}
-               
-            
+                
+                
             }
-        
+            
             VStack {
                 HStack {
                     Text("\(selectedLanguage.chapters.count) Chapters")
@@ -262,8 +259,8 @@ struct contentView: View {
                         .foregroundColor(.accentColor)
                         .padding(.leading,20)
                         .font(.title2)
-                       
-                        
+                    
+                    
                         .contentShape(Rectangle())
                         .contextMenu{
                             if let contentChapters = contentChapters as? [Chapters], contentChapters.count > 0 {
@@ -273,10 +270,10 @@ struct contentView: View {
                                         index, item in
                                         Button(item.language){langaugeIdx = index}
                                     }
-                                
+                                    
                                 } label: {Text("Language")}
                             }
-
+                            
                         }
                         .onTapGesture {
                             print("chapterList reversed")
@@ -291,7 +288,7 @@ struct contentView: View {
                                 
                             }
                         }
-
+                    
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Divider()
@@ -303,7 +300,7 @@ struct contentView: View {
                         if let chapterData = item.chapterData
                         {
                             Button{
-                               
+                                
                                 selectedChapterIdx = index
                                 DispatchQueue.main.async {
                                     selectedChapterData = item
@@ -314,30 +311,30 @@ struct contentView: View {
                                 HStack{
                                     
                                     
-                                        if chapterData.count > 0 {
-
-                                            Text("\(item.chapterNumber )").font(.subheadline)
-                                                .foregroundColor(Color.accentColor)  + Text(" \u{00B7} \(chapterData[0].scanlationGroup)")
-                                                .font(.footnote)
-                                                .foregroundColor(.secondary)
-                                                
-                                            
-                                        }
+                                    if chapterData.count > 0 {
+                                        
+                                        Text("\(item.chapterNumber )").font(.subheadline)
+                                            .foregroundColor(Color.accentColor)  + Text(" \u{00B7} \(chapterData[0].scanlationGroup)")
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                        
+                                        
+                                    }
                                     else{
                                         Text("\(item.chapterNumber)").font(.subheadline)
                                             .foregroundColor(Color.accentColor)
                                     }
-                               
-
+                                    
+                                    
                                 }.frame(maxWidth: .infinity, alignment: .leading)
                             }
-
-                        }
                             
+                        }
+                        
                         
                         
                         Divider()
-                }
+                    }
                 }
             }
         } else {

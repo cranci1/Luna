@@ -4,8 +4,10 @@
 //
 //  Created by Dawud Osman on 13/05/2025.
 //
+
 import JavaScriptCore
 import Foundation
+
 extension JSContext
 {
     func setupTimeOut()
@@ -20,13 +22,14 @@ extension JSContext
         // 3. Inject `setTimeout` into JSContext
         self.setObject(setTimeout, forKeyedSubscript: "setTimeout" as (NSCopying & NSObjectProtocol))
     }
+    
     func setupBundle()
     {
-       guard let jsPath = Bundle.main.path(forResource: "bundle", ofType: "js")
+        guard let jsPath = Bundle.main.path(forResource: "bundle", ofType: "js")
         else{
-           Logger.shared.log("bundle not found",type: "Error")
-           return
-       }
+            Logger.shared.log("bundle not found",type: "Error")
+            return
+        }
         do {
             let jsCode = try String(contentsOfFile: jsPath, encoding: .utf8)
             self.evaluateScript(jsCode)
@@ -36,6 +39,7 @@ extension JSContext
         }
         
     }
+    
     func setUpConsole()
     {
         let consoleObject = JSValue(newObjectIn: self)
@@ -52,20 +56,21 @@ extension JSContext
         consoleObject?.setObject(consolePrintFunction, forKeyedSubscript: "print" as NSString)
         self.setObject(consoleObject, forKeyedSubscript: "console" as NSString)
     }
+    
     func setUpFetch()
     {
         let fetch: @convention(block) (JSValue,JSValue) -> JSValue = {
             jsUrl, jsOptions in
-            print("fetch Called")
             guard let urlStr = jsUrl.toString(), let url = URL(string: urlStr) else
             {
                 return JSValue(newErrorFromMessage: "Invalid URL", in: self)
             }
-            print("url is \(urlStr)")
+            
             guard let promiseConstructor = self.objectForKeyedSubscript("Promise") else
             {
                 fatalError("Promise constructor not found in JSContext")
             }
+            
             let executor: @convention(block) (@escaping (JSValue) -> Void, @escaping (JSValue) -> Void) -> Void = { resolve, reject in
                 var request  = URLRequest(url: url)
                 request.httpMethod = "GET"
@@ -88,10 +93,9 @@ extension JSContext
                         request.httpBody = bodyData
                     }
                 }
-
                 
                 let task = URLSession.shared.dataTask(with: request) { data, response, error in
-
+                    
                     if let error = error
                     {
                         return reject(JSValue(newErrorFromMessage: error.localizedDescription, in: self))
@@ -138,13 +142,12 @@ extension JSContext
                     ]
                     
                     resolve(JSValue(object: responseObject, in: self))
-
+                    
                 }
                 task.resume()
                 
             }
-
-
+            
             let promise = JSValue(newPromiseIn: self, fromExecutor: { resolve, reject in
                 executor(
                     { value in resolve?.call(withArguments: [value]) },
@@ -153,11 +156,12 @@ extension JSContext
             })
             
             return promise ?? JSValue(newErrorFromMessage: "Promise not supported", in: self)
-           
+            
         }
-
+        
         self.setObject(fetch, forKeyedSubscript: "fetch" as NSString)
     }
+    
     func setUpJSEnvirontment()
     {
         setUpFetch()

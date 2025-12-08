@@ -4,7 +4,9 @@
 //
 //  Created by Dawud Osman on 12/05/2025.
 //
+
 import Foundation
+
 enum ScriptExecutionError: Error,CustomStringConvertible {
     case jsRuntimeError(String)   // JavaScript runtime error with a message
     case invalidReturnValue      // The script returned an invalid value
@@ -21,6 +23,7 @@ enum ScriptExecutionError: Error,CustomStringConvertible {
         }
     }
 }
+
 // Module Creation ERRORS
 enum ModuleCreationError: Error,CustomStringConvertible {
     case invalidScriptUrl(String)
@@ -37,6 +40,7 @@ enum ModuleCreationError: Error,CustomStringConvertible {
         }
     }
 }
+
 // LOADING MODULE ERRORS
 enum ModuleLoadingError: Error,CustomStringConvertible {
     case moduleNotFound(String)
@@ -59,10 +63,5 @@ enum ModuleLoadingError: Error,CustomStringConvertible {
         case.invalidScriptFormat(let message):
             return "Invalid Script Format: \(message)"
         }
-
-
-       
     }
 }
-
-
