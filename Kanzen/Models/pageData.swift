@@ -109,3 +109,12 @@ struct chapterView: View {
    
     }
 }
+
+struct TransitionPage: View {
+    var index: String
+    var body: some View {
+        Text("Chapter \(index) End")
+            .frame(maxWidth: .infinity)
+            .clipped()
+    }
+}
