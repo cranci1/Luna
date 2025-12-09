@@ -31,8 +31,11 @@ struct WebtoonView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         //print("updateUIVIEW called")
-        if context.coordinator.currChapter != reader_manager.currChapter {
+        if context.coordinator.currChapter != reader_manager.currChapter, reader_manager.currChapter.count > 0 {
             print("diff CurrChapter")
+            print("Curr Updated Chapter is ")
+            print(reader_manager.currChapter)
+        
             context.coordinator.reader_manager = reader_manager
             context.coordinator.currChapter = reader_manager.currChapter
             context.coordinator.chapters = [reader_manager.currChapter]
@@ -44,6 +47,9 @@ struct WebtoonView: UIViewRepresentable {
             context.coordinator.reader_manager = reader_manager
             context.coordinator.currChapter = reader_manager.currChapter
             context.coordinator.chapters = [reader_manager.currChapter]
+            context.coordinator.loadingNext = false
+            context.coordinator.loadingPrevious = false
+            
         }
         
         if reader_manager.changeIndex, let sectionIdx = context.coordinator.chapters.firstIndex(of: reader_manager.currChapter){
@@ -143,6 +149,8 @@ struct WebtoonView: UIViewRepresentable {
         }
         
         func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            print("LoadingNext is \(loadingNext)")
+            print("LoadingPrev is \(loadingPrevious)")
            if let collectionView = scrollView as? UICollectionView {
                let visibleIndexPaths = collectionView.indexPathsForVisibleItems
                if !loadingPrevious {
@@ -151,7 +159,7 @@ struct WebtoonView: UIViewRepresentable {
                        print("First cell is VISIBLE adding prev chapters")
                        
                        if reader_manager.prevChapter.count  == 0 {
-                           loadingNext = true
+                           loadingPrevious = true
                            self.reader_manager.fetchTask(bool: false){
                                print("completion handler called")
                                
@@ -371,7 +379,7 @@ struct WebtoonView: UIViewRepresentable {
             if chapters.count >= 3 {
                 print("last chapter count \(chapters[2].count)")
             }
-            
+            print("currChapter count is \(chapters[chapterIndex].count)")
             let rootView = chapters[chapterIndex][indexPath.item].body
             if(indexPath.section % 2 == 0){
                 cell.set(rootView: rootView, coordinator: self, indexPath: indexPath)
