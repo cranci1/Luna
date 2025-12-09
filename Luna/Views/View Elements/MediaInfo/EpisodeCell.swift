@@ -250,6 +250,19 @@ struct EpisodeCell: View {
                 Label("Play", systemImage: "play.fill")
             }
             
+            if episode.episodeNumber > 1 {
+                Button(action: {
+                    ProgressManager.shared.markPreviousEpisodesAsWatched(
+                        showId: showId,
+                        seasonNumber: episode.seasonNumber,
+                        episodeNumber: episode.episodeNumber
+                    )
+                    onMarkWatched()
+                }) {
+                    Label("Mark Previous as Watched", systemImage: "chevron.left.slash.chevron.right")
+                }
+            }
+            
             if progress < 0.95 {
                 Button(action: {
                     ProgressManager.shared.markEpisodeAsWatched(

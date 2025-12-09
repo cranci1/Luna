@@ -181,6 +181,16 @@ class ProgressManager {
         Logger.shared.log("Manually marked episode as watched: S\(seasonNumber)E\(episodeNumber)", type: "Progress")
     }
     
+    func markPreviousEpisodesAsWatched(showId: Int, seasonNumber: Int, episodeNumber: Int) {
+        guard episodeNumber > 1 else { return }
+
+        for e in 1..<episodeNumber {
+            markEpisodeAsWatched(showId: showId, seasonNumber: seasonNumber, episodeNumber: e)
+        }
+
+        Logger.shared.log("Marked previous episodes as watched for S\(seasonNumber) up to E\(episodeNumber - 1)", type: "Progress")
+    }
+    
     func resetMovieProgress(movieId: Int, title: String) {
         let progressKey = movieProgressKey(movieId: movieId, title: title)
         let watchedKey = movieWatchedKey(movieId: movieId, title: title)

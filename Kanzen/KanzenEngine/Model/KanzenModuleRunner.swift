@@ -4,16 +4,19 @@
 //
 //  Created by Dawud Osman on 12/05/2025.
 //
+
 import Foundation
 import JavaScriptCore
+
 class KanzenModuleRunner
 {
     private let contextQueue: DispatchQueue = DispatchQueue(label: "com.Kanzen.Module.Runner.Context")
     private var jsContext: JSContext?
     private var lastJSException: String?
+    
     func getChapterImages(params:Any, completion: @escaping (JSValue?,Error?) -> Void)
     {
-        guard let context = jsContext as? JSContext else {
+        guard let context = jsContext else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         
@@ -43,9 +46,10 @@ class KanzenModuleRunner
         promise.invokeMethod("then", withArguments: [resolveCallback as Any])
         promise.invokeMethod("catch", withArguments: [rejectCallback as Any])
     }
+    
     func getChapters(params:Any, completion: @escaping (JSValue?,Error?) -> Void)
     {
-        guard let context = jsContext as? JSContext else {
+        guard let context = jsContext else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         
@@ -79,7 +83,7 @@ class KanzenModuleRunner
     func getContentData(params:Any, completion: @escaping (JSValue?,Error?) -> Void)
     {
 
-        guard let context = jsContext as? JSContext else {
+        guard let context = jsContext else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
@@ -113,7 +117,7 @@ class KanzenModuleRunner
     func searchContent(input:String, page:Int = 0,completion: @escaping(JSValue?,Error?) -> Void)
     {
 
-        guard let context = jsContext as? JSContext else {
+        guard let context = jsContext else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
@@ -146,6 +150,7 @@ class KanzenModuleRunner
         promise.invokeMethod("then", withArguments: [resolveCallback as Any])
         promise.invokeMethod("catch", withArguments: [rejectCallback as Any])
     }
+    
     func setUpEnvironMent()
     {
         jsContext = JSContext()
@@ -156,6 +161,7 @@ class KanzenModuleRunner
         }
         jsContext?.setUpJSEnvirontment()
     }
+    
     func loadScript(_ script: String) throws
     {
         

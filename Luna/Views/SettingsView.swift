@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
     @StateObject private var algorithmManager = AlgorithmManager.shared
     @AppStorage("showKanzen") private var showKanzen: Bool = false
+    
     let languages = [
         ("en-US", "English (US)"),
         ("en-GB", "English (UK)"),
@@ -137,19 +138,20 @@ struct SettingsView: View {
                 NavigationLink(destination: ServicesView()) {
                     Text("Services")
                 }
-                
-                NavigationLink(destination: LoggerView()) {
-                    Text("Logger")
-                }
             }
 
             Section {
                 NavigationLink(destination: StorageView()) {
                     Text("Storage")
                 }
+                
+                NavigationLink(destination: LoggerView()) {
+                    Text("Logger")
+                }
             } header: {
-                Text("DATA AND STORAGE")
+                Text("MICS")
             }
+            
             Section{
                 Text("Switch to Kanzen")
                     .onTapGesture {
