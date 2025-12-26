@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "fakewebkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/undeaDD/FakeWebKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "851ab88f8558e5af93d4f4f7160586ad0aa5e93b"
+      }
+    },
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "state" : {
+        "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
+        "version" : "8.6.2"
+      }
+    },
+    {
+      "identity" : "mpvkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mpvkit/MPVKit",
+      "state" : {
+        "revision" : "613c0ccc3acf70e136aaff880a9b5fe8fdfaf5b8",
+        "version" : "0.41.0"
+      }
+    },
+    {
+      "identity" : "soracore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cranci1/SoraCore",
+      "state" : {
+        "branch" : "main",
+        "revision" : "50ddc160fd606e9708adefc1d9fc7003b574446b"
+      }
+    }
+  ],
+  "version" : 2
+}

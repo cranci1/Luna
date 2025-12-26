@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 WORKING_LOCATION="$(pwd)"
-APPLICATION_NAME="Sora"
+APPLICATION_NAME="Luna"
 
 PLATFORM=${1:-ios}
 
