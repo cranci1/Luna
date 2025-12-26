@@ -14,4 +14,8 @@ extension Bundle {
     var buildNumber: String {
         infoDictionary?["CFBundleVersion"] as? String ?? "1"
     }
+    var iCloudContainerID: String? {
+        infoDictionary?["iCloudContainerID"] as? String
+    }
 }
+

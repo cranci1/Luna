@@ -10,39 +10,70 @@ import Kingfisher
 
 struct ServicesView: View {
     @StateObject private var serviceManager = ServiceManager.shared
-    
+    @Environment(\.editMode) private var editMode
+
     var body: some View {
-        VStack {
-            if serviceManager.services.isEmpty {
-                emptyStateView
-            } else {
-                servicesList
+        ZStack {
+            VStack {
+                if serviceManager.services.isEmpty {
+                    emptyStateView
+                } else {
+                    servicesList
+                }
+            }
+            .navigationTitle("Services")
+            #if !os(tvOS)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if editMode?.wrappedValue != .active {
+                        Button {
+                            Task {
+                                await serviceManager.updateServices()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        withAnimation {
+                            editMode?.wrappedValue =
+                                (editMode?.wrappedValue == .active) ? .inactive : .active
+                        }
+                    } label: {
+                        Image(systemName:
+                                editMode?.wrappedValue == .active ? "checkmark" : "pencil")
+                    }
+                }
+            }
+            #endif
+
+            // Overlay progress alert using reusable view
+            if serviceManager.isDownloading {
+                DownloadProgressView(
+                    progress: serviceManager.downloadProgress,
+                    message: serviceManager.downloadMessage
+                )
             }
         }
-        .navigationTitle("Services")
-        #if !os(tvOS)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
-        }
-        #endif
     }
-    
+
     @ViewBuilder
     private var emptyStateView: some View {
         VStack(spacing: 20) {
             Image(systemName: "square.stack.3d.up")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
-            
+
             Text("No Services")
                 .font(.title2)
                 .fontWeight(.semibold)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     @ViewBuilder
     private var servicesList: some View {
         List {
@@ -55,7 +86,7 @@ struct ServicesView: View {
             }
         }
     }
-    
+
     private func deleteServices(offsets: IndexSet) {
         for index in offsets {
             let service = serviceManager.services[index]
@@ -64,8 +95,9 @@ struct ServicesView: View {
     }
 }
 
+
 struct ServiceRow: View {
-    let service: Services
+    let service: Service
     @ObservedObject var serviceManager: ServiceManager
     @State private var showingSettings = false
     

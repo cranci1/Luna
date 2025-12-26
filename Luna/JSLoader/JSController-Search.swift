@@ -15,7 +15,7 @@ struct SearchItem: Identifiable {
 }
 
 extension JSController {
-    func fetchJsSearchResults(keyword: String, module: Services, completion: @escaping ([SearchItem]) -> Void) {
+    func fetchJsSearchResults(keyword: String, module: Service, completion: @escaping ([SearchItem]) -> Void) {
         if let exception = context.exception {
             Logger.shared.log("JavaScript exception: \(exception)", type: "Error")
             completion([])

@@ -9,7 +9,7 @@ import SwiftUI
 import Kingfisher
 
 struct ServiceSettingsView: View {
-    let service: Services
+    let service: Service
     @ObservedObject var serviceManager: ServiceManager
     @Environment(\.dismiss) private var dismiss
     

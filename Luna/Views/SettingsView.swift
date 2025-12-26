@@ -55,7 +55,7 @@ struct SettingsView: View {
                             .fontWeight(.regular)
                             .foregroundColor(.secondary)
 
-                        Text("Copyright © \(Calendar.current.component(.year, from: Date())) Luna by Cranci")
+                        Text("Copyright © \(String(Calendar.current.component(.year, from: Date()))) Luna by Cranci")
                             .font(.footnote)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -65,6 +65,8 @@ struct SettingsView: View {
 
                 NavigationStack {
                     settingsContent
+                        // prevent row clipping
+                        .padding(.horizontal, 20)
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
