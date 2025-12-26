@@ -32,11 +32,15 @@ struct WebtoonView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UICollectionView, context: Context) {
         //print("updateUIVIEW called")
-        if context.coordinator.currChapter != reader_manager.currChapter {
+        if context.coordinator.currChapter != reader_manager.currChapter, reader_manager.currChapter.count > 0 {
             print("diff CurrChapter")
+            print("Curr Updated Chapter is ")
+            print(reader_manager.currChapter)
+        
             context.coordinator.reader_manager = reader_manager
             context.coordinator.currChapter = reader_manager.currChapter
             context.coordinator.chapters = [reader_manager.currChapter]
+            context.coordinator.transitionPages = [reader_manager.selectedChapter?.chapterNumber ?? "0"]
             context.coordinator.imageSizes = [[:]] // Clear cached sizes
             uiView.reloadData()
             uiView.collectionViewLayout.invalidateLayout()
@@ -44,15 +48,22 @@ struct WebtoonView: UIViewRepresentable {
             context.coordinator.reader_manager = reader_manager
             context.coordinator.currChapter = reader_manager.currChapter
             context.coordinator.chapters = [reader_manager.currChapter]
+            context.coordinator.loadingNext = false
+            context.coordinator.loadingPrevious = false
+            
         }
         
         if reader_manager.changeIndex, let sectionIdx = context.coordinator.chapters.firstIndex(of: reader_manager.currChapter){
-            let pathItem = IndexPath(item: reader_manager.index, section: sectionIdx )
+            print("Change index called && currChapter in chapters")
+            let pathItem = IndexPath(item: reader_manager.index, section: sectionIdx * 2)
             uiView.scrollToItem(at: pathItem, at: UICollectionView.ScrollPosition.centeredVertically, animated: false)
             if reader_manager.changeIndex == true {
                 reader_manager.changeIndex = false
+
             }
         }
+
+        
     }
     
     class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
@@ -61,11 +72,16 @@ struct WebtoonView: UIViewRepresentable {
         var imageSizes: [[Int: CGSize]] = []
         var loadingPrevious = false
         var loadingNext = false
+        var reader_manager: readerManager
+        var chapters: [[PageData]] = []
+        var currChapter: [PageData]
+        var transitionPages: [String] = []
         
         init(reader_manager: readerManager) {
             self.reader_manager = reader_manager
             self.chapters.append(reader_manager.currChapter)
             self.currChapter = reader_manager.currChapter
+            self.transitionPages.append(reader_manager.selectedChapter?.chapterNumber ?? "0")
             imageSizes.append([:])
         }
         
@@ -94,7 +110,7 @@ struct WebtoonView: UIViewRepresentable {
                     return
                 }
                 let midPath = getCurrentpagePath(collectionView: collectionView,position: .mid)
-                let midIdx = midPath?.section ?? 0
+                let midIdx = (midPath?.section ?? 0)/2
                 //print("midPath Idx: \(String(describing: midIdx))")
                 //print("currChapter Idx: \(String(describing: chapterIdx)) ")
                 reader_manager.setIndex(midPath?.item ?? 0)
@@ -129,49 +145,44 @@ struct WebtoonView: UIViewRepresentable {
         }
         
         func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-            if let collectionView = scrollView as? UICollectionView {
-                let visibleIndexPaths = collectionView.indexPathsForVisibleItems
-                if !loadingPrevious {
-                    if visibleIndexPaths.contains(IndexPath(item:0, section:0))
-                    {
-                        print("First cell is VISIBLE adding prev chapters")
-                        
-                        if reader_manager.prevChapter.count  == 0 {
-                            loadingNext = true
-                            self.reader_manager.fetchTask(bool: false){
-                                print("completion handler called")
-                                self.prependChapter(collectionView: collectionView)
-                            }
-                        }
-                        else {
-                            print("nextChap is not empty")
-                            prependChapter(collectionView: collectionView)
-                        }
-                    }
-                }
-                
-                let bottomPath = getCurrentpagePath(collectionView: collectionView,position: .bottom)
-                if !loadingNext {
-                    
-                    if bottomPath == nil || bottomPath?.section == chapters.count - 1  && bottomPath?.item == chapters[chapters.count - 1].count - 1 {
-                        if reader_manager.nextChapter.count  == 0 {
-                            loadingNext = true
-                            self.reader_manager.fetchTask(bool: true){
-                                print("completion handler called")
-                                
-                                self.appendChapter(collectionView: collectionView)
-                                
-                            }
-                        }
-                        else {
-                            print("nextChap is not empty")
-                            appendChapter(collectionView: collectionView)
-                        }
-                    }
-                }
-                
+           if let collectionView = scrollView as? UICollectionView {
+               let visibleIndexPaths = collectionView.indexPathsForVisibleItems
+               if !loadingPrevious {
+                   if visibleIndexPaths.contains(IndexPath(item:0, section:0))
+                   {
+                       if reader_manager.prevChapter.count  == 0 {
+                           loadingPrevious = true
+                           self.reader_manager.fetchTask(bool: false){
+                               self.prependChapter(collectionView: collectionView)
+                               
+                           }
+                       }
+                       else {
+                           prependChapter(collectionView: collectionView)
+                       }
+                       
+                       
+
+                   }
+               }
+               
+               let bottomPath = getCurrentpagePath(collectionView: collectionView,position: .bottom)
+               if !loadingNext {
+                 
+                   if bottomPath == nil || bottomPath?.section == chapters.count - 1  && bottomPath?.item == chapters[chapters.count - 1].count - 1 {
+                       if reader_manager.nextChapter.count  == 0 {
+                           loadingNext = true
+                           self.reader_manager.fetchTask(bool: true){
+                               self.appendChapter(collectionView: collectionView)
+                               
+                           }
+                       }
+                       else {
+                           appendChapter(collectionView: collectionView)
+                       }
+                   }
+               }
             }
-            print("SCROLLING AS STOPPED")
         }
         //get height
         func getHeightForSection(_ section: Int, collectionView: UICollectionView) -> CGFloat {
@@ -182,15 +193,17 @@ struct WebtoonView: UIViewRepresentable {
                 let size = self.collectionView(collectionView, layout: layout, sizeForItemAt: indexPath)
                 totalHeight += size.height
             }
+            // Add transition page height (section at chapterIndex * 2 + 1)
+            let transitionIndexPath = IndexPath(item: 0, section: section * 2 + 1)
+            let transitionSize = self.collectionView(collectionView, layout: layout, sizeForItemAt: transitionIndexPath)
+            totalHeight += transitionSize.height
             return totalHeight
         }
         // prepend Chapter
         func prependChapter(collectionView: UICollectionView)
         {
-            print("prependChapter called")
             if reader_manager.prevChapter.count > 0
             {
-                print("prevChap > 0 && loadingNext == false")
                 loadingPrevious = true
                 
                 // 🔧 FIX: Disable animations to prevent jumping
@@ -205,9 +218,10 @@ struct WebtoonView: UIViewRepresentable {
                 
                 chapters.insert(reader_manager.prevChapter, at: 0)
                 imageSizes.insert([:], at: 0)
+                transitionPages.insert(reader_manager.getPrevChapterIdx(), at: 0)
                 
-                collectionView.performBatchUpdates({
-                    collectionView.insertSections(IndexSet(integer: 0))
+                 collectionView.performBatchUpdates({
+                     collectionView.insertSections(IndexSet(integersIn: 0..<2))
                 }, completion: { _ in
                     // Calculate new offset
                     let newContentSize = collectionView.collectionViewLayout.collectionViewContentSize
@@ -220,18 +234,16 @@ struct WebtoonView: UIViewRepresentable {
                     // 🔧 FIX: Re-enable animations and reset loading flag
                     if self.chapters.count > 3 {
                         // 1. First update your data source
-                        let lastSectionIndex = self.chapters.count - 1
+                        //let lastSectionIndex = self.chapters.count - 1
+                        let lastSectionStart = (self.chapters.count - 1) * 2
                         self.chapters.removeLast()
-                        self.imageSizes.removeLast() // Also remove corresponding cached data
-                        
+                        self.imageSizes.removeLast()
+                        self.transitionPages.removeLast()// Also remove corresponding cached data
+
                         // 2. Then update the UI
-                        collectionView.performBatchUpdates({
-                            collectionView.deleteSections(IndexSet(integer: lastSectionIndex))
-                        }, completion: { completed in
-                            if completed {
-                                print("First section removed successfully")
-                                
-                            }
+                         collectionView.performBatchUpdates({
+                             collectionView.deleteSections(IndexSet(integersIn: lastSectionStart..<lastSectionStart + 2))
+                        }, completion: { _ in
                             self.loadingPrevious = false
                             UIView.setAnimationsEnabled(true)
                             CATransaction.commit()
@@ -269,12 +281,15 @@ struct WebtoonView: UIViewRepresentable {
                     // Sliding window: replace first chapter with new one
                     chapters.removeFirst()
                     chapters.append(reader_manager.nextChapter)
+                  
                     imageSizes.removeFirst()
                     imageSizes.append([:])
-                    
+                    transitionPages.removeFirst()
+                    transitionPages.append(reader_manager.getNextChapterIdx())
+                    let lastSectionStart = (chapters.count - 1) * 2
                     collectionView.performBatchUpdates({
-                        collectionView.deleteSections(IndexSet(integer: 0))
-                        collectionView.insertSections(IndexSet(integer: 2))
+                        collectionView.deleteSections(IndexSet(integersIn: 0..<2))
+                        collectionView.insertSections(IndexSet(integersIn: lastSectionStart..<lastSectionStart + 2))
                     }, completion: { _ in
                         // 🔧 FIX: Adjust offset by the difference in content size
                         
@@ -290,10 +305,12 @@ struct WebtoonView: UIViewRepresentable {
                 } else {
                     // Simple append: just add new chapter
                     chapters.append(reader_manager.nextChapter)
+                    transitionPages.append(reader_manager.getNextChapterIdx())
                     imageSizes.append([:])
                     
                     collectionView.performBatchUpdates({
-                        collectionView.insertSections(IndexSet(integer: self.chapters.count - 1))
+                        let newSectionStart = (chapters.count - 1) * 2
+                        collectionView.insertSections(IndexSet(integersIn: newSectionStart..<newSectionStart + 2))
                     }, completion: { _ in
                         UIView.setAnimationsEnabled(true)
                         CATransaction.commit()
@@ -310,11 +327,18 @@ struct WebtoonView: UIViewRepresentable {
         
         
         func numberOfSections(in collectionView: UICollectionView) -> Int {
-            chapters.count
+            (chapters.count * 2 )
         }
         
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            chapters[section].count
+            if section % 2 == 0
+            {
+                let chapterIndex = section / 2
+                return             chapters[chapterIndex].count
+            }
+            else{
+                return 1
+            }
         }
         
         func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -326,23 +350,34 @@ struct WebtoonView: UIViewRepresentable {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChapterCollectionViewCell.reuseIdentifier, for: indexPath) as? ChapterCollectionViewCell else {
                 fatalError("Could not dequeue cell")
             }
-            
+            let chapterIndex = indexPath.section / 2
             print("cellForItemAt section \(indexPath.section) -  item \(indexPath.item)")
             print("chapters count \(chapters.count)")
             if chapters.count >= 3 {
                 print("last chapter count \(chapters[2].count)")
             }
-            let rootView = chapters[indexPath.section][indexPath.item].body
-            cell.set(rootView: rootView, coordinator: self, indexPath: indexPath)
+            print("currChapter count is \(chapters[chapterIndex].count)")
+            let rootView = chapters[chapterIndex][indexPath.item].body
+            if(indexPath.section % 2 == 0){
+                cell.set(rootView: rootView, coordinator: self, indexPath: indexPath)
+            }
+            else{
+                print("Chapters Count is //// \(chapters.count)")
+                print("transition pages count is //// \(transitionPages.count)")
+                cell.setTransitionPage(chapterNumber: transitionPages[chapterIndex], indexPath: indexPath)
+            }
             
             return cell
         }
         
         func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             let width = collectionView.bounds.width
-            
+            if indexPath.section % 2 == 1{
+                return CGSize(width: width, height:  400)
+            }
             // If we have the cached size, use it
-            if let cachedSize = imageSizes[indexPath.section][indexPath.item] {
+            let chapterIndex = indexPath.section / 2
+            if let cachedSize = imageSizes[chapterIndex][indexPath.item] {
                 let aspectRatio = cachedSize.height / cachedSize.width
                 return CGSize(width: width, height: width * aspectRatio)
             }
@@ -352,8 +387,13 @@ struct WebtoonView: UIViewRepresentable {
         }
         
         func updateImageSize(for indexPath: IndexPath, size: CGSize, collectionView: UICollectionView, isCached: Bool) {
+            
             print("cell  section \(indexPath.section) -  item \(indexPath.item) updated ; number of sections \(chapters.count)")
-            imageSizes[indexPath.section][indexPath.item] = size
+            if indexPath.section % 2 == 1 {
+                return
+            }
+            let chapterIndex = indexPath.section / 2
+            imageSizes[chapterIndex][indexPath.item] = size
             
             // 🔧 FIX: Only update layout if this is a new image that needs resizing
             if !isCached {
@@ -377,9 +417,7 @@ struct WebtoonView: UIViewRepresentable {
             }
         }
         
-        var reader_manager: readerManager
-        var chapters: [[PageData]] = []
-        var currChapter: [PageData]
+
     }
 }
 
@@ -388,6 +426,7 @@ class ChapterCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "ChapterCell"
     private let imageView = UIImageView()
     private var hostingController : UIHostingController<CircularLoader>!
+    private var transitionHostingController: UIHostingController<AnyView>?
     private var coordinator: WebtoonView.Coordinator?
     var indexPath: IndexPath?
     private let hostingContainer = UIView()
@@ -421,6 +460,8 @@ class ChapterCollectionViewCell: UICollectionViewCell {
         // Clear references
         coordinator = nil
         indexPath = nil
+        transitionHostingController?.view.removeFromSuperview()
+        transitionHostingController = nil
     }
     
     private func setupImageView() {
@@ -471,6 +512,29 @@ class ChapterCollectionViewCell: UICollectionViewCell {
         ])
     }
     
+    // set Transition page
+    func setTransitionPage(chapterNumber: String, indexPath: IndexPath)
+    {
+        self.currentLoadingTask = nil
+        imageView.isHidden = true
+        hostingController.view.isHidden = true
+        transitionHostingController?.view.removeFromSuperview()
+
+
+        
+        let transitionView: AnyView = AnyView(TransitionPage(index:chapterNumber))
+        transitionHostingController = UIHostingController(rootView: transitionView)
+         transitionHostingController!.view.translatesAutoresizingMaskIntoConstraints = false
+         transitionHostingController!.view.backgroundColor = .black
+         contentView.addSubview(transitionHostingController!.view)
+         
+         NSLayoutConstraint.activate([
+             transitionHostingController!.view.topAnchor.constraint(equalTo: contentView.topAnchor),
+             transitionHostingController!.view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+             transitionHostingController!.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+             transitionHostingController!.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+         ])
+    }
     // 🔧 FIX: Smart loading state management
     func set(rootView: chapterView, coordinator: WebtoonView.Coordinator, indexPath: IndexPath) {
         self.coordinator = coordinator
@@ -493,7 +557,8 @@ class ChapterCollectionViewCell: UICollectionViewCell {
             imageView.isHidden = true
             hostingController.view.isHidden = false
         }
-        
+        transitionHostingController?.view.removeFromSuperview()
+         transitionHostingController = nil
         guard let url = URL(string: rootView.page.content) else { return }
         
         // 🔧 FIX: Set the image with options to prevent flicker
@@ -517,13 +582,14 @@ class ChapterCollectionViewCell: UICollectionViewCell {
                 let imageSize = value.image.size
                 
                 // If size is not cached, update it and trigger resize
-                if coordinator.imageSizes[indexPath.section][indexPath.item] == nil {
+                let chatperIndex = indexPath.section / 2
+                if coordinator.imageSizes[chatperIndex][indexPath.item] == nil {
                     if let collectionView = self.findCollectionView() {
                         coordinator.updateImageSize(for: indexPath, size: imageSize, collectionView: collectionView, isCached: false)
                     }
                 } else {
                     // 🔧 FIX: Size is cached, update cache and reveal immediately
-                    coordinator.imageSizes[indexPath.section][indexPath.item] = imageSize
+                    coordinator.imageSizes[chatperIndex][indexPath.item] = imageSize
                     self.revealImage()
                 }
                 

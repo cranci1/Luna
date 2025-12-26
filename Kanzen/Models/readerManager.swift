@@ -440,4 +440,20 @@ var nextControllers: [UIViewController]?
         pagePrefetcher?.start()
         
     }
+    func getNextChapterIdx() -> String{
+        if let idx = selectedChapter?.idx, let currChapters = chapters, idx + 1 < currChapters.count  {
+            return currChapters[idx+1].chapterNumber
+            
+        }
+        return "0"
+        
+    }
+    func getPrevChapterIdx() -> String
+    {
+        if let idx = selectedChapter?.idx, let currChapters = chapters, idx - 1  >= 0 {
+            return currChapters[idx - 1].chapterNumber
+            
+        }
+        return "0"
+    }
 }

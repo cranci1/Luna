@@ -213,11 +213,72 @@ final class PlayerViewController: UIViewController {
     
     class SubtitleModel: ObservableObject {
         @Published var currentAttributedText: NSAttributedString = NSAttributedString()
-        @Published var isVisible: Bool = false
-        @Published var foregroundColor: UIColor = .white
-        @Published var strokeColor: UIColor = .black
-        @Published var strokeWidth: CGFloat = 1.0
-        @Published var fontSize: CGFloat = 24.0
+        @Published var isVisible: Bool = false {
+            didSet {
+                saveSubtitleSettings()
+            }
+        }
+        @Published var foregroundColor: UIColor = .white {
+            didSet {
+                saveSubtitleSettings()
+            }
+        }
+        @Published var strokeColor: UIColor = .black {
+            didSet {
+                saveSubtitleSettings()
+            }
+        }
+        @Published var strokeWidth: CGFloat = 1.0 {
+            didSet {
+                saveSubtitleSettings()
+            }
+        }
+        @Published var fontSize: CGFloat = 24.0 {
+            didSet {
+                saveSubtitleSettings()
+            }
+        }
+        
+        init() {
+            loadSubtitleSettings()
+        }
+        
+        private func saveSubtitleSettings() {
+            let defaults = UserDefaults.standard
+            defaults.set(isVisible, forKey: "subtitles_isVisible")
+            defaults.set(strokeWidth, forKey: "subtitles_strokeWidth")
+            defaults.set(fontSize, forKey: "subtitles_fontSize")
+            
+            if let foregroundData = try? NSKeyedArchiver.archivedData(withRootObject: foregroundColor, requiringSecureCoding: false) {
+                defaults.set(foregroundData, forKey: "subtitles_foregroundColor")
+            }
+            if let strokeData = try? NSKeyedArchiver.archivedData(withRootObject: strokeColor, requiringSecureCoding: false) {
+                defaults.set(strokeData, forKey: "subtitles_strokeColor")
+            }
+        }
+        
+        private func loadSubtitleSettings() {
+            let defaults = UserDefaults.standard
+            
+            isVisible = defaults.bool(forKey: "subtitles_isVisible")
+            strokeWidth = CGFloat(defaults.double(forKey: "subtitles_strokeWidth"))
+            if strokeWidth == 0 {
+                strokeWidth = 1.0
+            }
+            fontSize = CGFloat(defaults.double(forKey: "subtitles_fontSize"))
+            if fontSize == 0 {
+                fontSize = 24.0
+            }
+            
+            if let foregroundData = defaults.data(forKey: "subtitles_foregroundColor"),
+               let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: foregroundData) {
+                foregroundColor = color
+            }
+            if let strokeData = defaults.data(forKey: "subtitles_strokeColor"),
+               let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: strokeData) {
+                strokeColor = color
+            }
+        }
     }
     private var subtitleModel = SubtitleModel()
     
@@ -369,15 +430,15 @@ final class PlayerViewController: UIViewController {
         displayLayer.frame = videoContainer.bounds
         displayLayer.videoGravity = .resizeAspect
 #if compiler(>=6.0)
-    if #available(iOS 26.0, tvOS 26.0, *) {
-        displayLayer.preferredDynamicRange = .automatic
-    } else {
-        #if !os(tvOS)
+        if #available(iOS 26.0, tvOS 26.0, *) {
+            displayLayer.preferredDynamicRange = .automatic
+        } else {
+#if !os(tvOS)
             if #available(iOS 17.0, *) {
                 displayLayer.wantsExtendedDynamicRangeContent = true
             }
-        #endif
-    }
+#endif
+        }
 #elseif !os(tvOS)
         if #available(iOS 17.0, *) {
             displayLayer.wantsExtendedDynamicRangeContent = true

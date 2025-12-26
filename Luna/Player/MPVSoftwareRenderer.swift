@@ -103,6 +103,7 @@ final class MPVSoftwareRenderer {
     private var cachedSubtitleText: NSAttributedString?
     private var subtitleRenderCache: SubtitleRenderCache?
     private var lastRenderDimensions: CGSize = .zero
+    private let subtitleUpdateInterval: Double = 0.5
     
     var isPausedState: Bool {
         return isPaused
@@ -116,12 +117,12 @@ final class MPVSoftwareRenderer {
         else {
             fatalError("⚠️ No active screen found — app may not have a visible window yet.")
         }
-
+        
         self.displayLayer = displayLayer
         let maxFPS = screen.maximumFramesPerSecond
         let cappedFPS = min(maxFPS, 60)
         self.minRenderInterval = 1.0 / CFTimeInterval(cappedFPS)
-
+        
         renderQueue.setSpecific(key: renderQueueKey, value: ())
     }
     
@@ -221,7 +222,7 @@ final class MPVSoftwareRenderer {
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-
+            
             if #available(iOS 18.0, *) {
                 self.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
             } else {
@@ -528,7 +529,7 @@ final class MPVSoftwareRenderer {
             let currentTime = cachedPosition
             let timeDelta = abs(currentTime - lastSubtitleCheckTime)
             
-            if timeDelta >= 0.1 {
+            if timeDelta >= subtitleUpdateInterval {
                 lastSubtitleCheckTime = currentTime
                 cachedSubtitleText = delegate?.renderer(self, getSubtitleForTime: currentTime)
             }
@@ -546,7 +547,7 @@ final class MPVSoftwareRenderer {
         
         enqueue(buffer: buffer)
         
-        if preAllocatedBuffers.count < 4 {
+        if preAllocatedBuffers.count < 2 {
             renderQueue.async { [weak self] in
                 self?.preAllocateBuffers()
             }
@@ -555,7 +556,7 @@ final class MPVSoftwareRenderer {
     
     private func targetRenderSize(for videoSize: CGSize) -> CGSize {
         guard videoSize.width > 0, videoSize.height > 0 else { return videoSize }
-
+        
         guard
             let screen = UIApplication.shared.connectedScenes
                 .compactMap({ ($0 as? UIWindowScene)?.screen })
@@ -563,7 +564,7 @@ final class MPVSoftwareRenderer {
         else {
             fatalError("⚠️ No active screen found — app may not have a visible window yet.")
         }
-
+        
         var scale = screen.scale
         if scale <= 0 { scale = 1 }
         let maxWidth = max(screen.bounds.width * scale, 1.0)
@@ -828,12 +829,12 @@ final class MPVSoftwareRenderer {
         
         guard let pool = pixelBufferPool else { return }
         
-        let targetCount = min(maxPreAllocatedBuffers, 8)
+        let targetCount = min(maxPreAllocatedBuffers, 5)
         let currentCount = preAllocatedBuffers.count
         
         guard currentCount < targetCount else { return }
         
-        let bufferCount = targetCount - currentCount
+        let bufferCount = min(targetCount - currentCount, 2)
         
         for _ in 0..<bufferCount {
             var buffer: CVPixelBuffer?
@@ -903,7 +904,7 @@ final class MPVSoftwareRenderer {
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-
+            
             let (status, error): (AVQueuedSampleBufferRenderingStatus?, Error?) = {
                 if #available(iOS 18.0, *) {
                     return (
@@ -917,7 +918,7 @@ final class MPVSoftwareRenderer {
                     )
                 }
             }()
-
+            
             if status == .failed {
                 if let error = error {
                     Logger.shared.log("Display layer in failed state: \(error.localizedDescription)", type: "Error")
@@ -959,7 +960,7 @@ final class MPVSoftwareRenderer {
             if shouldNotifyLoadingEnd {
                 self.delegate?.renderer(self, didChangeLoading: false)
             }
-
+            
             if #available(iOS 18.0, *) {
                 self.displayLayer.sampleBufferRenderer.enqueue(sample)
             } else {

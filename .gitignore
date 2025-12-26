@@ -45,6 +45,7 @@ xcuserdata/
 
 ## Private local build config
 Build.local.xcconfig
+Luna.local.entitlements
 
 ## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
 *.xcscmblueprint

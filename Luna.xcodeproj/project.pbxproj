@@ -14,10 +14,6 @@
 		12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */; };
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
-		131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC84F2EC36FCF00E19F3E /* FakeWebKit */; };
-		131BC8532EC36FD500E19F3E /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8522EC36FD500E19F3E /* SoraCore */; };
-		131BC8562EC36FD900E19F3E /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8552EC36FD900E19F3E /* Kingfisher */; };
-		131BC8592EC3728500E19F3E /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 131BC8582EC3728500E19F3E /* MPVKit-GPL */; };
 		1324E7BB2E940BD70036B5F5 /* PlayerPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */; };
 		1324E7BC2E940BD70036B5F5 /* MPVSoftwareRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */; };
 		1324E7BD2E940BD70036B5F5 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B52E940BD70036B5F5 /* PlayerViewController.swift */; };
@@ -25,6 +21,7 @@
 		1324E7BF2E940BD70036B5F5 /* MusicProgressSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7B82E940BD70036B5F5 /* MusicProgressSlider.swift */; };
 		1324E7C12E940BD70036B5F5 /* PiPController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1324E7BA2E940BD70036B5F5 /* PiPController.swift */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
+		136C25C62EFE950300E37A6E /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 136C25C52EFE950300E37A6E /* MPVKit-GPL */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
 		13830AEC2E55BD9200B3CDE4 /* AlgorithmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AEB2E55BD9200B3CDE4 /* AlgorithmManager.swift */; };
 		13830AEE2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AED2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift */; };
@@ -32,6 +29,9 @@
 		13830AF22E55F51300B3CDE4 /* AlternativeUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AF12E55F51300B3CDE4 /* AlternativeUIView.swift */; };
 		13830AF42E55F5FF00B3CDE4 /* AccentColorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AF32E55F5FF00B3CDE4 /* AccentColorManager.swift */; };
 		139509A22E7DDAE100CB60D4 /* PlayerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139509A12E7DDAE100CB60D4 /* PlayerSettingsView.swift */; };
+		13A46CFD2EF5943400423BC6 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13A46CFC2EF5943400423BC6 /* FakeWebKit */; };
+		13A46D002EF5944C00423BC6 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13A46CFF2EF5944C00423BC6 /* Kingfisher */; };
+		13A46D032EF5945700423BC6 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13A46D022EF5945700423BC6 /* SoraCore */; };
 		13B2E5742E7597B9009F3271 /* JSController-NetworkFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B2E5732E7597B9009F3271 /* JSController-NetworkFetch.swift */; };
 		13B6F3452EA4C6BC00DECD2B /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B6F3442EA4C6BC00DECD2B /* ProgressManager.swift */; };
 		13DCC4F62E58B40F0028AE91 /* HybridSimilarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DCC4F52E58B40F0028AE91 /* HybridSimilarity.swift */; };
@@ -133,6 +133,7 @@
 /* Begin PBXFileReference section */
 		12201F502EBE91870033073C /* ServiceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceStore.swift; sourceTree = "<group>"; };
 		12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ServiceModels.xcdatamodel; sourceTree = "<group>"; };
+		1240112B2EFF3B8B00CEC6EB /* Luna.local.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Luna.local.entitlements; sourceTree = "<group>"; };
 		129CC9062EBA1D4600D2D84B /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
 		129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.local.xcconfig; sourceTree = "<group>"; };
 		129CC90B2EBA920A00D2D84B /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
@@ -245,11 +246,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				131BC8562EC36FD900E19F3E /* Kingfisher in Frameworks */,
+				13A46D002EF5944C00423BC6 /* Kingfisher in Frameworks */,
 				12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */,
-				131BC8532EC36FD500E19F3E /* SoraCore in Frameworks */,
-				131BC8502EC36FCF00E19F3E /* FakeWebKit in Frameworks */,
-				131BC8592EC3728500E19F3E /* MPVKit-GPL in Frameworks */,
+				13A46D032EF5945700423BC6 /* SoraCore in Frameworks */,
+				13A46CFD2EF5943400423BC6 /* FakeWebKit in Frameworks */,
+				136C25C62EFE950300E37A6E /* MPVKit-GPL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,8 +509,8 @@
 				13F0725D2E4B2D3300EF90EB /* Luna */,
 				13E1ED992ED9E65F00087629 /* Kanzen */,
 				129CC9062EBA1D4600D2D84B /* Build.xcconfig */,
-				13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */,
 				129CC9082EBA1F8400D2D84B /* Build.local.xcconfig */,
+				13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */,
 				13F0725C2E4B2D3300EF90EB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -539,6 +540,7 @@
 				13F0727D2E4B2D9000EF90EB /* ContentView.swift */,
 				13F072622E4B2D3700EF90EB /* Assets.xcassets */,
 				13F072642E4B2D3700EF90EB /* Luna.entitlements */,
+				1240112B2EFF3B8B00CEC6EB /* Luna.local.entitlements */,
 			);
 			path = Luna;
 			sourceTree = "<group>";
@@ -765,10 +767,10 @@
 			name = Luna;
 			packageProductDependencies = (
 				12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */,
-				131BC84F2EC36FCF00E19F3E /* FakeWebKit */,
-				131BC8522EC36FD500E19F3E /* SoraCore */,
-				131BC8552EC36FD900E19F3E /* Kingfisher */,
-				131BC8582EC3728500E19F3E /* MPVKit-GPL */,
+				13A46CFC2EF5943400423BC6 /* FakeWebKit */,
+				13A46CFF2EF5944C00423BC6 /* Kingfisher */,
+				13A46D022EF5945700423BC6 /* SoraCore */,
+				136C25C52EFE950300E37A6E /* MPVKit-GPL */,
 			);
 			productName = Sora;
 			productReference = 13F0725B2E4B2D3300EF90EB /* Luna.app */;
@@ -799,10 +801,10 @@
 			);
 			mainGroup = 13F072522E4B2D3300EF90EB;
 			packageReferences = (
-				131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */,
-				131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */,
-				131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */,
+				13A46CFB2EF5943400423BC6 /* XCRemoteSwiftPackageReference "FakeWebKit" */,
+				13A46CFE2EF5944C00423BC6 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				13A46D012EF5945700423BC6 /* XCRemoteSwiftPackageReference "SoraCore" */,
+				136C25C42EFE950300E37A6E /* XCRemoteSwiftPackageReference "MPVKit" */,
 			);
 			productRefGroup = 13F0725C2E4B2D3300EF90EB /* Products */;
 			projectDirPath = "";
@@ -1088,7 +1090,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Luna/Luna.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
@@ -1145,7 +1146,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Luna/Luna.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
@@ -1220,7 +1220,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */ = {
+		136C25C42EFE950300E37A6E /* XCRemoteSwiftPackageReference "MPVKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mpvkit/MPVKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.41.0;
+			};
+		};
+		13A46CFB2EF5943400423BC6 /* XCRemoteSwiftPackageReference "FakeWebKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/undeaDD/FakeWebKit";
 			requirement = {
@@ -1228,28 +1236,20 @@
 				kind = branch;
 			};
 		};
-		131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */ = {
+		13A46CFE2EF5944C00423BC6 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
+		13A46D012EF5945700423BC6 /* XCRemoteSwiftPackageReference "SoraCore" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cranci1/SoraCore";
 			requirement = {
 				branch = main;
 				kind = branch;
-			};
-		};
-		131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.6.1;
-			};
-		};
-		131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mpvkit/MPVKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = "0.40.0-xcode";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1259,25 +1259,25 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FakeWebKit;
 		};
-		131BC84F2EC36FCF00E19F3E /* FakeWebKit */ = {
+		136C25C52EFE950300E37A6E /* MPVKit-GPL */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 131BC84E2EC36FCF00E19F3E /* XCRemoteSwiftPackageReference "FakeWebKit" */;
+			package = 136C25C42EFE950300E37A6E /* XCRemoteSwiftPackageReference "MPVKit" */;
+			productName = "MPVKit-GPL";
+		};
+		13A46CFC2EF5943400423BC6 /* FakeWebKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13A46CFB2EF5943400423BC6 /* XCRemoteSwiftPackageReference "FakeWebKit" */;
 			productName = FakeWebKit;
 		};
-		131BC8522EC36FD500E19F3E /* SoraCore */ = {
+		13A46CFF2EF5944C00423BC6 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 131BC8512EC36FD500E19F3E /* XCRemoteSwiftPackageReference "SoraCore" */;
-			productName = SoraCore;
-		};
-		131BC8552EC36FD900E19F3E /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 131BC8542EC36FD900E19F3E /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			package = 13A46CFE2EF5944C00423BC6 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
-		131BC8582EC3728500E19F3E /* MPVKit-GPL */ = {
+		13A46D022EF5945700423BC6 /* SoraCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 131BC8572EC3728500E19F3E /* XCRemoteSwiftPackageReference "MPVKit" */;
-			productName = "MPVKit-GPL";
+			package = 13A46D012EF5945700423BC6 /* XCRemoteSwiftPackageReference "SoraCore" */;
+			productName = SoraCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 

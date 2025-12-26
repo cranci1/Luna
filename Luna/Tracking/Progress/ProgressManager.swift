@@ -8,56 +8,137 @@
 import Foundation
 import AVFoundation
 
-class ProgressManager {
+// MARK: - Data Models
+
+struct ProgressData: Codable {
+    var movieProgress: [MovieProgressEntry] = []
+    var episodeProgress: [EpisodeProgressEntry] = []
+    
+    mutating func updateMovie(_ entry: MovieProgressEntry) {
+        if let index = movieProgress.firstIndex(where: { $0.id == entry.id }) {
+            movieProgress[index] = entry
+        } else {
+            movieProgress.append(entry)
+        }
+    }
+    
+    mutating func updateEpisode(_ entry: EpisodeProgressEntry) {
+        if let index = episodeProgress.firstIndex(where: { $0.id == entry.id }) {
+            episodeProgress[index] = entry
+        } else {
+            episodeProgress.append(entry)
+        }
+    }
+    
+    func findMovie(id: Int) -> MovieProgressEntry? {
+        movieProgress.first { $0.id == id }
+    }
+    
+    func findEpisode(showId: Int, season: Int, episode: Int) -> EpisodeProgressEntry? {
+        episodeProgress.first { $0.showId == showId && $0.seasonNumber == season && $0.episodeNumber == episode }
+    }
+}
+
+struct MovieProgressEntry: Codable, Identifiable {
+    let id: Int
+    let title: String
+    var currentTime: Double = 0
+    var totalDuration: Double = 0
+    var isWatched: Bool = false
+    var lastUpdated: Date = Date()
+    
+    var progress: Double {
+        guard totalDuration > 0 else { return 0 }
+        return min(currentTime / totalDuration, 1.0)
+    }
+}
+
+struct EpisodeProgressEntry: Codable, Identifiable {
+    let id: String
+    let showId: Int
+    let seasonNumber: Int
+    let episodeNumber: Int
+    var currentTime: Double = 0
+    var totalDuration: Double = 0
+    var isWatched: Bool = false
+    var lastUpdated: Date = Date()
+    
+    var progress: Double {
+        guard totalDuration > 0 else { return 0 }
+        return min(currentTime / totalDuration, 1.0)
+    }
+    
+    init(showId: Int, seasonNumber: Int, episodeNumber: Int) {
+        self.id = "ep_\(showId)_s\(seasonNumber)_e\(episodeNumber)"
+        self.showId = showId
+        self.seasonNumber = seasonNumber
+        self.episodeNumber = episodeNumber
+    }
+}
+
+// MARK: - ProgressManager
+
+final class ProgressManager {
     static let shared = ProgressManager()
     
-    private init() {}
+    private let fileManager = FileManager.default
+    private var progressData: ProgressData = ProgressData()
+    private let progressFileURL: URL
+    private let debounceInterval: TimeInterval = 2.0
+    private var debounceTask: Task<Void, Never>?
+    private let accessQueue = DispatchQueue(label: "com.luna.progress-manager", attributes: .concurrent)
     
-    // MARK: - Key Generation
+    private static let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     
-    private func movieProgressKey(movieId: Int, title: String) -> String {
-        let sanitizedTitle = title
-            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
-            .replacingOccurrences(of: " ", with: "_")
-            .lowercased()
-            .prefix(50)
-        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
-        return "movie_progress_\(movieId)_\(finalTitle)"
+    private init() {
+        self.progressFileURL = Self.documentsDirectory.appendingPathComponent("ProgressData.json")
+        loadProgressData()
     }
     
-    private func episodeProgressKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
-        return "episode_progress_\(showId)_s\(seasonNumber)_e\(episodeNumber)"
+    // MARK: - Data Persistence
+    
+    private func loadProgressData() {
+        guard fileManager.fileExists(atPath: progressFileURL.path) else {
+            Logger.shared.log("Progress file not found, initializing new data", type: "Progress")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: progressFileURL)
+            let decoded = try JSONDecoder().decode(ProgressData.self, from: data)
+            accessQueue.async(flags: .barrier) { [weak self] in
+                self?.progressData = decoded
+            }
+            Logger.shared.log("Progress data loaded successfully (\(decoded.movieProgress.count) movies, \(decoded.episodeProgress.count) episodes)", type: "Progress")
+        } catch {
+            Logger.shared.log("Failed to load progress data: \(error.localizedDescription)", type: "Error")
+        }
     }
     
-    private func movieDurationKey(movieId: Int, title: String) -> String {
-        let sanitizedTitle = title
-            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
-            .replacingOccurrences(of: " ", with: "_")
-            .lowercased()
-            .prefix(50)
-        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
-        return "movie_duration_\(movieId)_\(finalTitle)"
+    private func saveProgressData() {
+        accessQueue.async { [weak self] in
+            guard let self = self else { return }
+            do {
+                let data = try JSONEncoder().encode(self.progressData)
+                try data.write(to: self.progressFileURL, options: .atomic)
+                Logger.shared.log("Progress data saved successfully", type: "Progress")
+            } catch {
+                Logger.shared.log("Failed to save progress data: \(error.localizedDescription)", type: "Error")
+            }
+        }
     }
     
-    private func episodeDurationKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
-        return "episode_duration_\(showId)_s\(seasonNumber)_e\(episodeNumber)"
+    private func debouncedSave() {
+        debounceTask?.cancel()
+        debounceTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(debounceInterval * 1_000_000_000))
+            if !Task.isCancelled {
+                self.saveProgressData()
+            }
+        }
     }
     
-    private func movieWatchedKey(movieId: Int, title: String) -> String {
-        let sanitizedTitle = title
-            .replacingOccurrences(of: "[^a-zA-Z0-9\\s]", with: "", options: .regularExpression)
-            .replacingOccurrences(of: " ", with: "_")
-            .lowercased()
-            .prefix(50)
-        let finalTitle = String(sanitizedTitle).isEmpty ? "unknown" : String(sanitizedTitle)
-        return "movie_watched_\(movieId)_\(finalTitle)"
-    }
-    
-    private func episodeWatchedKey(showId: Int, seasonNumber: Int, episodeNumber: Int) -> String {
-        return "episode_watched_\(showId)_s\(seasonNumber)_e\(episodeNumber)"
-    }
-    
-    // MARK: - Progress Tracking
+    // MARK: - Movie Progress
     
     func updateMovieProgress(movieId: Int, title: String, currentTime: Double, totalDuration: Double) {
         guard currentTime >= 0 && totalDuration > 0 && currentTime <= totalDuration else {
@@ -65,18 +146,77 @@ class ProgressManager {
             return
         }
         
-        let progressKey = movieProgressKey(movieId: movieId, title: title)
-        let durationKey = movieDurationKey(movieId: movieId, title: title)
-        let watchedKey = movieWatchedKey(movieId: movieId, title: title)
-        
-        UserDefaults.standard.set(currentTime, forKey: progressKey)
-        UserDefaults.standard.set(totalDuration, forKey: durationKey)
-        
-        let progressPercentage = currentTime / totalDuration
-        if progressPercentage >= 0.95 {
-            UserDefaults.standard.set(true, forKey: watchedKey)
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            var entry = self.progressData.findMovie(id: movieId) ?? MovieProgressEntry(id: movieId, title: title)
+            entry.currentTime = currentTime
+            entry.totalDuration = totalDuration
+            entry.lastUpdated = Date()
+            
+            if entry.progress >= 0.95 {
+                entry.isWatched = true
+            }
+            
+            self.progressData.updateMovie(entry)
         }
+        debouncedSave()
     }
+    
+    func getMovieProgress(movieId: Int, title: String) -> Double {
+        var result: Double = 0.0
+        accessQueue.sync {
+            result = self.progressData.findMovie(id: movieId)?.progress ?? 0.0
+        }
+        return result
+    }
+    
+    func getMovieCurrentTime(movieId: Int, title: String) -> Double {
+        var result: Double = 0.0
+        accessQueue.sync {
+            result = self.progressData.findMovie(id: movieId)?.currentTime ?? 0.0
+        }
+        return result
+    }
+    
+    func isMovieWatched(movieId: Int, title: String) -> Bool {
+        var result: Bool = false
+        accessQueue.sync {
+            if let entry = self.progressData.findMovie(id: movieId) {
+                result = entry.isWatched || entry.progress >= 0.95
+            }
+        }
+        return result
+    }
+    
+    func markMovieAsWatched(movieId: Int, title: String) {
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            if var entry = self.progressData.findMovie(id: movieId) {
+                entry.isWatched = true
+                entry.currentTime = entry.totalDuration
+                entry.lastUpdated = Date()
+                self.progressData.updateMovie(entry)
+                Logger.shared.log("Marked movie as watched: \(title)", type: "Progress")
+            }
+        }
+        saveProgressData()
+    }
+    
+    func resetMovieProgress(movieId: Int, title: String) {
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            if var entry = self.progressData.findMovie(id: movieId) {
+                entry.currentTime = 0
+                entry.isWatched = false
+                entry.lastUpdated = Date()
+                self.progressData.updateMovie(entry)
+                Logger.shared.log("Reset movie progress: \(title)", type: "Progress")
+            }
+        }
+        saveProgressData()
+    }
+    
+    // MARK: - Episode Progress
     
     func updateEpisodeProgress(showId: Int, seasonNumber: Int, episodeNumber: Int, currentTime: Double, totalDuration: Double) {
         guard currentTime >= 0 && totalDuration > 0 && currentTime <= totalDuration else {
@@ -84,137 +224,98 @@ class ProgressManager {
             return
         }
         
-        let progressKey = episodeProgressKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let durationKey = episodeDurationKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let watchedKey = episodeWatchedKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        
-        UserDefaults.standard.set(currentTime, forKey: progressKey)
-        UserDefaults.standard.set(totalDuration, forKey: durationKey)
-        
-        let progressPercentage = currentTime / totalDuration
-        if progressPercentage >= 0.95 {
-            UserDefaults.standard.set(true, forKey: watchedKey)
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber) 
+                ?? EpisodeProgressEntry(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
+            
+            entry.currentTime = currentTime
+            entry.totalDuration = totalDuration
+            entry.lastUpdated = Date()
+            
+            if entry.progress >= 0.95 {
+                entry.isWatched = true
+            }
+            
+            self.progressData.updateEpisode(entry)
         }
-    }
-    
-    // MARK: - Progress Retrieval
-    
-    func getMovieProgress(movieId: Int, title: String) -> Double {
-        let progressKey = movieProgressKey(movieId: movieId, title: title)
-        let durationKey = movieDurationKey(movieId: movieId, title: title)
-        
-        let currentTime = UserDefaults.standard.double(forKey: progressKey)
-        let totalDuration = UserDefaults.standard.double(forKey: durationKey)
-        
-        guard totalDuration > 0 else { return 0.0 }
-        return min(currentTime / totalDuration, 1.0)
+        debouncedSave()
     }
     
     func getEpisodeProgress(showId: Int, seasonNumber: Int, episodeNumber: Int) -> Double {
-        let progressKey = episodeProgressKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let durationKey = episodeDurationKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        
-        let currentTime = UserDefaults.standard.double(forKey: progressKey)
-        let totalDuration = UserDefaults.standard.double(forKey: durationKey)
-        
-        guard totalDuration > 0 else { return 0.0 }
-        return min(currentTime / totalDuration, 1.0)
-    }
-    
-    func getMovieCurrentTime(movieId: Int, title: String) -> Double {
-        let progressKey = movieProgressKey(movieId: movieId, title: title)
-        return UserDefaults.standard.double(forKey: progressKey)
+        var result: Double = 0.0
+        accessQueue.sync {
+            result = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber)?.progress ?? 0.0
+        }
+        return result
     }
     
     func getEpisodeCurrentTime(showId: Int, seasonNumber: Int, episodeNumber: Int) -> Double {
-        let progressKey = episodeProgressKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        return UserDefaults.standard.double(forKey: progressKey)
-    }
-    
-    // MARK: - Watched Status
-    
-    func isMovieWatched(movieId: Int, title: String) -> Bool {
-        let watchedKey = movieWatchedKey(movieId: movieId, title: title)
-        let isExplicitlyWatched = UserDefaults.standard.bool(forKey: watchedKey)
-        let progress = getMovieProgress(movieId: movieId, title: title)
-        
-        return isExplicitlyWatched || progress >= 0.95
+        var result: Double = 0.0
+        accessQueue.sync {
+            result = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber)?.currentTime ?? 0.0
+        }
+        return result
     }
     
     func isEpisodeWatched(showId: Int, seasonNumber: Int, episodeNumber: Int) -> Bool {
-        let watchedKey = episodeWatchedKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let isExplicitlyWatched = UserDefaults.standard.bool(forKey: watchedKey)
-        let progress = getEpisodeProgress(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        
-        return isExplicitlyWatched || progress >= 0.95
-    }
-    
-    // MARK: - Manual Actions
-    
-    func markMovieAsWatched(movieId: Int, title: String) {
-        let watchedKey = movieWatchedKey(movieId: movieId, title: title)
-        let progressKey = movieProgressKey(movieId: movieId, title: title)
-        let durationKey = movieDurationKey(movieId: movieId, title: title)
-        
-        UserDefaults.standard.set(true, forKey: watchedKey)
-        
-        let totalDuration = UserDefaults.standard.double(forKey: durationKey)
-        if totalDuration > 0 {
-            UserDefaults.standard.set(totalDuration, forKey: progressKey)
+        var result: Bool = false
+        accessQueue.sync {
+            if let entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber) {
+                result = entry.isWatched || entry.progress >= 0.95
+            }
         }
-        
-        Logger.shared.log("Manually marked movie as watched: \(title)", type: "Progress")
+        return result
     }
     
     func markEpisodeAsWatched(showId: Int, seasonNumber: Int, episodeNumber: Int) {
-        let watchedKey = episodeWatchedKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let progressKey = episodeProgressKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let durationKey = episodeDurationKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        
-        UserDefaults.standard.set(true, forKey: watchedKey)
-        
-        let totalDuration = UserDefaults.standard.double(forKey: durationKey)
-        if totalDuration > 0 {
-            UserDefaults.standard.set(totalDuration, forKey: progressKey)
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            if var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber) {
+                entry.isWatched = true
+                entry.currentTime = entry.totalDuration
+                entry.lastUpdated = Date()
+                self.progressData.updateEpisode(entry)
+                Logger.shared.log("Marked episode as watched: S\(seasonNumber)E\(episodeNumber)", type: "Progress")
+            }
         }
-        
-        Logger.shared.log("Manually marked episode as watched: S\(seasonNumber)E\(episodeNumber)", type: "Progress")
+        saveProgressData()
+    }
+    
+    func resetEpisodeProgress(showId: Int, seasonNumber: Int, episodeNumber: Int) {
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            if var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber) {
+                entry.currentTime = 0
+                entry.isWatched = false
+                entry.lastUpdated = Date()
+                self.progressData.updateEpisode(entry)
+                Logger.shared.log("Reset episode progress: S\(seasonNumber)E\(episodeNumber)", type: "Progress")
+            }
+        }
+        saveProgressData()
     }
     
     func markPreviousEpisodesAsWatched(showId: Int, seasonNumber: Int, episodeNumber: Int) {
         guard episodeNumber > 1 else { return }
-
-        for e in 1..<episodeNumber {
-            markEpisodeAsWatched(showId: showId, seasonNumber: seasonNumber, episodeNumber: e)
+        
+        accessQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            for e in 1..<episodeNumber {
+                if var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: e) {
+                    entry.isWatched = true
+                    entry.currentTime = entry.totalDuration
+                    entry.lastUpdated = Date()
+                    self.progressData.updateEpisode(entry)
+                }
+            }
+            Logger.shared.log("Marked previous episodes as watched for S\(seasonNumber) up to E\(episodeNumber - 1)", type: "Progress")
         }
-
-        Logger.shared.log("Marked previous episodes as watched for S\(seasonNumber) up to E\(episodeNumber - 1)", type: "Progress")
+        saveProgressData()
     }
     
-    func resetMovieProgress(movieId: Int, title: String) {
-        let progressKey = movieProgressKey(movieId: movieId, title: title)
-        let watchedKey = movieWatchedKey(movieId: movieId, title: title)
-        
-        UserDefaults.standard.set(0.0, forKey: progressKey)
-        UserDefaults.standard.set(false, forKey: watchedKey)
-        
-        Logger.shared.log("Reset movie progress: \(title)", type: "Progress")
-    }
+    // MARK: - AVPlayer Extension
     
-    func resetEpisodeProgress(showId: Int, seasonNumber: Int, episodeNumber: Int) {
-        let progressKey = episodeProgressKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        let watchedKey = episodeWatchedKey(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
-        
-        UserDefaults.standard.set(0.0, forKey: progressKey)
-        UserDefaults.standard.set(false, forKey: watchedKey)
-        
-        Logger.shared.log("Reset episode progress: S\(seasonNumber)E\(episodeNumber)", type: "Progress")
-    }
-}
-
-// MARK: - AVPlayer Extension
-
-extension ProgressManager {
     func addPeriodicTimeObserver(to player: AVPlayer, for mediaInfo: MediaInfo) -> Any? {
         let interval = CMTime(seconds: 1.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         
@@ -241,6 +342,8 @@ extension ProgressManager {
         }
     }
 }
+
+// MARK: - MediaInfo Enum
 
 enum MediaInfo {
     case movie(id: Int, title: String)

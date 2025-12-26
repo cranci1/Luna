@@ -8,7 +8,8 @@
 APP_NAME = Luna
 DEVELOPMENT_TEAM = 399LMK6Q2Y
 BUNDLE_IDENTIFIER = me.cranci.solar
-ICLOUD_CONTAINER_ID = iCloud.me.cranci.solar
+ICLOUD_CONTAINER_ID = iCloud.me.cranci.sora
+CODE_SIGN_ENTITLEMENTS = Luna/Luna.entitlements
 
 // Optional local overrides (ignored in Git)
 #include? "Build.local.xcconfig"
