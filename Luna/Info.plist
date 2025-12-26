@@ -21,9 +21,8 @@
 	<array>
 		<string>audio</string>
 		<string>fetch</string>
-		<string>processing</string>
 	</array>
-    <key>iCloudContainerID</key>
-    <string>$(ICLOUD_CONTAINER_ID)</string>
+	<key>iCloudContainerID</key>
+	<string>$(ICLOUD_CONTAINER_ID)</string>
 </dict>
 </plist>
