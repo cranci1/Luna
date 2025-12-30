@@ -557,17 +557,17 @@ struct ModulesSearchResultsSheet: View {
         } message: {
             qualityThresholdAlertMessage
         }
-        .confirmationDialog("Select Server", isPresented: $showingStreamMenu, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Server", isPresented: $showingStreamMenu, titleVisibility: .visible) {
             serverSelectionDialogContent
         } message: {
             serverSelectionDialogMessage
         }
-        .confirmationDialog("Select Season", isPresented: $showingSeasonPicker, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Season", isPresented: $showingSeasonPicker, titleVisibility: .visible) {
             seasonPickerDialogContent
         } message: {
             seasonPickerDialogMessage
         }
-        .confirmationDialog("Select Episode", isPresented: $showingEpisodePicker, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Episode", isPresented: $showingEpisodePicker, titleVisibility: .visible) {
             episodePickerDialogContent
         } message: {
             episodePickerDialogMessage

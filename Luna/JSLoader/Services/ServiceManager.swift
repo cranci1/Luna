@@ -289,6 +289,8 @@ class ServiceManager: ObservableObject {
         let jsController = JSController()
         jsController.loadScript(service.jsScript)
 
+        print(query)
+
         return await withCheckedContinuation { continuation in
             jsController.fetchJsSearchResults(keyword: query, module: service) { results in
                 continuation.resume(returning: results)
