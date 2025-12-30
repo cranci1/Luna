@@ -161,7 +161,9 @@ struct SearchView: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
+#if !os(tvOS)
                         .background(Color(.systemGray6))
+#endif
                         .cornerRadius(8)
                     }
                     .foregroundColor(.primary)
