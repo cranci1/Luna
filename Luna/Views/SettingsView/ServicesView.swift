@@ -11,7 +11,10 @@ import Kingfisher
 struct ServicesView: View {
     @StateObject private var serviceManager = ServiceManager.shared
     @Environment(\.editMode) private var editMode
-
+    @State private var showDownloadAlert = false
+    @State private var downloadURL = ""
+    @State private var showServiceDownloadAlert = false
+    
     var body: some View {
         ZStack {
             VStack {
@@ -22,25 +25,23 @@ struct ServicesView: View {
                 }
             }
             .navigationTitle("Services")
-            #if !os(tvOS)
+#if !os(tvOS)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if editMode?.wrappedValue != .active {
                         Button {
-                            Task {
-                                await serviceManager.updateServices()
-                            }
+                            showDownloadAlert = true
                         } label: {
-                            Image(systemName: "arrow.clockwise")
+                            Image(systemName: "plus.app")
                         }
                     }
                 }
-
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         withAnimation {
                             editMode?.wrappedValue =
-                                (editMode?.wrappedValue == .active) ? .inactive : .active
+                            (editMode?.wrappedValue == .active) ? .inactive : .active
                         }
                     } label: {
                         Image(systemName:
@@ -48,32 +49,43 @@ struct ServicesView: View {
                     }
                 }
             }
-            #endif
-
-            // Overlay progress alert using reusable view
-            if serviceManager.isDownloading {
-                DownloadProgressView(
-                    progress: serviceManager.downloadProgress,
-                    message: serviceManager.downloadMessage
-                )
+#endif
+            .refreshable {
+                await serviceManager.updateServices()
+            }
+            .alert("Add Service", isPresented: $showDownloadAlert) {
+                TextField("JSON URL", text: $downloadURL)
+                Button("Cancel", role: .cancel) {
+                    downloadURL = ""
+                }
+                Button("Add") {
+                    downloadServiceFromURL()
+                }
+            } message: {
+                Text("Enter the direct JSON file URL")
+            }
+            .alert("Service Downloaded", isPresented: $showServiceDownloadAlert) {
+                Button("OK") { }
+            } message: {
+                Text("The service has been successfully downloaded and saved to your documents folder.")
             }
         }
     }
-
+    
     @ViewBuilder
     private var emptyStateView: some View {
         VStack(spacing: 20) {
             Image(systemName: "square.stack.3d.up")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
-
+            
             Text("No Services")
                 .font(.title2)
                 .fontWeight(.semibold)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     @ViewBuilder
     private var servicesList: some View {
         List {
@@ -86,11 +98,29 @@ struct ServicesView: View {
             }
         }
     }
-
+    
     private func deleteServices(offsets: IndexSet) {
         for index in offsets {
             let service = serviceManager.services[index]
             serviceManager.removeService(service)
+        }
+    }
+    
+    private func downloadServiceFromURL() {
+        guard !downloadURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+        
+        Task {
+            do {
+                let wasHandled = await serviceManager.handlePotentialServiceURL(downloadURL)
+                if wasHandled {
+                    await MainActor.run {
+                        downloadURL = ""
+                        showServiceDownloadAlert = true
+                    }
+                }
+            }
         }
     }
 }

@@ -584,7 +584,6 @@
 				13F072892E4B2D9000EF90EB /* NormalPlayer.swift */,
 				13F0728A2E4B2D9000EF90EB /* FallbackImageView.swift */,
 				13F0728B2E4B2D9000EF90EB /* ServicesResultsSheet.swift */,
-				12DA48AF2EE21409000ADDF0 /* DownloadProgressView.swift */,
 			);
 			path = "View Elements";
 			sourceTree = "<group>";
@@ -910,7 +909,6 @@
 				1324E7BE2E940BD70036B5F5 /* SampleBufferDisplayView.swift in Sources */,
 				13E1EDD32ED9E65F00087629 /* mangaModel.xcdatamodeld in Sources */,
 				13F5B58F2E7308F300565E75 /* HomeSectionsView.swift in Sources */,
-				12DA48B02EE2140D000ADDF0 /* DownloadProgressView.swift in Sources */,
 				13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */,
 				13F5B5922E73090000565E75 /* HomeSection.swift in Sources */,
 				13F0729C2E4B2D9200EF90EB /* JavaScriptCore+Extensions.swift in Sources */,

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct SearchView: View {
     @AppStorage("mediaColumnsPortrait") private var mediaColumnsPortrait: Int = 3
@@ -21,6 +22,9 @@ struct SearchView: View {
     @State private var showServiceDownloadAlert = false
     @State private var serviceDownloadError: String?
     @State private var searchHistory: [String] = []
+    @State private var selectedService: Service?
+    @State private var serviceSearchResults: [SearchItem] = []
+    @State private var showSourceSelector = false
     
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var serviceManager = ServiceManager.shared
@@ -64,7 +68,7 @@ struct SearchView: View {
             else {
                 fatalError("⚠️ No active screen found — app may not have a visible window yet.")
             }
-
+            
             let isLandscape = screen.bounds.width > screen.bounds.height
             return isLandscape ? mediaColumnsLandscape : mediaColumnsPortrait
         } else {
@@ -89,10 +93,83 @@ struct SearchView: View {
         ScrollView {
             VStack(spacing: 12) {
                 HStack(spacing: 8) {
+                    Menu {
+                        Button(action: {
+                            selectedService = nil
+                            serviceSearchResults = []
+                            if !searchText.isEmpty {
+                                performSearch()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "tv.fill")
+                                    .font(.system(size: 16))
+                                Text("TMDB")
+                                if selectedService == nil {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        
+                        ForEach(serviceManager.services.filter({ $0.isActive })) { service in
+                            Button(action: {
+                                selectedService = service
+                                searchResults = []
+                                if !searchText.isEmpty {
+                                    performServiceSearch(service: service)
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    KFImage(URL(string: service.metadata.iconUrl))
+                                        .placeholder {
+                                            Image(systemName: "app.dashed")
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 20, height: 20)
+                                        .clipShape(Circle())
+                                    
+                                    Text(service.metadata.sourceName)
+                                    if selectedService?.id == service.id {
+                                        Spacer()
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if let service = selectedService {
+                                KFImage(URL(string: service.metadata.iconUrl))
+                                    .placeholder {
+                                        Image(systemName: "app.dashed")
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 18, height: 18)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "tv.fill")
+                                    .font(.system(size: 14))
+                            }
+                            Text(selectedService?.metadata.sourceName ?? "TMDB")
+                                .font(.caption)
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                    }
+                    .foregroundColor(.primary)
+                    
                     HStack(spacing: 8) {
                         TextField("Search...", text: $searchText)
 #if os(iOS)
-                            .padding(7)
+                            .padding(6)
                             .padding(.horizontal, 25)
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
@@ -154,23 +231,23 @@ struct SearchView: View {
             }
             .padding()
             
-            if isLoading || serviceManager.isDownloading {
+            if selectedService != nil && !serviceSearchResults.isEmpty {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                    ForEach(serviceSearchResults) { item in
+                        ServiceSearchResultCard(item: item, service: selectedService!)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top)
+            } else if isLoading {
                 VStack {
                     ProgressView()
                         .scaleEffect(1.2)
                     
-                    if serviceManager.isDownloading {
-                        DownloadProgressView(
-                            progress: serviceManager.downloadProgress,
-                            message: serviceManager.downloadMessage
-                        )
-                            .padding(.top, 8)
-                    } else {
-                        Text("Searching...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 8)
-                    }
+                    Text("Searching...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage = errorMessage {
@@ -393,34 +470,10 @@ struct SearchView: View {
             return
         }
         
-        if isJSONURL(searchText) {
-            downloadServiceFromURL()
+        if let service = selectedService {
+            performServiceSearch(service: service)
         } else {
             performSearch()
-        }
-    }
-    
-    private func isJSONURL(_ text: String) -> Bool {
-        guard let url = URL(string: text.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-            return false
-        }
-        
-        return url.scheme != nil &&
-        (url.pathExtension.lowercased() == "json" ||
-         text.lowercased().contains(".json"))
-    }
-    
-    private func downloadServiceFromURL() {
-        Task {
-            do {
-                let wasHandled = await serviceManager.handlePotentialServiceURL(searchText)
-                if wasHandled {
-                    await MainActor.run {
-                        searchText = ""
-                        showServiceDownloadAlert = true
-                    }
-                }
-            }
         }
     }
     
@@ -450,6 +503,72 @@ struct SearchView: View {
                     self.isLoading = false
                 }
             }
+        }
+    }
+    
+    private func performServiceSearch(service: Service) {
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        serviceSearchResults = []
+        
+        let jsController = JSController()
+        jsController.loadScript(service.jsScript)
+        
+        jsController.fetchJsSearchResults(keyword: searchText, module: service) { results in
+            DispatchQueue.main.async {
+                self.serviceSearchResults = results
+                self.isLoading = false
+                if !results.isEmpty {
+                    self.addToSearchHistory(self.searchText)
+                }
+            }
+        }
+    }
+}
+
+struct ServiceSearchResultCard: View {
+    let item: SearchItem
+    let service: Service
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            AsyncImage(url: URL(string: item.imageUrl)) { phase in
+                switch phase {
+                case .empty:
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .overlay(
+                            ProgressView()
+                        )
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .clipped()
+                case .failure:
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .aspectRatio(2/3, contentMode: .fit)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(.gray)
+                        )
+                @unknown default:
+                    EmptyView()
+                }
+            }
+            .cornerRadius(8)
+            
+            Text(item.title)
+                .font(.caption)
+                .lineLimit(2)
+                .foregroundColor(.primary)
         }
     }
 }
