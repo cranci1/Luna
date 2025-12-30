@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+
+#if !os(tvOS)
 struct favouriteViewWrapper: View {
     var favouriteContent: MangaData
     var currModule: ModuleDataContainer?
@@ -39,3 +41,4 @@ struct favouriteViewWrapper: View {
         }
     }
 }
+#endif

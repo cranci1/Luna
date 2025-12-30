@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+#if !os(tvOS)
 struct KanzenMenu: View {
     let kanzen = KanzenEngine();
     var body: some View {
@@ -23,3 +24,4 @@ struct KanzenMenu: View {
         }
     }
 }
+#endif

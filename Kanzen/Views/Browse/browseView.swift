@@ -1,4 +1,6 @@
 import SwiftUI
+
+#if !os(tvOS)
 struct BrowseView: View {
     @EnvironmentObject var moduleManager: ModuleManager
     let kanzen: KanzenEngine = KanzenEngine()
@@ -8,3 +10,4 @@ struct BrowseView: View {
         }.environmentObject(kanzen)
     }
 }
+#endif

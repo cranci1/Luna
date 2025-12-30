@@ -11,6 +11,8 @@
 //  Created by Dawud Osman on 16/05/2025.
 //
 import SwiftUI
+
+#if !os(tvOS)
 struct KanzenSettingsView : View
 {
     @AppStorage("showKanzen") private var showKanzen: Bool = false
@@ -45,3 +47,4 @@ struct KanzenSettingsView : View
         }
     }
 }
+#endif

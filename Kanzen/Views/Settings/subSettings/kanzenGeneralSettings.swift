@@ -5,6 +5,8 @@
 //  Created by Dawud Osman on 22/05/2025.
 //
 import SwiftUI
+
+#if !os(tvOS)
 struct KanzenGeneralSettingsView: View {
     @EnvironmentObject var settings : Settings
     var body: some View {
@@ -34,3 +36,4 @@ struct KanzenGeneralSettingsView: View {
     }
 
 }
+#endif

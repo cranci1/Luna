@@ -6,6 +6,8 @@
 //
 import SwiftUI
 import CoreData
+
+#if !os(tvOS)
 struct KanzenLibraryView: View {
     @EnvironmentObject var favouriteManager: FavouriteManager
     @EnvironmentObject var moduleManager : ModuleManager
@@ -66,3 +68,4 @@ struct KanzenLibraryView: View {
         FavouriteManager.shared.removeFavourite(moduleId: item.sourceId,contentId: item.mangaId)
     }
 }
+#endif

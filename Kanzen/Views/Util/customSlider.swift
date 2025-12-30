@@ -13,6 +13,8 @@ extension CGFloat {
         return result
     }
 }
+
+#if !os(tvOS)
 struct customSlider: View{
     @Binding var value: CGFloat
     @Binding var  RTL: Bool
@@ -64,4 +66,4 @@ struct customSlider: View{
         
     }
 }
-
+#endif

@@ -8,6 +8,7 @@
 import SwiftUI
 import Kingfisher
 
+#if !os(tvOS)
 struct readerManagerView:View {
     @State  var chapters: [Chapter]?
     @State var selectedChapter: Chapter?
@@ -168,3 +169,4 @@ struct readerManagerView:View {
         }
     }
 }
+#endif

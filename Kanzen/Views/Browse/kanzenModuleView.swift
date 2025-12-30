@@ -6,6 +6,8 @@
 //
 import SwiftUI
 import Kingfisher
+
+#if !os(tvOS)
 struct KanzenModuleView: View {
     @AppStorage("selectedModuleId") private var selectedModuleId: String?
     @EnvironmentObject var moduleManager : ModuleManager
@@ -395,3 +397,4 @@ struct KanzenModuleView: View {
     }
 
 }
+#endif

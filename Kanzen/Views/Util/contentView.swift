@@ -9,6 +9,7 @@ import SwiftUI
 import Foundation
 import Kingfisher
 
+#if !os(tvOS)
 struct contentView: View {
     @State var parentModule: ModuleDataContainer?
     @State  var title: String
@@ -339,3 +340,4 @@ struct contentView: View {
         }
     }
 }
+#endif

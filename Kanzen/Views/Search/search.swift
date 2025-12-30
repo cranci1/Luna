@@ -7,6 +7,8 @@
 import SwiftUI
 import Foundation
 import Kingfisher
+
+#if !os(tvOS)
 struct KanzenSearchView: View {
 
     @State var module: ModuleDataContainer?
@@ -154,3 +156,4 @@ struct SearchBar: View {
         }
     }
 }
+#endif
