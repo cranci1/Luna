@@ -6,34 +6,43 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
   build-ios:
-    name: Build IPA
+    name: Build iOS IPA
     runs-on: macos-26
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-
       - name: Make build script executable
         run: chmod +x ./ipabuild.sh
-
-      - name: Build IPA
+      - name: Build iOS IPA
         run: ./ipabuild.sh ios
-
-      - name: Compress IPA
-        run: |
-          cd build
-          zip -r Luna.zip Luna.ipa
-
-      - name: Upload IPA artifact
+      - name: Upload iOS IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Luna IPA
-          path: build/Luna.zip
+          name: Luna-iOS
+          path: build/Luna.ipa
+
+  build-tvos:
+    name: Build tvOS IPA
+    runs-on: macos-26
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Make build script executable
+        run: chmod +x ./ipabuild.sh
+      - name: Build tvOS IPA
+        run: ./ipabuild.sh tvos
+      - name: Upload tvOS IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Luna-tvOS
+          path: build/Luna-tvOS.ipa
