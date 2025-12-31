@@ -543,7 +543,7 @@ struct SearchBarLuna: View {
                 
                 .padding(7)
                 .padding(.horizontal, 25)
-#if !os(iOS)
+#if !os(tvOS)
                 .background(Color(.systemGray6))
 #endif
                 .cornerRadius(8)
