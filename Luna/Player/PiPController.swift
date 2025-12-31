@@ -19,6 +19,7 @@ protocol PiPControllerDelegate: AnyObject {
     func pipController(_ controller: PiPController, skipByInterval interval: CMTime)
     func pipControllerIsPlaying(_ controller: PiPController) -> Bool
     func pipControllerDuration(_ controller: PiPController) -> Double
+    func pipControllerCurrentTime(_ controller: PiPController) -> Double
 }
 
 final class PiPController: NSObject {
@@ -125,6 +126,9 @@ extension PiPController: AVPictureInPictureSampleBufferPlaybackDelegate {
         } else {
             delegate?.pipControllerPause(self)
         }
+        DispatchQueue.main.async { [weak self] in
+            self?.pipController?.invalidatePlaybackState()
+        }
     }
     
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, didTransitionToRenderSize newRenderSize: CMVideoDimensions) {
@@ -132,14 +136,13 @@ extension PiPController: AVPictureInPictureSampleBufferPlaybackDelegate {
     
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, skipByInterval skipInterval: CMTime, completion completionHandler: @escaping () -> Void) {
         delegate?.pipController(self, skipByInterval: skipInterval)
+        DispatchQueue.main.async { [weak self] in
+            self?.pipController?.invalidatePlaybackState()
+        }
         completionHandler()
     }
     
-    var isPlaying: Bool {
-        return delegate?.pipControllerIsPlaying(self) ?? false
-    }
-    
-    var timeRangeForPlayback: CMTimeRange {
+    func pictureInPictureControllerTimeRangeForPlayback(_ pictureInPictureController: AVPictureInPictureController) -> CMTimeRange {
         let duration = delegate?.pipControllerDuration(self) ?? 0
         if duration > 0 {
             let cmDuration = CMTime(seconds: duration, preferredTimescale: 1000)
@@ -148,12 +151,8 @@ extension PiPController: AVPictureInPictureSampleBufferPlaybackDelegate {
         return CMTimeRange(start: .zero, duration: .positiveInfinity)
     }
     
-    func pictureInPictureControllerTimeRangeForPlayback(_ pictureInPictureController: AVPictureInPictureController) -> CMTimeRange {
-        return timeRangeForPlayback
-    }
-    
     func pictureInPictureControllerIsPlaybackPaused(_ pictureInPictureController: AVPictureInPictureController) -> Bool {
-        return !isPlaying
+        return !(delegate?.pipControllerIsPlaying(self) ?? false)
     }
     
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, setPlaying playing: Bool, completion: @escaping () -> Void) {
@@ -162,6 +161,23 @@ extension PiPController: AVPictureInPictureSampleBufferPlaybackDelegate {
         } else {
             delegate?.pipControllerPause(self)
         }
+        DispatchQueue.main.async { [weak self] in
+            self?.pipController?.invalidatePlaybackState()
+        }
         completion()
+    }
+    
+    func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, timeRangeForPlayback sampleBufferDisplayLayer: AVSampleBufferDisplayLayer) -> CMTimeRange {
+        let duration = delegate?.pipControllerDuration(self) ?? 0
+        if duration > 0 {
+            let cmDuration = CMTime(seconds: duration, preferredTimescale: 1000)
+            return CMTimeRange(start: .zero, duration: cmDuration)
+        }
+        return CMTimeRange(start: .zero, duration: .positiveInfinity)
+    }
+    
+    func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, currentTimeFor sampleBufferDisplayLayer: AVSampleBufferDisplayLayer) -> CMTime {
+        let currentTime = delegate?.pipControllerCurrentTime(self) ?? 0
+        return CMTime(seconds: currentTime, preferredTimescale: 1000)
     }
 }

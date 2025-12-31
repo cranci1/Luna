@@ -213,34 +213,38 @@ final class PlayerViewController: UIViewController {
     
     class SubtitleModel: ObservableObject {
         @Published var currentAttributedText: NSAttributedString = NSAttributedString()
+        
+        private var isLoading: Bool = true
+        
         @Published var isVisible: Bool = false {
             didSet {
-                saveSubtitleSettings()
+                if !isLoading { saveSubtitleSettings() }
             }
         }
         @Published var foregroundColor: UIColor = .white {
             didSet {
-                saveSubtitleSettings()
+                if !isLoading { saveSubtitleSettings() }
             }
         }
         @Published var strokeColor: UIColor = .black {
             didSet {
-                saveSubtitleSettings()
+                if !isLoading { saveSubtitleSettings() }
             }
         }
         @Published var strokeWidth: CGFloat = 1.0 {
             didSet {
-                saveSubtitleSettings()
+                if !isLoading { saveSubtitleSettings() }
             }
         }
-        @Published var fontSize: CGFloat = 24.0 {
+        @Published var fontSize: CGFloat = 38.0 {
             didSet {
-                saveSubtitleSettings()
+                if !isLoading { saveSubtitleSettings() }
             }
         }
         
         init() {
             loadSubtitleSettings()
+            isLoading = false
         }
         
         private func saveSubtitleSettings() {
@@ -260,14 +264,18 @@ final class PlayerViewController: UIViewController {
         private func loadSubtitleSettings() {
             let defaults = UserDefaults.standard
             
-            isVisible = defaults.bool(forKey: "subtitles_isVisible")
-            strokeWidth = CGFloat(defaults.double(forKey: "subtitles_strokeWidth"))
-            if strokeWidth == 0 {
-                strokeWidth = 1.0
+            if defaults.object(forKey: "subtitles_isVisible") != nil {
+                isVisible = defaults.bool(forKey: "subtitles_isVisible")
             }
-            fontSize = CGFloat(defaults.double(forKey: "subtitles_fontSize"))
-            if fontSize == 0 {
-                fontSize = 24.0
+            
+            if defaults.object(forKey: "subtitles_strokeWidth") != nil {
+                let width = CGFloat(defaults.double(forKey: "subtitles_strokeWidth"))
+                strokeWidth = width > 0 ? width : 1.0
+            }
+            
+            if defaults.object(forKey: "subtitles_fontSize") != nil {
+                let size = CGFloat(defaults.double(forKey: "subtitles_fontSize"))
+                fontSize = size > 0 ? size : 38.0
             }
             
             if let foregroundData = defaults.data(forKey: "subtitles_foregroundColor"),
@@ -1199,9 +1207,11 @@ extension PlayerViewController: PiPControllerDelegate {
         let seconds = CMTimeGetSeconds(interval)
         let target = max(0, cachedPosition + seconds)
         renderer.seek(to: target)
+        pipController?.updatePlaybackState()
     }
     func pipControllerIsPlaying(_ controller: PiPController) -> Bool { return !renderer.isPausedState }
     func pipControllerDuration(_ controller: PiPController) -> Double { return cachedDuration }
+    func pipControllerCurrentTime(_ controller: PiPController) -> Double { return cachedPosition }
     
     @objc private func appDidEnterBackground() {
         DispatchQueue.main.async { [weak self] in

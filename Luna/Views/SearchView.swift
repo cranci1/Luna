@@ -89,125 +89,87 @@ struct SearchView: View {
         }
     }
     
+    private var serviceSelector: some View {
+        Menu {
+            Button(action: {
+                selectedService = nil
+                serviceSearchResults = []
+                if !searchText.isEmpty {
+                    performSearch()
+                }
+            }) {
+                HStack {
+                    Image(systemName: "tv.fill")
+                        .font(.system(size: 16))
+                    Text("TMDB")
+                    if selectedService == nil {
+                        Spacer()
+                        Image(systemName: "checkmark")
+                    }
+                }
+            }
+            
+            ForEach(serviceManager.services.filter({ $0.isActive })) { service in
+                Button(action: {
+                    selectedService = service
+                    searchResults = []
+                    if !searchText.isEmpty {
+                        performServiceSearch(service: service)
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        KFImage(URL(string: service.metadata.iconUrl))
+                            .placeholder {
+                                Image(systemName: "app.dashed")
+                                    .foregroundColor(.secondary)
+                            }
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .clipShape(Circle())
+                        
+                        Text(service.metadata.sourceName)
+                        if selectedService?.id == service.id {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            if let service = selectedService {
+                KFImage(URL(string: service.metadata.iconUrl))
+                    .placeholder {
+                        Image(systemName: "app.dashed")
+                            .foregroundColor(.secondary)
+                    }
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "tv.fill")
+                    .font(.system(size: 18))
+            }
+        }
+    }
+    
     private var searchContent: some View {
         ScrollView {
             VStack(spacing: 12) {
                 HStack(spacing: 8) {
-                    Menu {
-                        Button(action: {
-                            selectedService = nil
+                    SearchBarLuna(text: $searchText) {
+                        performSearchOrDownloadService()
+                    }
+                    .onChangeComp(of: searchText) { _, newValue in
+                        if newValue.isEmpty {
+                            searchResults = []
                             serviceSearchResults = []
-                            if !searchText.isEmpty {
-                                performSearch()
-                            }
-                        }) {
-                            HStack {
-                                Image(systemName: "tv.fill")
-                                    .font(.system(size: 16))
-                                Text("TMDB")
-                                if selectedService == nil {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
-                            }
+                            errorMessage = nil
                         }
-                        
-                        ForEach(serviceManager.services.filter({ $0.isActive })) { service in
-                            Button(action: {
-                                selectedService = service
-                                searchResults = []
-                                if !searchText.isEmpty {
-                                    performServiceSearch(service: service)
-                                }
-                            }) {
-                                HStack(spacing: 8) {
-                                    KFImage(URL(string: service.metadata.iconUrl))
-                                        .placeholder {
-                                            Image(systemName: "app.dashed")
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 20, height: 20)
-                                        .clipShape(Circle())
-                                    
-                                    Text(service.metadata.sourceName)
-                                    if selectedService?.id == service.id {
-                                        Spacer()
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 6) {
-                            if let service = selectedService {
-                                KFImage(URL(string: service.metadata.iconUrl))
-                                    .placeholder {
-                                        Image(systemName: "app.dashed")
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 18, height: 18)
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "tv.fill")
-                                    .font(.system(size: 14))
-                            }
-                            Text(selectedService?.metadata.sourceName ?? "TMDB")
-                                .font(.caption)
-                                .lineLimit(1)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-#if !os(tvOS)
-                        .background(Color(.systemGray6))
-#endif
-                        .cornerRadius(8)
-                    }
-                    .foregroundColor(.primary)
-                    
-                    HStack(spacing: 8) {
-                        TextField("Search...", text: $searchText)
-#if os(iOS)
-                            .padding(6)
-                            .padding(.horizontal, 25)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
-                            .overlay(
-                                HStack {
-                                    Image(systemName: "magnifyingglass")
-                                        .foregroundColor(.gray)
-                                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-                                        .padding(.leading, 8)
-                                    
-                                    if !searchText.isEmpty {
-                                        Button(action: {
-                                            searchText = ""
-                                            searchResults = []
-                                            errorMessage = nil
-                                        }) {
-                                            Image(systemName: "multiply.circle.fill")
-                                                .foregroundColor(.gray)
-                                                .padding(.trailing, 8)
-                                        }
-                                    }
-                                }
-                            )
-#endif
-                            .onSubmit {
-                                performSearchOrDownloadService()
-                            }
-                            .onChangeComp(of: searchText) { _, newValue in
-                                if newValue.isEmpty {
-                                    searchResults = []
-                                    errorMessage = nil
-                                }
-                            }
                     }
                     
-                    if !searchResults.isEmpty {
+                    if !searchResults.isEmpty && selectedService == nil {
                         Menu {
                             ForEach(SearchFilter.allCases, id: \.self) { filter in
                                 Button(action: {
@@ -400,6 +362,11 @@ struct SearchView: View {
             }
         }
         .navigationTitle("Search")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                serviceSelector
+            }
+        }
         .alert("Service Downloaded", isPresented: $showServiceDownloadAlert) {
             Button("OK") { }
         } message: {
@@ -537,44 +504,68 @@ struct ServiceSearchResultCard: View {
     let service: Service
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            AsyncImage(url: URL(string: item.imageUrl)) { phase in
-                switch phase {
-                case .empty:
+        VStack(spacing: 8) {
+            KFImage(URL(string: item.imageUrl))
+                .placeholder {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .aspectRatio(2/3, contentMode: .fit)
-                        .overlay(
-                            ProgressView()
-                        )
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .aspectRatio(2/3, contentMode: .fit)
-                        .clipped()
-                case .failure:
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .aspectRatio(2/3, contentMode: .fit)
                         .overlay(
                             Image(systemName: "photo")
                                 .foregroundColor(.gray)
                         )
-                @unknown default:
-                    EmptyView()
                 }
-            }
-            .cornerRadius(8)
+                .resizable()
+                .aspectRatio(2/3, contentMode: .fill)
+                .frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
             
             Text(item.title)
                 .font(.caption)
+                .fontWeight(.medium)
+                .multilineTextAlignment(.center)
                 .lineLimit(2)
+                .frame(height: 34)
                 .foregroundColor(.primary)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
-#Preview {
-    SearchView()
+struct SearchBarLuna: View {
+    @State private var debounceTimer: Timer?
+    @Binding var text: String
+    var onSearchButtonClicked: () -> Void
+    
+    var body: some View {
+        HStack {
+            TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
+                
+                .padding(7)
+                .padding(.horizontal, 25)
+#if !os(iOS)
+                .background(Color(.systemGray6))
+#endif
+                .cornerRadius(8)
+                .contentShape(Rectangle())
+                .overlay(
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 8)
+                        
+                        if !text.isEmpty {
+                            Button(action: {
+                                self.text = ""
+                            }) {
+                                Image(systemName: "multiply.circle.fill")
+                                    .foregroundColor(.secondary)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
+                )
+        }
+    }
 }
