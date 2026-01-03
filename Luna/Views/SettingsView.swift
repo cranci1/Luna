@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.colorScheme) var colorScheme
+
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
-    @StateObject private var algorithmManager = AlgorithmManager.shared
     @AppStorage("showKanzen") private var showKanzen: Bool = false
-    
+
+    @StateObject private var algorithmManager = AlgorithmManager.shared
+
     let languages = [
         ("en-US", "English (US)"),
         ("en-GB", "English (UK)"),
@@ -40,35 +43,17 @@ struct SettingsView: View {
     
     var body: some View {
         #if os(tvOS)
-            HStack(spacing: 0) {
-                VStack(spacing: 30) {
-                    Image("Luna")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 500, height: 500)
-                        .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
-                        .shadow(radius: 10)
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    sidebarView
+                        .frame(width: geometry.size.width * 0.4)
+                        .frame(maxHeight: .infinity)
 
-                    VStack(spacing: 15) {
-                        Text("Version \(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
-                            .font(.footnote)
-                            .fontWeight(.regular)
-                            .foregroundColor(.secondary)
-
-                        Text("Copyright © \(String(Calendar.current.component(.year, from: Date()))) Luna by Cranci")
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
+                    NavigationStack {
+                        settingsContent
                     }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                NavigationStack {
-                    settingsContent
-                        // prevent row clipping
-                        .padding(.horizontal, 20)
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         #else
             if #available(iOS 16.0, *) {
@@ -82,6 +67,30 @@ struct SettingsView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
             }
         #endif
+    }
+
+    private var sidebarView: some View {
+        VStack(spacing: 30) {
+            Image("Luna")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 500, height: 500)
+                .background(colorScheme == .dark ? .black : .white)
+                .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
+                .shadow(radius: 10)
+
+            VStack(spacing: 15) {
+                Text("Version \(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
+                    .font(.footnote)
+                    .fontWeight(.regular)
+                    .foregroundColor(.secondary)
+
+                Text("Copyright © \(String(Calendar.current.component(.year, from: Date()))) Luna by Cranci")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+        }
     }
 
     private var settingsContent: some View {
@@ -104,9 +113,12 @@ struct SettingsView: View {
                     Text("Content Filters")
                 }
             } header: {
-                Text("TMDB Settings")
+                Text("TMDB SETTINGS")
+                    .fontWeight(.bold)
             } footer: {
                 Text("Configure language preferences and content filtering options for TMDB data.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
             }
             
             Section {
@@ -124,8 +136,11 @@ struct SettingsView: View {
                 }
             } header: {
                 Text("SEARCH SETTINGS")
+                    .fontWeight(.bold)
             } footer: {
                 Text("Choose the algorithm used to match and rank search results.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
             }
             
             Section {
@@ -140,20 +155,23 @@ struct SettingsView: View {
                 NavigationLink(destination: ServicesView()) {
                     Text("Services")
                 }
-            }
 
-            Section {
                 NavigationLink(destination: StorageView()) {
                     Text("Storage")
                 }
-                
+
                 NavigationLink(destination: LoggerView()) {
                     Text("Logger")
                 }
             } header: {
-                Text("MICS")
+                Text("MISCELLANEOUS")
+                    .fontWeight(.bold)
+            } footer: {
+                Text("")
+                    .padding(.bottom)
             }
-            
+
+            #if !os(tvOS)
             Section{
                 Text("Switch to Kanzen")
                     .onTapGesture {
@@ -161,40 +179,17 @@ struct SettingsView: View {
                     }
             }
             header:{
-                Text("Others")
+                Text("OTHERS")
+                    .fontWeight(.bold)
             }
+            #endif
         }
         #if !os(tvOS)
             .navigationTitle("Settings")
         #else
             .listStyle(.grouped)
+            .padding(.horizontal, 50)
             .scrollClipDisabled()
         #endif
-    }
-}
-
-struct LanguageSelectionView: View {
-    @StateObject private var accentColorManager = AccentColorManager.shared
-    @Binding var selectedLanguage: String
-    let languages: [(String, String)]
-    
-    var body: some View {
-        List {
-            ForEach(languages, id: \.0) { language in
-                HStack {
-                    Text(language.1)
-                    Spacer()
-                    if selectedLanguage == language.0 {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(accentColorManager.currentAccentColor)
-                    }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    selectedLanguage = language.0
-                }
-            }
-        }
-        .navigationTitle("Language")
     }
 }

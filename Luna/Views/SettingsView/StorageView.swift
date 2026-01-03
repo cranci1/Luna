@@ -16,44 +16,79 @@ struct StorageView: View {
     
     var body: some View {
         List {
-            Section(header: Text("APP CACHE"), footer: Text("Cache includes images and other temporary files that can be removed.")) {
-                HStack {
-                    Text("Cache Size")
-                    Spacer()
-                    if isLoading {
-                        ProgressView()
-                    } else {
-                        Text(formattedCacheSize)
-                            .foregroundColor(.secondary)
+            Section {
+                Button {
+
+                } label: {
+                    HStack {
+                        Text("Cache Size")
+
+                        Spacer()
+
+                        if isLoading {
+                            ProgressView()
+                        } else {
+                            Text(formattedCacheSize)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
-                
+                .buttonStyle(.plain)
+                .disabled(true)
+                #if os(tvOS)
+                    .padding(.vertical)
+                #endif
+
                 Button(role: .destructive) {
                     showConfirmClear = true
                 } label: {
-                    if isClearing {
-                        HStack {
+                    HStack {
+                        if isClearing {
                             ProgressView()
                             Text("Clearing Cache…")
+                            Spacer()
+                        } else {
+                            Text("Clear Cache")
+                            Spacer()
                         }
-                    } else {
-                        Text("Clear Cache")
                     }
                 }
+                .buttonStyle(.plain)
                 .disabled(isClearing || (isLoading && cacheSizeBytes == 0))
+                #if os(tvOS)
+                    .padding(.vertical)
+                #endif
+            } header: {
+                Text("APP CACHE")
+                    .fontWeight(.bold)
+            } footer: {
+                Text("Cache includes images and other temporary files that can be removed.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
             }
-            
+
             if let errorMessage {
-                Section(header: Text("ERROR")) {
-                    Text(errorMessage).foregroundColor(.red)
+                Section {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                } header: {
+                    Text("ERROR")
+                        .fontWeight(.bold)
                 }
             }
         }
-        .navigationTitle("Storage")
+        #if os(tvOS)
+            .listStyle(.grouped)
+            .padding(.horizontal, 50)
+            .scrollClipDisabled()
+        #else
+            .navigationTitle("Storage")
+        #endif
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: refreshCacheSize) {
                     Image(systemName: "arrow.clockwise")
+                        .tint(.primary)
                 }
                 .disabled(isLoading || isClearing)
                 .help("Recalculate cache size")

@@ -25,10 +25,6 @@ struct HomeView: View {
     @State private var isHoveringWatchlist = false
     
     @State private var hasLoadedContent = false
-    @State private var continueWatchingItems: [ContinueWatchingItem] = []
-    @State private var heroLogoURL: String?
-    
-    @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
     
     @AppStorage("homeSections") private var homeSectionsData: Data = {
         if let data = try? JSONEncoder().encode(HomeSection.defaultSections) {
@@ -87,8 +83,6 @@ struct HomeView: View {
         .onAppear {
             if !hasLoadedContent {
                 loadContent()
-            } else {
-                continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
             }
         }
         .onChangeComp(of: contentFilter.filterHorror) { _, _ in
@@ -146,21 +140,10 @@ struct HomeView: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
                 heroSection
-                continueWatchingSection
                 contentSections
             }
         }
         .ignoresSafeArea(edges: [.top, .leading, .trailing])
-    }
-    
-    @ViewBuilder
-    private var continueWatchingSection: some View {
-        if !continueWatchingItems.isEmpty {
-            ContinueWatchingSection(
-                items: continueWatchingItems,
-                tmdbService: tmdbService
-            )
-        }
     }
     
     @ViewBuilder
@@ -227,18 +210,13 @@ struct HomeView: View {
                     }
                 }
                 
-                if let heroLogoURL = heroLogoURL {
-                    KFImage(URL(string: heroLogoURL))
-                        .placeholder {
-                            heroTitleText(hero)
-                        }
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: isTvOS ? 400 : 280, maxHeight: isTvOS ? 120 : 80)
-                        .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
-                } else {
-                    heroTitleText(hero)
-                }
+                Text(hero.displayTitle)
+                    .font(.system(size: isTvOS ? 40 : 25))
+                    .fontWeight(.bold)
+                    .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
                 
                 if let overview = hero.overview, !overview.isEmpty {
                     Text(String(overview.prefix(100)) + (overview.count > 100 ? "..." : ""))
@@ -324,17 +302,6 @@ struct HomeView: View {
     }
     
     @ViewBuilder
-    private func heroTitleText(_ hero: TMDBSearchResult) -> some View {
-        Text(hero.displayTitle)
-            .font(.system(size: isTvOS ? 40 : 25))
-            .fontWeight(.bold)
-            .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
-            .foregroundColor(.white)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
-    }
-    
-    @ViewBuilder
     private var contentSections: some View {
         VStack(spacing: 0) {
             ForEach(homeSections.filter { $0.isEnabled }) { section in
@@ -402,7 +369,6 @@ struct HomeView: View {
     private func loadContent() {
         isLoading = true
         errorMessage = nil
-        continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
         
         Task {
             do {
@@ -431,10 +397,6 @@ struct HomeView: View {
                         self.hasLoadedContent = true
                     }
                 }
-                
-                if let hero = await MainActor.run(body: { self.heroContent }) {
-                    await loadHeroLogo(for: hero)
-                }
             } catch {
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
@@ -442,27 +404,6 @@ struct HomeView: View {
                     Logger.shared.log("Error loading content: \(error)", type: "Error")
                 }
             }
-        }
-    }
-    
-    private func loadHeroLogo(for hero: TMDBSearchResult) async {
-        do {
-            let images: TMDBImagesResponse
-            if hero.isMovie {
-                images = try await tmdbService.getMovieImages(id: hero.id, preferredLanguage: selectedLanguage)
-            } else {
-                images = try await tmdbService.getTVShowImages(id: hero.id, preferredLanguage: selectedLanguage)
-            }
-            
-            if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        self.heroLogoURL = logo.fullURL
-                    }
-                }
-            }
-        } catch {
-            Logger.shared.log("Error loading hero logo: \(error)", type: "Warning")
         }
     }
 }
@@ -618,249 +559,6 @@ struct ContinuousHoverModifier: ViewModifier {
                 }
         } else {
             content
-        }
-    }
-}
-
-// MARK: - Continue Watching Section
-
-struct ContinueWatchingSection: View {
-    let items: [ContinueWatchingItem]
-    let tmdbService: TMDBService
-    
-    var gap: Double { isTvOS ? 50.0 : 16.0 }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Continue Watching")
-                    .font(isTvOS ? .headline : .title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                Spacer()
-            }
-            .padding(.horizontal, isTvOS ? 40 : 16)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: gap) {
-                    ForEach(items) { item in
-                        ContinueWatchingCard(item: item, tmdbService: tmdbService)
-                    }
-                }
-                .padding(.horizontal, isTvOS ? 40 : 16)
-            }
-            .modifier(ScrollClipModifier())
-            .buttonStyle(.borderless)
-        }
-        .padding(.top, isTvOS ? 40 : 24)
-    }
-}
-
-struct ContinueWatchingCard: View {
-    let item: ContinueWatchingItem
-    let tmdbService: TMDBService
-    
-    @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
-    
-    @State private var backdropURL: String?
-    @State private var logoURL: String?
-    @State private var title: String = ""
-    @State private var isHovering: Bool = false
-    @State private var isLoaded: Bool = false
-    
-    private var cardWidth: CGFloat { isTvOS ? 380 : 260 }
-    private var cardHeight: CGFloat { isTvOS ? 220 : 146 }
-    private var logoMaxWidth: CGFloat { isTvOS ? 200 : 140 }
-    private var logoMaxHeight: CGFloat { isTvOS ? 60 : 40 }
-    
-    var body: some View {
-        NavigationLink(destination: destinationView) {
-            ZStack(alignment: .bottomLeading) {
-                ZStack {
-                    if let backdropURL = backdropURL {
-                        KFImage(URL(string: backdropURL))
-                            .placeholder {
-                                backdropPlaceholder
-                            }
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else {
-                        backdropPlaceholder
-                    }
-                }
-                .frame(width: cardWidth, height: cardHeight)
-                .clipped()
-                
-                LinearGradient(
-                    gradient: Gradient(stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(color: .black.opacity(0.3), location: 0.4),
-                        .init(color: .black.opacity(0.85), location: 1.0)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                
-                VStack(alignment: .leading, spacing: isTvOS ? 10 : 6) {
-                    Spacer()
-                    
-                    HStack(alignment: .bottom, spacing: isTvOS ? 12 : 8) {
-                        if let logoURL = logoURL {
-                            KFImage(URL(string: logoURL))
-                                .placeholder {
-                                    titleText
-                                }
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: logoMaxWidth, maxHeight: logoMaxHeight, alignment: .leading)
-                        } else {
-                            titleText
-                        }
-                        
-                        Spacer()
-                        
-                        if !item.isMovie, let season = item.seasonNumber, let episode = item.episodeNumber {
-                            Text("S\(season) E\(episode)")
-                                .font(isTvOS ? .subheadline : .caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.white.opacity(0.9))
-                        }
-                    }
-                    
-                    HStack(spacing: isTvOS ? 12 : 8) {
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(Color.white.opacity(0.3))
-                                    .frame(height: isTvOS ? 6 : 4)
-                                
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(Color.white)
-                                    .frame(width: geometry.size.width * item.progress, height: isTvOS ? 6 : 4)
-                            }
-                        }
-                        .frame(height: isTvOS ? 6 : 4)
-                        
-                        Text(item.remainingTime)
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white.opacity(0.8))
-                            .fixedSize()
-                    }
-                }
-                .padding(isTvOS ? 16 : 12)
-            }
-            .frame(width: cardWidth, height: cardHeight)
-            .clipShape(RoundedRectangle(cornerRadius: isTvOS ? 16 : 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: isTvOS ? 16 : 12)
-                    .stroke(Color.white.opacity(isHovering ? 0.5 : 0.2), lineWidth: isHovering ? 2 : 1)
-            )
-            .shadow(color: .black.opacity(0.3), radius: isHovering ? 12 : 6, x: 0, y: isHovering ? 8 : 4)
-            .scaleEffect(isHovering ? 1.02 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: isHovering)
-            .modifier(ContinuousHoverModifier(isHovering: $isHovering))
-        }
-        .tvos({ view in
-            view.buttonStyle(BorderlessButtonStyle())
-        }, else: { view in
-            view.buttonStyle(PlainButtonStyle())
-        })
-        .task {
-            await loadMediaDetails()
-        }
-    }
-    
-    @ViewBuilder
-    private var titleText: some View {
-        Text(title)
-            .font(isTvOS ? .title3 : .subheadline)
-            .fontWeight(.bold)
-            .foregroundColor(.white)
-            .lineLimit(2)
-            .multilineTextAlignment(.leading)
-            .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-    }
-    
-    @ViewBuilder
-    private var backdropPlaceholder: some View {
-        Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.2)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                Image(systemName: item.isMovie ? "film" : "tv")
-                    .font(isTvOS ? .largeTitle : .title)
-                    .foregroundColor(.gray.opacity(0.5))
-            )
-    }
-    
-    @ViewBuilder
-    private var destinationView: some View {
-        if isLoaded {
-            MediaDetailView(searchResult: TMDBSearchResult(
-                id: item.tmdbId,
-                mediaType: item.isMovie ? "movie" : "tv",
-                title: item.isMovie ? title : nil,
-                name: item.isMovie ? nil : title,
-                overview: nil,
-                posterPath: nil,
-                backdropPath: nil,
-                releaseDate: nil,
-                firstAirDate: nil,
-                voteAverage: nil,
-                popularity: 0,
-                adult: false,
-                genreIds: nil
-            ))
-        } else {
-            ProgressView()
-        }
-    }
-    
-    private func loadMediaDetails() async {
-        guard !isLoaded else { return }
-        
-        do {
-            if item.isMovie {
-                async let detailsTask = tmdbService.getMovieDetails(id: item.tmdbId)
-                async let imagesTask = tmdbService.getMovieImages(id: item.tmdbId, preferredLanguage: selectedLanguage)
-                
-                let (details, images) = try await (detailsTask, imagesTask)
-                
-                await MainActor.run {
-                    self.title = details.title
-                    self.backdropURL = details.fullBackdropURL ?? details.fullPosterURL
-                    if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
-                        self.logoURL = logo.fullURL
-                    }
-                    self.isLoaded = true
-                }
-            } else {
-                async let detailsTask = tmdbService.getTVShowDetails(id: item.tmdbId)
-                async let imagesTask = tmdbService.getTVShowImages(id: item.tmdbId, preferredLanguage: selectedLanguage)
-                
-                let (details, images) = try await (detailsTask, imagesTask)
-                
-                await MainActor.run {
-                    self.title = details.name
-                    self.backdropURL = details.fullBackdropURL ?? details.fullPosterURL
-                    if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
-                        self.logoURL = logo.fullURL
-                    }
-                    self.isLoaded = true
-                }
-            }
-        } catch {
-            await MainActor.run {
-                self.title = item.isMovie ? "Movie" : "TV Show"
-                self.isLoaded = true
-            }
         }
     }
 }

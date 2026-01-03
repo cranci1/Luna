@@ -23,9 +23,16 @@ struct ServicesView: View {
                 } else {
                     servicesList
                 }
+
+                storageStatusView
             }
-            .navigationTitle("Services")
-#if !os(tvOS)
+            #if os(tvOS)
+                .listStyle(.grouped)
+                .padding(.horizontal, 50)
+                .scrollClipDisabled()
+            #else
+                .navigationTitle("Services")
+            #endif
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if editMode?.wrappedValue != .active {
@@ -33,23 +40,37 @@ struct ServicesView: View {
                             showDownloadAlert = true
                         } label: {
                             Image(systemName: "plus.app")
+                                .tint(.primary)
                         }
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        withAnimation {
-                            editMode?.wrappedValue =
-                            (editMode?.wrappedValue == .active) ? .inactive : .active
+
+                #if !os(tvOS)
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            withAnimation {
+                                editMode?.wrappedValue =
+                                (editMode?.wrappedValue == .active) ? .inactive : .active
+                            }
+                        } label: {
+                            Image(systemName:
+                                    editMode?.wrappedValue == .active ? "checkmark" : "pencil")
                         }
-                    } label: {
-                        Image(systemName:
-                                editMode?.wrappedValue == .active ? "checkmark" : "pencil")
                     }
-                }
+                #else
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            Task {
+                                await serviceManager.updateServices()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .tint(.primary)
+                        }
+                        .disabled(serviceManager.isDownloading)
+                    }
+                #endif
             }
-#endif
             .refreshable {
                 await serviceManager.updateServices()
             }
@@ -81,24 +102,67 @@ struct ServicesView: View {
             
             Text("No Services")
                 .font(.title2)
+                .foregroundColor(.secondary)
                 .fontWeight(.semibold)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     @ViewBuilder
     private var servicesList: some View {
         List {
-            ForEach(serviceManager.services, id: \.id) { service in
-                ServiceRow(service: service, serviceManager: serviceManager)
-            }
-            .onDelete(perform: deleteServices)
-            .onMove { indices, newOffset in
-                serviceManager.moveServices(fromOffsets: indices, toOffset: newOffset)
+            Section {
+                ForEach(serviceManager.services, id: \.id) { service in
+                    ServiceRow(service: service, serviceManager: serviceManager)
+                }
+                #if !os(tvOS)
+                    .onDelete(perform: deleteServices)
+                    .onMove { indices, newOffset in
+                        serviceManager.moveServices(fromOffsets: indices, toOffset: newOffset)
+                    }
+                #endif
+            } header: {
+                #if os(tvOS)
+                    Text("SERVICES")
+                        .fontWeight(.bold)
+                #endif
             }
         }
     }
-    
+
+    @ViewBuilder
+    private var storageStatusView: some View {
+        let status = ServiceManager.shared.getStatus()
+
+        HStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: status.symbol)
+                    .foregroundColor(status.tint)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("iCloud Status:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    Text(status.description)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+            }
+            #if os(tvOS)
+                .padding(.horizontal, 20)
+                .padding(.vertical)
+                .applyLiquidGlassBackground(cornerRadius: 40)
+            #endif
+
+            Spacer()
+        }
+        .padding()
+        #if !os(tvOS)
+            .background(Color(.secondarySystemBackground))
+        #endif
+    }
+
     private func deleteServices(offsets: IndexSet) {
         for index in offsets {
             let service = serviceManager.services[index]
@@ -143,78 +207,122 @@ struct ServiceRow: View {
     }
     
     var body: some View {
-        HStack {
-            KFImage(URL(string: service.metadata.iconUrl))
-                .placeholder {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.2))
-                        .overlay(
-                            Image(systemName: "app.dashed")
-                                .foregroundColor(.secondary)
-                        )
+        #if os(tvOS)
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    serviceManager.setServiceState(service, isActive: !isServiceActive)
                 }
-                .resizable()
-                .frame(width: 40, height: 40)
-                .clipShape(Circle())
-                .padding(.trailing, 10)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(service.metadata.sourceName)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                
-                HStack(spacing: 8) {
-                    Text(service.metadata.author.name)
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                    
-                    Text("•")
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                    
-                    Text(service.metadata.language)
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                    
-                    Text("•")
-                        .font(.caption)
-                        .foregroundStyle(.gray)
-                    
-                    Text("v\(service.metadata.version)")
-                        .font(.caption)
-                        .foregroundStyle(.gray)
+            } label: {
+                HStack {
+                    KFImage(URL(string: service.metadata.iconUrl))
+                        .placeholder {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.gray.opacity(0.2))
+                                .overlay(
+                                    Image(systemName: "app.dashed")
+                                        .foregroundColor(.secondary)
+                                )
+                        }
+                        .resizable()
+                        .frame(width: 70, height: 70)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(service.metadata.sourceName)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Text("\(service.metadata.author.name) •  \(service.metadata.language) • v\(service.metadata.version)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    HStack(spacing: 5) {
+                        if hasSettings {
+                            Button(action: {
+                                showingSettings = true
+                            }) {
+                                Image(systemName: "pencil")
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 20, height: 20)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+
+                        if isServiceActive {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.accentColor)
+                                .frame(width: 20, height: 20)
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingSettings) {
+                    ServiceSettingsView(service: service, serviceManager: serviceManager)
+
                 }
             }
-            
-            Spacer()
-            
-            HStack(spacing: 12) {
-                if hasSettings {
-                    Button(action: {
-                        showingSettings = true
-                    }) {
-                        Image(systemName: "pencil")
-                            .foregroundStyle(Color.secondary)
+            .buttonStyle(.plain)
+            .padding(.vertical)
+        #else
+            HStack {
+                KFImage(URL(string: service.metadata.iconUrl))
+                    .placeholder {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.gray.opacity(0.2))
+                            .overlay(
+                                Image(systemName: "app.dashed")
+                                    .foregroundColor(.secondary)
+                            )
+                    }
+                    .resizable()
+                    .frame(width: 40, height: 40)
+                    .clipShape(Circle())
+                    .padding(.trailing, 10)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(service.metadata.sourceName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    Text("\(service.metadata.author.name) •  \(service.metadata.language) • v\(service.metadata.version)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                HStack(spacing: 12) {
+                    /* Temporarily disabled until i have more time or someone else implements this.
+                    if hasSettings {
+                        Button(action: {
+                            showingSettings = true
+                        }) {
+                            Image(systemName: "pencil")
+                                .foregroundColor(.secondary)
+                                .frame(width: 20, height: 20)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                     */
+
+                    if isServiceActive {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.accentColor)
                             .frame(width: 20, height: 20)
                     }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                if isServiceActive {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.accentColor)
-                        .frame(width: 20, height: 20)
                 }
             }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                serviceManager.setServiceState(service, isActive: !isServiceActive)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    serviceManager.setServiceState(service, isActive: !isServiceActive)
+                }
             }
-        }
-        .sheet(isPresented: $showingSettings) {
-            ServiceSettingsView(service: service, serviceManager: serviceManager)
-        }
+            .sheet(isPresented: $showingSettings) {
+                ServiceSettingsView(service: service, serviceManager: serviceManager)
+            }
+        #endif
     }
 }

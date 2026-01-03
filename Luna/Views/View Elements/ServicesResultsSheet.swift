@@ -9,71 +9,11 @@ import AVKit
 import SwiftUI
 import Kingfisher
 
-struct StreamOption: Identifiable {
+struct StreamOption {
     let id = UUID()
     let name: String
     let url: String
     let headers: [String: String]?
-    let subtitle: String?
-}
-
-@MainActor
-final class ModulesSearchResultsViewModel: ObservableObject {
-    @Published var moduleResults: [UUID: [SearchItem]] = [:]
-    @Published var isSearching = true
-    @Published var searchedServices: Set<UUID> = []
-    @Published var failedServices: Set<UUID> = []
-    @Published var totalServicesCount = 0
-    
-    @Published var isFetchingStreams = false
-    @Published var currentFetchingTitle = ""
-    @Published var streamFetchProgress = ""
-    @Published var streamOptions: [StreamOption] = []
-    @Published var streamError: String?
-    @Published var showingStreamError = false
-    @Published var showingStreamMenu = false
-    
-    @Published var selectedResult: SearchItem?
-    @Published var showingPlayAlert = false
-    @Published var expandedServices: Set<UUID> = []
-    @Published var showingFilterEditor = false
-    @Published var highQualityThreshold: Double = 0.9
-    
-    @Published var showingSeasonPicker = false
-    @Published var showingEpisodePicker = false
-    @Published var showingSubtitlePicker = false
-    @Published var availableSeasons: [[EpisodeLink]] = []
-    @Published var selectedSeasonIndex = 0
-    @Published var pendingEpisodes: [EpisodeLink] = []
-    @Published var subtitleOptions: [(title: String, url: String)] = []
-    
-    var pendingSubtitles: [String]?
-    var pendingService: Service?
-    var pendingResult: SearchItem?
-    var pendingJSController: JSController?
-    var pendingStreamURL: String?
-    var pendingHeaders: [String: String]?
-    var pendingDefaultSubtitle: String?
-    
-    init() {
-        highQualityThreshold = UserDefaults.standard.object(forKey: "highQualityThreshold") as? Double ?? 0.9
-    }
-    
-    func resetPickerState() {
-        availableSeasons = []
-        pendingEpisodes = []
-        pendingResult = nil
-        pendingJSController = nil
-        selectedSeasonIndex = 0
-        isFetchingStreams = false
-    }
-    
-    func resetStreamState() {
-        isFetchingStreams = false
-        showingStreamMenu = false
-        pendingSubtitles = nil
-        pendingService = nil
-    }
 }
 
 struct ModulesSearchResultsSheet: View {
@@ -84,37 +24,85 @@ struct ModulesSearchResultsSheet: View {
     let tmdbId: Int
     
     @Environment(\.presentationMode) var presentationMode
-    @StateObject private var viewModel = ModulesSearchResultsViewModel()
+    @State private var moduleResults: [(service: Service, results: [SearchItem])] = []
+    @State private var selectedResult: SearchItem?
+    @State private var showingPlayAlert = false
+    @State private var expandedServices: Set<UUID> = []
+    @State private var isSearching = true
+    @State private var searchedServices: Set<UUID> = []
+    @State private var failedServices: Set<UUID> = []
+    @State private var totalServicesCount = 0
+    @State private var player: AVPlayer?
+    @State private var playerViewController: NormalPlayer?
+    @State private var streamOptions: [StreamOption] = []
+    @State private var pendingSubtitles: [String]?
+    @State private var pendingService: Service?
+    @State private var showingStreamMenu = false
+    @State private var isFetchingStreams = false
+    @State private var currentFetchingTitle = ""
+    @State private var streamFetchProgress = ""
+    @State private var showingAlgorithmPicker = false
+    @State private var showingFilterEditor = false
+    @State private var highQualityThreshold: Double = 0.9
+    @State private var showingSeasonPicker = false
+    @State private var showingEpisodePicker = false
+    @State private var availableSeasons: [[EpisodeLink]] = []
+    @State private var selectedSeasonIndex = 0
+    @State private var pendingEpisodes: [EpisodeLink] = []
+    @State private var pendingResult: SearchItem?
+    @State private var pendingJSController: JSController?
+    
     @StateObject private var serviceManager = ServiceManager.shared
     @StateObject private var algorithmManager = AlgorithmManager.shared
+    
+    private var servicesWithResults: [(service: Service, results: [SearchItem])] {
+        moduleResults.filter { !$0.results.isEmpty }
+    }
+    
+    private var shouldShowOriginalTitle: Bool {
+        guard let originalTitle = originalTitle else { return false }
+        return !originalTitle.isEmpty && originalTitle.lowercased() != mediaTitle.lowercased()
+    }
     
     private var displayTitle: String {
         if let episode = selectedEpisode {
             return "\(mediaTitle) S\(episode.seasonNumber)E\(episode.episodeNumber)"
+        } else {
+            return mediaTitle
         }
-        return mediaTitle
     }
     
     private var episodeSeasonInfo: String {
-        guard let episode = selectedEpisode else { return "" }
-        return "S\(episode.seasonNumber)E\(episode.episodeNumber)"
+        if let episode = selectedEpisode {
+            return "S\(episode.seasonNumber)E\(episode.episodeNumber)"
+        }
+        return ""
     }
     
-    private var mediaTypeText: String { isMovie ? "Movie" : "TV Show" }
-    private var mediaTypeColor: Color { isMovie ? .purple : .green }
+    private var mediaTypeText: String {
+        return isMovie ? "Movie" : "TV Show"
+    }
+    
+    private var mediaTypeColor: Color {
+        return isMovie ? .purple : .green
+    }
     
     private var searchStatusText: String {
-        viewModel.isSearching
-        ? "Searching... (\(viewModel.searchedServices.count)/\(viewModel.totalServicesCount))"
-        : "Search complete"
+        if isSearching {
+            return "Searching... (\(searchedServices.count)/\(totalServicesCount))"
+        } else {
+            return "Search complete"
+        }
     }
     
     private var searchStatusColor: Color {
-        viewModel.isSearching ? .secondary : .green
+        return isSearching ? .secondary : .green
     }
     
     private func lowerQualityResultsText(count: Int) -> String {
-        "\(count) lower quality result\(count == 1 ? "" : "s") (<\(Int(viewModel.highQualityThreshold * 100))%)"
+        let plural = count == 1 ? "" : "s"
+        let threshold = Int(highQualityThreshold * 100)
+        return "\(count) lower quality result\(plural) (<\(threshold)%)"
     }
     
     @ViewBuilder
@@ -162,7 +150,7 @@ struct ModulesSearchResultsSheet: View {
             
             Spacer()
             
-            if viewModel.isSearching {
+            if isSearching {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.8)
@@ -209,15 +197,15 @@ struct ModulesSearchResultsSheet: View {
     
     @ViewBuilder
     private func serviceSection(service: Service) -> some View {
-        let results = viewModel.moduleResults[service.id]
-        let hasSearched = viewModel.searchedServices.contains(service.id)
-        let isCurrentlySearching = viewModel.isSearching && !hasSearched
+        let moduleResult = moduleResults.first { $0.service.id == service.id }
+        let hasSearched = searchedServices.contains(service.id)
+        let isCurrentlySearching = isSearching && !hasSearched
         
-        if let results = results {
-            let filteredResults = filterResults(for: results)
+        if let result = moduleResult {
+            let filteredResults = filterResults(for: result.results)
             
             Section(header: serviceHeader(for: service, highQualityCount: filteredResults.highQuality.count, lowQualityCount: filteredResults.lowQuality.count, isSearching: false)) {
-                if results.isEmpty {
+                if result.results.isEmpty {
                     noResultsRow
                 } else {
                     serviceResultsContent(filteredResults: filteredResults, service: service)
@@ -227,7 +215,7 @@ struct ModulesSearchResultsSheet: View {
             Section(header: serviceHeader(for: service, highQualityCount: 0, lowQualityCount: 0, isSearching: true)) {
                 searchingRow
             }
-        } else if !viewModel.isSearching && !hasSearched {
+        } else if !isSearching && !hasSearched {
             Section(header: serviceHeader(for: service, highQualityCount: 0, lowQualityCount: 0, isSearching: false)) {
                 notSearchedRow
             }
@@ -279,9 +267,9 @@ struct ModulesSearchResultsSheet: View {
                 alternativeTitle: originalTitle,
                 episode: selectedEpisode,
                 onTap: {
-                    viewModel.selectedResult = searchResult
-                    viewModel.showingPlayAlert = true
-                }, highQualityThreshold: viewModel.highQualityThreshold
+                    selectedResult = searchResult
+                    showingPlayAlert = true
+                }, highQualityThreshold: highQualityThreshold
             )
         }
         
@@ -292,14 +280,14 @@ struct ModulesSearchResultsSheet: View {
     
     @ViewBuilder
     private func lowQualityResultsSection(filteredResults: (highQuality: [SearchItem], lowQuality: [SearchItem]), service: Service) -> some View {
-        let isExpanded = viewModel.expandedServices.contains(service.id)
+        let isExpanded = expandedServices.contains(service.id)
         
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 if isExpanded {
-                    viewModel.expandedServices.remove(service.id)
+                    expandedServices.remove(service.id)
                 } else {
-                    viewModel.expandedServices.insert(service.id)
+                    expandedServices.insert(service.id)
                 }
             }
         }) {
@@ -329,9 +317,9 @@ struct ModulesSearchResultsSheet: View {
                     alternativeTitle: originalTitle,
                     episode: selectedEpisode,
                     onTap: {
-                        viewModel.selectedResult = searchResult
-                        viewModel.showingPlayAlert = true
-                    }, highQualityThreshold: viewModel.highQualityThreshold
+                        selectedResult = searchResult
+                        showingPlayAlert = true
+                    }, highQualityThreshold: highQualityThreshold
                 )
             }
         }
@@ -340,99 +328,94 @@ struct ModulesSearchResultsSheet: View {
     @ViewBuilder
     private var playAlertButtons: some View {
         Button("Play") {
-            viewModel.showingPlayAlert = false
-            if let result = viewModel.selectedResult {
-                Task {
-                    try? await Task.sleep(nanoseconds: 300_000_000)
-                    await playContent(result)
+            showingPlayAlert = false
+            if let result = selectedResult {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playContent(result)
                 }
             }
         }
         Button("Cancel", role: .cancel) {
-            viewModel.selectedResult = nil
+            selectedResult = nil
         }
     }
     
     @ViewBuilder
     private var playAlertMessage: some View {
-        if let result = viewModel.selectedResult, let episode = selectedEpisode {
+        if let result = selectedResult, let episode = selectedEpisode {
             Text("Play Episode \(episode.episodeNumber) of '\(result.title)'?")
-        } else if let result = viewModel.selectedResult {
+        } else if let result = selectedResult {
             Text("Play '\(result.title)'?")
         }
     }
     
     @ViewBuilder
     private var streamFetchingOverlay: some View {
-        if viewModel.isFetchingStreams {
-            ZStack {
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(1.5)
+        Group {
+            if isFetchingStreams {
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
                     
-                    VStack(spacing: 8) {
-                        Text("Fetching Streams")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(1.5)
                         
-                        Text(viewModel.currentFetchingTitle)
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
-                            .lineLimit(2)
-                            .multilineTextAlignment(.center)
-                        
-                        if !viewModel.streamFetchProgress.isEmpty {
-                            Text(viewModel.streamFetchProgress)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                        VStack(spacing: 8) {
+                            Text("Fetching Streams")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                            
+                            Text(currentFetchingTitle)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+                                .lineLimit(2)
                                 .multilineTextAlignment(.center)
+                            
+                            if !streamFetchProgress.isEmpty {
+                                Text(streamFetchProgress)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                            }
                         }
                     }
+                    .padding(30)
+                    .applyLiquidGlassBackground(cornerRadius: 16)
+                    .padding(.horizontal, 40)
                 }
-                .padding(30)
-                .applyLiquidGlassBackground(cornerRadius: 16)
-                .padding(.horizontal, 40)
             }
         }
     }
     
     @ViewBuilder
     private var qualityThresholdAlertContent: some View {
-        TextField("Threshold (0.0 - 1.0)", value: $viewModel.highQualityThreshold, format: .number)
+        TextField("Threshold (0.0 - 1.0)", value: $highQualityThreshold, format: .number)
             .keyboardType(.decimalPad)
         
         Button("Save") {
-            viewModel.highQualityThreshold = max(0.0, min(1.0, viewModel.highQualityThreshold))
-            UserDefaults.standard.set(viewModel.highQualityThreshold, forKey: "highQualityThreshold")
+            highQualityThreshold = max(0.0, min(1.0, highQualityThreshold))
+            UserDefaults.standard.set(highQualityThreshold, forKey: "highQualityThreshold")
         }
         
         Button("Cancel", role: .cancel) {
-            viewModel.highQualityThreshold = UserDefaults.standard.object(forKey: "highQualityThreshold") as? Double ?? 0.9
+            highQualityThreshold = UserDefaults.standard.object(forKey: "highQualityThreshold") as? Double ?? 0.9
         }
     }
     
     @ViewBuilder
     private var qualityThresholdAlertMessage: some View {
-        Text("Set the minimum similarity score (0.0 to 1.0) for results to be considered high quality. Current: \(String(format: "%.2f", viewModel.highQualityThreshold)) (\(Int(viewModel.highQualityThreshold * 100))%)")
+        Text("Set the minimum similarity score (0.0 to 1.0) for results to be considered high quality. Current: \(String(format: "%.2f", highQualityThreshold)) (\(Int(highQualityThreshold * 100))%)")
     }
     
     @ViewBuilder
     private var serverSelectionDialogContent: some View {
-        ForEach(viewModel.streamOptions) { option in
+        ForEach(Array(streamOptions.enumerated()), id: \.element.id) { index, option in
             Button(option.name) {
-                if let service = viewModel.pendingService {
-                    resolveSubtitleSelection(
-                        subtitles: viewModel.pendingSubtitles,
-                        defaultSubtitle: option.subtitle,
-                        service: service,
-                        streamURL: option.url,
-                        headers: option.headers
-                    )
+                if let service = pendingService {
+                    playStreamURL(option.url, service: service, subtitles: pendingSubtitles, headers: option.headers)
                 }
             }
         }
@@ -446,16 +429,16 @@ struct ModulesSearchResultsSheet: View {
     
     @ViewBuilder
     private var seasonPickerDialogContent: some View {
-        ForEach(Array(viewModel.availableSeasons.enumerated()), id: \.offset) { index, season in
+        ForEach(Array(availableSeasons.enumerated()), id: \.offset) { index, season in
             Button("Season \(index + 1) (\(season.count) episodes)") {
-                viewModel.selectedSeasonIndex = index
-                viewModel.pendingEpisodes = season
-                viewModel.showingSeasonPicker = false
-                viewModel.showingEpisodePicker = true
+                selectedSeasonIndex = index
+                pendingEpisodes = season
+                showingSeasonPicker = false
+                showingEpisodePicker = true
             }
         }
         Button("Cancel", role: .cancel) {
-            viewModel.resetPickerState()
+            resetPickerState()
         }
     }
     
@@ -466,13 +449,13 @@ struct ModulesSearchResultsSheet: View {
     
     @ViewBuilder
     private var episodePickerDialogContent: some View {
-        ForEach(viewModel.pendingEpisodes, id: \.href) { episode in
+        ForEach(pendingEpisodes, id: \.href) { episode in
             Button("Episode \(episode.number)") {
                 proceedWithSelectedEpisode(episode)
             }
         }
         Button("Cancel", role: .cancel) {
-            viewModel.resetPickerState()
+            resetPickerState()
         }
     }
     
@@ -485,46 +468,17 @@ struct ModulesSearchResultsSheet: View {
         }
     }
     
-    @ViewBuilder
-    private var subtitlePickerDialogContent: some View {
-        ForEach(viewModel.subtitleOptions, id: \.url) { option in
-            Button(option.title) {
-                viewModel.showingSubtitlePicker = false
-                if let service = viewModel.pendingService,
-                   let streamURL = viewModel.pendingStreamURL {
-                    playStreamURL(streamURL, service: service, subtitle: option.url, headers: viewModel.pendingHeaders)
-                }
-            }
-        }
-        Button("No Subtitles") {
-            viewModel.showingSubtitlePicker = false
-            if let service = viewModel.pendingService,
-               let streamURL = viewModel.pendingStreamURL {
-                playStreamURL(streamURL, service: service, subtitle: nil, headers: viewModel.pendingHeaders)
-            }
-        }
-        Button("Cancel", role: .cancel) {
-            viewModel.subtitleOptions = []
-            viewModel.pendingStreamURL = nil
-            viewModel.pendingHeaders = nil
-        }
-    }
-    
-    @ViewBuilder
-    private var subtitlePickerDialogMessage: some View {
-        Text("Choose a subtitle track")
-    }
-    
     private func filterResults(for results: [SearchItem]) -> (highQuality: [SearchItem], lowQuality: [SearchItem]) {
-        let sortedResults = results.map { result -> (result: SearchItem, similarity: Double) in
-            let primarySimilarity = algorithmManager.calculateSimilarity(original: mediaTitle, result: result.title)
-            let originalSimilarity = originalTitle.map { algorithmManager.calculateSimilarity(original: $0, result: result.title) } ?? 0.0
-            return (result: result, similarity: max(primarySimilarity, originalSimilarity))
+        let sortedResults = results.map { result in
+            let primarySimilarity = calculateSimilarity(original: mediaTitle, result: result.title)
+            let originalSimilarity = originalTitle.map { calculateSimilarity(original: $0, result: result.title) } ?? 0.0
+            let bestSimilarity = max(primarySimilarity, originalSimilarity)
+            
+            return (result: result, similarity: bestSimilarity)
         }.sorted { $0.similarity > $1.similarity }
         
-        let threshold = viewModel.highQualityThreshold
-        let highQuality = sortedResults.filter { $0.similarity >= threshold }.map { $0.result }
-        let lowQuality = sortedResults.filter { $0.similarity < threshold }.map { $0.result }
+        let highQuality = sortedResults.filter { $0.similarity >= highQualityThreshold }.map { $0.result }
+        let lowQuality = sortedResults.filter { $0.similarity < highQualityThreshold }.map { $0.result }
         
         return (highQuality, lowQuality)
     }
@@ -565,13 +519,13 @@ struct ModulesSearchResultsSheet: View {
                         
                         Section("Filter Settings") {
                             Button(action: {
-                                viewModel.showingFilterEditor = true
+                                showingFilterEditor = true
                             }) {
                                 HStack {
                                     Image(systemName: "slider.horizontal.3")
                                     Text("Quality Threshold")
                                     Spacer()
-                                    Text("\(Int(viewModel.highQualityThreshold * 100))%")
+                                    Text("\(Int(highQualityThreshold * 100))%")
                                         .foregroundColor(.secondary)
                                 }
                             }
@@ -588,7 +542,7 @@ struct ModulesSearchResultsSheet: View {
                 }
             }
         }
-        .alert("Play Content", isPresented: $viewModel.showingPlayAlert) {
+        .alert("Play Content", isPresented: $showingPlayAlert) {
             playAlertButtons
         } message: {
             playAlertMessage
@@ -596,98 +550,102 @@ struct ModulesSearchResultsSheet: View {
         .overlay(streamFetchingOverlay)
         .onAppear {
             startProgressiveSearch()
+            highQualityThreshold = UserDefaults.standard.object(forKey: "highQualityThreshold") as? Double ?? 0.9
         }
-        .alert("Quality Threshold", isPresented: $viewModel.showingFilterEditor) {
+        .alert("Quality Threshold", isPresented: $showingFilterEditor) {
             qualityThresholdAlertContent
         } message: {
             qualityThresholdAlertMessage
         }
-        .adaptiveConfirmationDialog("Select Server", isPresented: $viewModel.showingStreamMenu, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Server", isPresented: $showingStreamMenu, titleVisibility: .visible) {
             serverSelectionDialogContent
         } message: {
             serverSelectionDialogMessage
         }
-        .adaptiveConfirmationDialog("Select Season", isPresented: $viewModel.showingSeasonPicker, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Season", isPresented: $showingSeasonPicker, titleVisibility: .visible) {
             seasonPickerDialogContent
         } message: {
             seasonPickerDialogMessage
         }
-        .adaptiveConfirmationDialog("Select Episode", isPresented: $viewModel.showingEpisodePicker, titleVisibility: .visible) {
+        .adaptiveConfirmationDialog("Select Episode", isPresented: $showingEpisodePicker, titleVisibility: .visible) {
             episodePickerDialogContent
         } message: {
             episodePickerDialogMessage
-        }
-        .adaptiveConfirmationDialog("Select Subtitle", isPresented: $viewModel.showingSubtitlePicker, titleVisibility: .visible) {
-            subtitlePickerDialogContent
-        } message: {
-            subtitlePickerDialogMessage
-        }
-        .alert("Stream Error", isPresented: $viewModel.showingStreamError) {
-            Button("OK", role: .cancel) {
-                viewModel.streamError = nil
-            }
-        } message: {
-            if let error = viewModel.streamError {
-                Text(error)
-            }
         }
     }
     
     private func startProgressiveSearch() {
         let activeServices = serviceManager.activeServices
-        viewModel.totalServicesCount = activeServices.count
+        totalServicesCount = activeServices.count
         
         guard !activeServices.isEmpty else {
-            viewModel.isSearching = false
+            isSearching = false
             return
         }
-        
         let searchQuery = mediaTitle
-        let hasAlternativeTitle = originalTitle.map { !$0.isEmpty && $0.lowercased() != mediaTitle.lowercased() } ?? false
         
         Task {
             await serviceManager.searchInActiveServicesProgressively(
                 query: searchQuery,
                 onResult: { service, results in
                     Task { @MainActor in
-                        self.viewModel.moduleResults[service.id] = results ?? []
-                        self.viewModel.searchedServices.insert(service.id)
+                        var newModuleResults = moduleResults
+                        
+                        if let existingIndex = newModuleResults.firstIndex(where: { $0.service.id == service.id }) {
+                            newModuleResults[existingIndex] = (service: service, results: results ?? [])
+                        } else {
+                            newModuleResults.append((service: service, results: results ?? []))
+                        }
+                        
+                        moduleResults = newModuleResults
+                        searchedServices.insert(service.id)
                         
                         if results == nil {
-                            self.viewModel.failedServices.insert(service.id)
+                            failedServices.insert(service.id)
                         } else {
-                            self.viewModel.failedServices.remove(service.id)
+                            failedServices.remove(service.id)
                         }
                     }
                 },
                 onComplete: {
-                    if hasAlternativeTitle, let altTitle = self.originalTitle {
+                    if let originalTitle = self.originalTitle,
+                       !originalTitle.isEmpty,
+                       originalTitle.lowercased() != self.mediaTitle.lowercased() {
+                        
                         Task {
                             await self.serviceManager.searchInActiveServicesProgressively(
-                                query: altTitle,
+                                query: originalTitle,
                                 onResult: { service, additionalResults in
                                     Task { @MainActor in
                                         let additional = additionalResults ?? []
-                                        let existing = self.viewModel.moduleResults[service.id] ?? []
-                                        let existingHrefs = Set(existing.map { $0.href })
-                                        let newResults = additional.filter { !existingHrefs.contains($0.href) }
-                                        self.viewModel.moduleResults[service.id] = existing + newResults
+                                        
+                                        if let existingIndex = self.moduleResults.firstIndex(where: { $0.service.id == service.id }) {
+                                            let existingResults = self.moduleResults[existingIndex].results
+                                            let existingHrefs = Set(existingResults.map { $0.href })
+                                            let newResults = additional.filter { !existingHrefs.contains($0.href) }
+                                            let mergedResults = existingResults + newResults
+                                            self.moduleResults[existingIndex] = (service: service, results: mergedResults)
+                                        } else {
+                                            self.moduleResults.append((service: service, results: additional))
+                                        }
                                         
                                         if additionalResults == nil {
-                                            self.viewModel.failedServices.insert(service.id)
+                                            failedServices.insert(service.id)
+                                        } else {
+                                            failedServices.remove(service.id)
                                         }
                                     }
                                 },
                                 onComplete: {
                                     Task { @MainActor in
-                                        self.viewModel.isSearching = false
+                                        self.isSearching = false
                                     }
                                 }
                             )
                         }
                     } else {
                         Task { @MainActor in
-                            self.viewModel.isSearching = false
+                            self.isSearching = false
                         }
                     }
                 }
@@ -711,7 +669,7 @@ struct ModulesSearchResultsSheet: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
             
-            if viewModel.failedServices.contains(service.id) {
+            if failedServices.contains(service.id) {
                 Image(systemName: "exclamationmark.octagon.fill")
                     .foregroundColor(.red)
                     .font(.caption)
@@ -753,362 +711,353 @@ struct ModulesSearchResultsSheet: View {
     }
     
     private func getResultCount(for service: Service) -> Int {
-        return viewModel.moduleResults[service.id]?.count ?? 0
+        return moduleResults.first { $0.service.id == service.id }?.results.count ?? 0
+    }
+    
+    private func calculateSimilarity(original: String, result: String) -> Double {
+        return algorithmManager.calculateSimilarity(original: original, result: result)
+    }
+    
+    private func resetPickerState() {
+        availableSeasons = []
+        pendingEpisodes = []
+        pendingResult = nil
+        pendingJSController = nil
+        selectedSeasonIndex = 0
+        isFetchingStreams = false
     }
     
     private func proceedWithSelectedEpisode(_ episode: EpisodeLink) {
-        viewModel.showingEpisodePicker = false
+        showingEpisodePicker = false
         
-        guard let jsController = viewModel.pendingJSController,
-              let service = viewModel.pendingService else {
+        guard let jsController = pendingJSController,
+              let service = pendingService else {
             Logger.shared.log("Missing controller or service for episode selection", type: "Error")
-            viewModel.resetPickerState()
+            resetPickerState()
             return
         }
         
-        viewModel.isFetchingStreams = true
-        viewModel.streamFetchProgress = "Fetching selected episode stream..."
+        isFetchingStreams = true
+        streamFetchProgress = "Fetching selected episode stream..."
         
         fetchStreamForEpisode(episode.href, jsController: jsController, service: service)
     }
     
     private func fetchStreamForEpisode(_ episodeHref: String, jsController: JSController, service: Service) {
-        let softsub = service.metadata.softsub ?? false
-        jsController.fetchStreamUrlJS(episodeUrl: episodeHref, softsub: softsub, module: service) { streamResult in
-            Task { @MainActor in
+        jsController.fetchStreamUrlJS(episodeUrl: episodeHref, module: service) { streamResult in
+            DispatchQueue.main.async {
                 let (streams, subtitles, sources) = streamResult
                 
                 Logger.shared.log("Stream fetch result - Streams: \(streams?.count ?? 0), Sources: \(sources?.count ?? 0)", type: "Stream")
-                self.viewModel.streamFetchProgress = "Processing stream data..."
+                self.streamFetchProgress = "Processing stream data..."
                 
                 self.processStreamResult(streams: streams, subtitles: subtitles, sources: sources, service: service)
-                self.viewModel.resetPickerState()
+                self.resetPickerState()
             }
         }
     }
     
-    @MainActor
-    private func playContent(_ result: SearchItem) async {
+    private func playContent(_ result: SearchItem) {
         Logger.shared.log("Starting playback for: \(result.title)", type: "Stream")
         
-        viewModel.isFetchingStreams = true
-        viewModel.currentFetchingTitle = result.title
-        viewModel.streamFetchProgress = "Initializing..."
+        isFetchingStreams = true
+        currentFetchingTitle = result.title
+        streamFetchProgress = "Initializing..."
         
         guard let service = serviceManager.activeServices.first(where: { service in
-            viewModel.moduleResults[service.id]?.contains { $0.id == result.id } ?? false
+            moduleResults.contains { $0.service.id == service.id && $0.results.contains { $0.id == result.id } }
         }) else {
             Logger.shared.log("Could not find service for result: \(result.title)", type: "Error")
-            viewModel.isFetchingStreams = false
-            viewModel.streamError = "Could not find the service for '\(result.title)'. Please try again."
-            viewModel.showingStreamError = true
+            isFetchingStreams = false
             return
         }
         
         Logger.shared.log("Using service: \(service.metadata.sourceName)", type: "Stream")
-        viewModel.streamFetchProgress = "Loading service: \(service.metadata.sourceName)"
-        
+        streamFetchProgress = "Loading service: \(service.metadata.sourceName)"
+
         let jsController = JSController()
+
         jsController.loadScript(service.jsScript)
         Logger.shared.log("JavaScript loaded successfully", type: "Stream")
         
-        viewModel.streamFetchProgress = "Fetching episodes..."
+        streamFetchProgress = "Fetching episodes..."
         
         jsController.fetchEpisodesJS(url: result.href) { episodes in
-            Task { @MainActor in
-                self.handleEpisodesFetched(episodes, result: result, service: service, jsController: jsController)
-            }
-        }
-    }
-    
-    @MainActor
-    private func handleEpisodesFetched(_ episodes: [EpisodeLink], result: SearchItem, service: Service, jsController: JSController) {
-        Logger.shared.log("Fetched \(episodes.count) episodes for: \(result.title)", type: "Stream")
-        viewModel.streamFetchProgress = "Found \(episodes.count) episode\(episodes.count == 1 ? "" : "s")"
-        
-        if episodes.isEmpty {
-            Logger.shared.log("No episodes found for: \(result.title)", type: "Error")
-            viewModel.isFetchingStreams = false
-            viewModel.streamError = "No episodes found for '\(result.title)'. The source may be unavailable."
-            viewModel.showingStreamError = true
-            return
-        }
-        
-        if isMovie {
-            let targetHref = episodes.first?.href ?? result.href
-            Logger.shared.log("Movie - Using href: \(targetHref)", type: "Stream")
-            viewModel.streamFetchProgress = "Preparing movie stream..."
-            fetchFinalStream(href: targetHref, jsController: jsController, service: service)
-            return
-        }
-        
-        guard let selectedEp = selectedEpisode else {
-            Logger.shared.log("No episode selected for TV show", type: "Error")
-            viewModel.isFetchingStreams = false
-            viewModel.streamError = "No episode selected. Please select an episode first."
-            viewModel.showingStreamError = true
-            return
-        }
-        
-        viewModel.streamFetchProgress = "Finding episode S\(selectedEp.seasonNumber)E\(selectedEp.episodeNumber)..."
-        let seasons = parseSeasons(from: episodes)
-        let targetSeasonIndex = selectedEp.seasonNumber - 1
-        let targetEpisodeNumber = selectedEp.episodeNumber
-        
-        if let targetHref = findEpisodeHref(seasons: seasons, seasonIndex: targetSeasonIndex, episodeNumber: targetEpisodeNumber) {
-            viewModel.streamFetchProgress = "Found episode, fetching stream..."
-            fetchFinalStream(href: targetHref, jsController: jsController, service: service)
-        } else {
-            showEpisodePicker(seasons: seasons, result: result, jsController: jsController, service: service)
-        }
-    }
-    
-    private func parseSeasons(from episodes: [EpisodeLink]) -> [[EpisodeLink]] {
-        var seasons: [[EpisodeLink]] = []
-        var currentSeason: [EpisodeLink] = []
-        var lastEpisodeNumber = 0
-        
-        for episode in episodes {
-            if episode.number == 1 || episode.number <= lastEpisodeNumber {
-                if !currentSeason.isEmpty {
-                    seasons.append(currentSeason)
-                    currentSeason = []
+            DispatchQueue.main.async {
+                Logger.shared.log("Fetched \(episodes.count) episodes for: \(result.title)", type: "Stream")
+                self.streamFetchProgress = "Found \(episodes.count) episode\(episodes.count == 1 ? "" : "s")"
+                
+                if episodes.isEmpty {
+                    Logger.shared.log("No episodes found for: \(result.title)", type: "Error")
+                    self.isFetchingStreams = false
+                    return
+                }
+                
+                let targetHref: String
+                
+                if self.isMovie {
+                    targetHref = episodes.first?.href ?? result.href
+                    Logger.shared.log("Movie - Using href: \(targetHref)", type: "Stream")
+                    self.streamFetchProgress = "Preparing movie stream..."
+                } else {
+                    guard let selectedEpisode = self.selectedEpisode else {
+                        Logger.shared.log("No episode selected for TV show", type: "Error")
+                        self.isFetchingStreams = false
+                        return
+                    }
+                    
+                    self.streamFetchProgress = "Finding episode S\(selectedEpisode.seasonNumber)E\(selectedEpisode.episodeNumber)..."
+                    
+                    var seasons: [[EpisodeLink]] = []
+                    var currentSeason: [EpisodeLink] = []
+                    var lastEpisodeNumber = 0
+                    
+                    for episode in episodes {
+                        if episode.number == 1 || episode.number <= lastEpisodeNumber {
+                            if !currentSeason.isEmpty {
+                                seasons.append(currentSeason)
+                                currentSeason = []
+                            }
+                        }
+                        currentSeason.append(episode)
+                        lastEpisodeNumber = episode.number
+                    }
+                    
+                    if !currentSeason.isEmpty {
+                        seasons.append(currentSeason)
+                    }
+                    
+                    let targetSeasonIndex = selectedEpisode.seasonNumber - 1
+                    let targetEpisodeNumber = selectedEpisode.episodeNumber
+                    
+                    if targetSeasonIndex >= 0 && targetSeasonIndex < seasons.count {
+                        let season = seasons[targetSeasonIndex]
+                        if let targetEpisode = season.first(where: { $0.number == targetEpisodeNumber }) {
+                            targetHref = targetEpisode.href
+                            Logger.shared.log("TV Show - S\(selectedEpisode.seasonNumber)E\(selectedEpisode.episodeNumber) - Using href: \(targetHref)", type: "Stream")
+                            self.streamFetchProgress = "Found episode, fetching stream..."
+                        } else {
+                            Logger.shared.log("Episode \(targetEpisodeNumber) not found in season \(selectedEpisode.seasonNumber). Available episodes: \(season.map { $0.number })", type: "Warning")
+                            
+                            var foundEpisode: EpisodeLink? = nil
+                            for otherSeason in seasons {
+                                if let episode = otherSeason.first(where: { $0.number == targetEpisodeNumber }) {
+                                    foundEpisode = episode
+                                    Logger.shared.log("Found episode \(targetEpisodeNumber) in a different season, auto-playing", type: "Stream")
+                                    break
+                                }
+                            }
+                            
+                            if let episode = foundEpisode {
+                                targetHref = episode.href
+                                Logger.shared.log("TV Show - Auto-selected E\(targetEpisodeNumber) - Using href: \(targetHref)", type: "Stream")
+                                self.streamFetchProgress = "Found episode, fetching stream..."
+                            } else {
+                                self.pendingEpisodes = season
+                                self.pendingResult = result
+                                self.pendingJSController = jsController
+                                self.pendingService = service
+                                self.isFetchingStreams = false
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    self.showingEpisodePicker = true
+                                }
+                                return
+                            }
+                        }
+                    } else {
+                        Logger.shared.log("Season \(selectedEpisode.seasonNumber) not found. Available seasons: \(seasons.count)", type: "Warning")
+                        
+                        var foundEpisode: EpisodeLink? = nil
+                        for season in seasons {
+                            if let episode = season.first(where: { $0.number == targetEpisodeNumber }) {
+                                foundEpisode = episode
+                                Logger.shared.log("Found episode \(targetEpisodeNumber) in a different season, auto-playing", type: "Stream")
+                                break
+                            }
+                        }
+                        
+                        if let episode = foundEpisode {
+                            targetHref = episode.href
+                            Logger.shared.log("TV Show - Auto-selected E\(targetEpisodeNumber) - Using href: \(targetHref)", type: "Stream")
+                            self.streamFetchProgress = "Found episode, fetching stream..."
+                        } else {
+                            if seasons.count > 1 {
+                                self.availableSeasons = seasons
+                                self.pendingResult = result
+                                self.pendingJSController = jsController
+                                self.pendingService = service
+                                self.isFetchingStreams = false
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    self.showingSeasonPicker = true
+                                }
+                                return
+                            } else {
+                                let season = seasons.first ?? []
+                                if !season.isEmpty {
+                                    self.pendingEpisodes = season
+                                    self.pendingResult = result
+                                    self.pendingJSController = jsController
+                                    self.pendingService = service
+                                    self.isFetchingStreams = false
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        self.showingEpisodePicker = true
+                                    }
+                                    return
+                                } else {
+                                    Logger.shared.log("No episodes found in any season", type: "Error")
+                                    self.isFetchingStreams = false
+                                    return
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                jsController.fetchStreamUrlJS(episodeUrl: targetHref, module: service) { streamResult in
+                    DispatchQueue.main.async {
+                        let (streams, subtitles, sources) = streamResult
+                        self.processStreamResult(streams: streams, subtitles: subtitles, sources: sources, service: service)
+                    }
                 }
             }
-            currentSeason.append(episode)
-            lastEpisodeNumber = episode.number
-        }
-        
-        if !currentSeason.isEmpty {
-            seasons.append(currentSeason)
-        }
-        
-        return seasons
-    }
-    
-    private func findEpisodeHref(seasons: [[EpisodeLink]], seasonIndex: Int, episodeNumber: Int) -> String? {
-        if seasonIndex >= 0 && seasonIndex < seasons.count {
-            if let episode = seasons[seasonIndex].first(where: { $0.number == episodeNumber }) {
-                Logger.shared.log("Found exact match: S\(seasonIndex + 1)E\(episodeNumber)", type: "Stream")
-                return episode.href
-            }
-        }
-        
-        for season in seasons {
-            if let episode = season.first(where: { $0.number == episodeNumber }) {
-                Logger.shared.log("Found episode \(episodeNumber) in different season, auto-playing", type: "Stream")
-                return episode.href
-            }
-        }
-        
-        return nil
-    }
-    
-    @MainActor
-    private func showEpisodePicker(seasons: [[EpisodeLink]], result: SearchItem, jsController: JSController, service: Service) {
-        viewModel.pendingResult = result
-        viewModel.pendingJSController = jsController
-        viewModel.pendingService = service
-        viewModel.isFetchingStreams = false
-        
-        if seasons.count > 1 {
-            viewModel.availableSeasons = seasons
-            viewModel.showingSeasonPicker = true
-        } else if let firstSeason = seasons.first, !firstSeason.isEmpty {
-            viewModel.pendingEpisodes = firstSeason
-            viewModel.showingEpisodePicker = true
-        } else {
-            Logger.shared.log("No episodes found in any season", type: "Error")
-            viewModel.streamError = "No episodes found in any season. The source may have incomplete data."
-            viewModel.showingStreamError = true
         }
     }
     
-    private func fetchFinalStream(href: String, jsController: JSController, service: Service) {
-        let softsub = service.metadata.softsub ?? false
-        jsController.fetchStreamUrlJS(episodeUrl: href, softsub: softsub, module: service) { streamResult in
-            Task { @MainActor in
-                let (streams, subtitles, sources) = streamResult
-                self.processStreamResult(streams: streams, subtitles: subtitles, sources: sources, service: service)
-            }
-        }
-    }
-    
-    @MainActor
     private func processStreamResult(streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?, service: Service) {
         Logger.shared.log("Stream fetch result - Streams: \(streams?.count ?? 0), Sources: \(sources?.count ?? 0)", type: "Stream")
-        viewModel.streamFetchProgress = "Processing stream data..."
+        self.streamFetchProgress = "Processing stream data..."
         
-        let availableStreams = parseStreamOptions(streams: streams, sources: sources)
-        
-        if availableStreams.count > 1 {
-            Logger.shared.log("Found \(availableStreams.count) stream options, showing selection", type: "Stream")
-            viewModel.streamOptions = availableStreams
-            viewModel.pendingSubtitles = subtitles
-            viewModel.pendingService = service
-            viewModel.isFetchingStreams = false
-            viewModel.showingStreamMenu = true
-            return
-        }
-        
-        if let firstStream = availableStreams.first {
-            resolveSubtitleSelection(
-                subtitles: subtitles,
-                defaultSubtitle: firstStream.subtitle,
-                service: service,
-                streamURL: firstStream.url,
-                headers: firstStream.headers
-            )
-        } else if let streamURL = extractSingleStreamURL(streams: streams, sources: sources) {
-            resolveSubtitleSelection(
-                subtitles: subtitles,
-                defaultSubtitle: nil,
-                service: service,
-                streamURL: streamURL.url,
-                headers: streamURL.headers
-            )
-        } else {
-            Logger.shared.log("Failed to create URL from stream string", type: "Error")
-            viewModel.isFetchingStreams = false
-            viewModel.streamError = "Failed to get a valid stream URL. The source may be temporarily unavailable."
-            viewModel.showingStreamError = true
-        }
-    }
-    
-    private func parseStreamOptions(streams: [String]?, sources: [[String: Any]]?) -> [StreamOption] {
         var availableStreams: [StreamOption] = []
         
         if let sources = sources, !sources.isEmpty {
-            for (idx, source) in sources.enumerated() {
-                guard let rawUrl = source["streamUrl"] as? String ?? source["url"] as? String, !rawUrl.isEmpty else { continue }
-                let title = (source["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                let headers = safeConvertToHeaders(source["headers"])
-                let subtitle = source["subtitle"] as? String
-                let option = StreamOption(
-                    name: title?.isEmpty == false ? title! : "Stream \(idx + 1)",
-                    url: rawUrl,
-                    headers: headers,
-                    subtitle: subtitle
-                )
-                availableStreams.append(option)
+            Logger.shared.log("Processing \(sources.count) sources with potential headers", type: "Stream")
+            
+            var hasNewFormat = false
+            for source in sources {
+                if source["title"] is String && source["streamUrl"] is String {
+                    hasNewFormat = true
+                    break
+                }
             }
-        } else if let streams = streams, streams.count > 1 {
-            availableStreams = parseStreamStrings(streams)
-        }
-        
-        return availableStreams
-    }
-    
-    private func parseStreamStrings(_ streams: [String]) -> [StreamOption] {
-        var options: [StreamOption] = []
-        var index = 0
-        var unnamedCount = 1
-        
-        while index < streams.count {
-            let entry = streams[index]
-            if isURL(entry) {
-                options.append(StreamOption(name: "Stream \(unnamedCount)", url: entry, headers: nil, subtitle: nil))
-                unnamedCount += 1
-                index += 1
+            
+            if hasNewFormat {
+                Logger.shared.log("Detected new stream format with titles and headers", type: "Stream")
+                for source in sources {
+                    if let title = source["title"] as? String,
+                       let streamUrl = source["streamUrl"] as? String {
+                        let headers = safeConvertToHeaders(source["headers"])
+                        availableStreams.append(StreamOption(name: title, url: streamUrl, headers: headers))
+                        Logger.shared.log("Added stream: \(title) with headers: \(headers?.keys.joined(separator: ", ") ?? "none")", type: "Stream")
+                    }
+                }
             } else {
-                let nextIndex = index + 1
-                if nextIndex < streams.count, isURL(streams[nextIndex]) {
-                    options.append(StreamOption(name: entry, url: streams[nextIndex], headers: nil, subtitle: nil))
-                    index += 2
+                Logger.shared.log("Using legacy source format", type: "Stream")
+                for (index, source) in sources.enumerated() {
+                    if let urlString = source["url"] as? String {
+                        let headers = safeConvertToHeaders(source["headers"])
+                        availableStreams.append(StreamOption(name: "Stream \(index + 1)", url: urlString, headers: headers))
+                    }
+                }
+            }
+        }
+        else if let streams = streams, streams.count > 1 {
+            var streamNames: [String] = []
+            var streamURLs: [String] = []
+            
+            for (_, stream) in streams.enumerated() {
+                if stream.hasPrefix("http") {
+                    streamURLs.append(stream)
                 } else {
-                    index += 1
+                    streamNames.append(stream)
+                }
+            }
+            
+            if !streamNames.isEmpty && !streamURLs.isEmpty {
+                let maxPairs = min(streamNames.count, streamURLs.count)
+                for i in 0..<maxPairs {
+                    availableStreams.append(StreamOption(name: streamNames[i], url: streamURLs[i], headers: nil))
+                }
+                
+                if streamURLs.count > streamNames.count {
+                    for i in streamNames.count..<streamURLs.count {
+                        availableStreams.append(StreamOption(name: "Stream \(i + 1)", url: streamURLs[i], headers: nil))
+                    }
+                }
+            } else if streamURLs.count > 1 {
+                for (index, url) in streamURLs.enumerated() {
+                    availableStreams.append(StreamOption(name: "Stream \(index + 1)", url: url, headers: nil))
+                }
+            } else if streams.count > 1 {
+                let urls = streams.filter { $0.hasPrefix("http") }
+                if urls.count > 1 {
+                    for (index, url) in urls.enumerated() {
+                        availableStreams.append(StreamOption(name: "Stream \(index + 1)", url: url, headers: nil))
+                    }
                 }
             }
         }
         
-        return options
-    }
-    
-    private func isURL(_ value: String) -> Bool {
-        let lowercased = value.lowercased()
-        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
-    }
-    
-    private func extractSingleStreamURL(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
-        if let sources = sources, let firstSource = sources.first {
+        if availableStreams.count > 1 {
+            Logger.shared.log("Found \(availableStreams.count) stream options, showing selection", type: "Stream")
+            self.streamOptions = availableStreams
+            self.pendingSubtitles = subtitles
+            self.pendingService = service
+            self.isFetchingStreams = false
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.showingStreamMenu = true
+            }
+            return
+        }
+        
+        var streamURL: URL?
+        var streamHeaders: [String: String]? = nil
+        
+        if let sources = sources, !sources.isEmpty {
+            let firstSource = sources.first!
+            
             if let streamUrl = firstSource["streamUrl"] as? String {
-                return (streamUrl, safeConvertToHeaders(firstSource["headers"]))
+                Logger.shared.log("Found single stream URL from new format: \(streamUrl)", type: "Stream")
+                streamURL = URL(string: streamUrl)
+                streamHeaders = safeConvertToHeaders(firstSource["headers"])
             } else if let urlString = firstSource["url"] as? String {
-                return (urlString, safeConvertToHeaders(firstSource["headers"]))
+                Logger.shared.log("Found single stream URL from legacy format: \(urlString)", type: "Stream")
+                streamURL = URL(string: urlString)
+                streamHeaders = safeConvertToHeaders(firstSource["headers"])
             }
         } else if let streams = streams, !streams.isEmpty {
             let urlCandidates = streams.filter { $0.hasPrefix("http") }
             if let firstURL = urlCandidates.first {
-                return (firstURL, nil)
-            } else if let first = streams.first {
-                return (first, nil)
-            }
-        }
-        return nil
-    }
-    
-    @MainActor
-    private func resolveSubtitleSelection(subtitles: [String]?, defaultSubtitle: String?, service: Service, streamURL: String, headers: [String: String]?) {
-        guard let subtitles = subtitles, !subtitles.isEmpty else {
-            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
-            return
-        }
-        
-        let options = parseSubtitleOptions(from: subtitles)
-        guard !options.isEmpty else {
-            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
-            return
-        }
-        
-        if options.count == 1 {
-            playStreamURL(streamURL, service: service, subtitle: options[0].url, headers: headers)
-            return
-        }
-        
-        viewModel.subtitleOptions = options
-        viewModel.pendingStreamURL = streamURL
-        viewModel.pendingHeaders = headers
-        viewModel.pendingService = service
-        viewModel.pendingDefaultSubtitle = defaultSubtitle
-        viewModel.isFetchingStreams = false
-        viewModel.showingSubtitlePicker = true
-    }
-    
-    private func parseSubtitleOptions(from subtitles: [String]) -> [(title: String, url: String)] {
-        var options: [(String, String)] = []
-        var index = 0
-        var fallbackIndex = 1
-        
-        while index < subtitles.count {
-            let entry = subtitles[index]
-            if isURL(entry) {
-                options.append(("Subtitle \(fallbackIndex)", entry))
-                fallbackIndex += 1
-                index += 1
+                Logger.shared.log("Found single stream URL: \(firstURL)", type: "Stream")
+                streamURL = URL(string: firstURL)
             } else {
-                let nextIndex = index + 1
-                if nextIndex < subtitles.count, isURL(subtitles[nextIndex]) {
-                    options.append((entry, subtitles[nextIndex]))
-                    fallbackIndex += 1
-                    index += 2
-                } else {
-                    index += 1
-                }
+                Logger.shared.log("First stream URL: \(streams.first!)", type: "Stream")
+                streamURL = URL(string: streams.first!)
             }
+        } else {
+            Logger.shared.log("No streams or sources found in result", type: "Error")
         }
-        return options
+        
+        if let url = streamURL {
+            self.playStreamURL(url.absoluteString, service: service, subtitles: subtitles, headers: streamHeaders)
+        } else {
+            Logger.shared.log("Failed to create URL from stream string", type: "Error")
+            self.isFetchingStreams = false
+        }
     }
     
-    private func playStreamURL(_ url: String, service: Service, subtitle: String?, headers: [String: String]?) {
-        viewModel.resetStreamState()
+    private func playStreamURL(_ url: String, service: Service, subtitles: [String]?, headers: [String: String]?) {
+        isFetchingStreams = false
+        showingStreamMenu = false
+        pendingSubtitles = nil
+        pendingService = nil
         
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             guard let streamURL = URL(string: url) else {
                 Logger.shared.log("Invalid stream URL: \(url)", type: "Error")
-                viewModel.streamError = "Invalid stream URL. The source returned a malformed URL."
-                viewModel.showingStreamError = true
                 return
             }
             
@@ -1147,12 +1096,11 @@ struct ModulesSearchResultsSheet: View {
             
             if inAppPlayer == "mpv" {
                 let preset = PlayerPreset.presets.first
-                let subtitleArray: [String]? = subtitle.map { [$0] }
                 let pvc = PlayerViewController(
                     url: streamURL,
                     preset: preset ?? PlayerPreset(id: .sdrRec709, title: "Default", summary: "", stream: nil, commands: []),
                     headers: finalHeaders,
-                    subtitles: subtitleArray
+                    subtitles: subtitles
                 )
                 if isMovie {
                     pvc.mediaInfo = .movie(id: tmdbId, title: mediaTitle)

@@ -14,42 +14,99 @@ struct TMDBFiltersView: View {
     var body: some View {
         List {
             Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Filter Horror Content")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        Text("Hide movies and TV shows with horror genre")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.leading)
+                #if os(tvOS)
+                    Button {
+                        contentFilter.filterHorror.toggle()
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Filter Horror Content")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.medium)
+
+                                Text("Hide movies and TV shows with horror genre")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.leading)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: $contentFilter.filterHorror)
+                                .tint(accentColorManager.currentAccentColor)
+                        }
                     }
-                    
-                    Spacer()
-                    
-                    Toggle("", isOn: $contentFilter.filterHorror)
-                        .tint(accentColorManager.currentAccentColor)
-                }
+                        .buttonStyle(.plain)
+                        .padding(.vertical)
+                #else
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Filter Horror Content")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+
+                            Text("Hide movies and TV shows with horror genre")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.leading)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: $contentFilter.filterHorror)
+                            .tint(accentColorManager.currentAccentColor)
+                    }
+                #endif
             } header: {
-                Text("Content Filters")
+                Text("CONTENT FILTERS")
+                    .fontWeight(.bold)
             } footer: {
                 Text("Filters apply to all TMDB content including search results and home contents.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
             }
             
             Section {
-                HStack() {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.yellow)
-                    
-                    Text("Some content may still appear if not properly tagged or rated")
-                        .font(.subheadline)
-                }
+                #if os(tvOS)
+                    Button {
+
+                    } label: {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.yellow)
+
+                            Text("Some content may still appear if not properly tagged or rated")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+
+                            Spacer()
+                        }
+                    }
+                        .buttonStyle(.plain)
+                        .disabled(true)
+                        .padding(.vertical)
+                #else
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.yellow)
+
+                        Text("Some content may still appear if not properly tagged or rated")
+                            .font(.subheadline)
+                    }
+                #endif
             } header: {
-                Text("Information")
+                Text("INFORMATION")
+                    .fontWeight(.bold)
             }
         }
-        .navigationTitle("Content Filters")
+        #if os(tvOS)
+            .listStyle(.grouped)
+            .padding(.horizontal, 50)
+            .scrollClipDisabled()
+        #else
+            .navigationTitle("Content Filters")
+        #endif
     }
 }
 

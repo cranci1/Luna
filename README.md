@@ -12,6 +12,7 @@
 - [Why Luna?](#why-luna)
 - [Features](#features)
 - [Installation](#installation)
+- [Build & Storage Modes](#build--storage-modes)
 - [Frequently Asked Questions](#frequently-asked-questions)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
@@ -37,6 +38,28 @@ Luna has been made to improve speed and stability over the old version, [Sora 1]
 ## Installation
 
 You can download Luna using Xcode or using the .ipa file, which you can find in the [Nightly](https://nightly.link/cranci1/Luna/workflows/build/main/Luna%20IPA.zip) build page.
+
+## Build & Storage Modes
+
+Luna supports multiple storage backends:
+
+| Mode      | Description                       | Default                        |
+|-----------|-----------------------------------|--------------------------------|
+| CLOUDKIT  | Uses iCloud/CloudKit for storage  | TestFlight / AppStore builds   |
+| LOCAL     | Uses local device storage only    | Default for manual builds & CI |
+
+### How to control the storage mode
+
+- **Xcode / TestFlight**: Configure via Build.xcconfig
+- **CI builds**: Configure via build.yml. LOCAL is used by default. 
+- **Manual script builds (`ipabuild.sh`)**: 
+  - You can choose the storage mode via a second argument:
+    ```bash
+    ./ipabuild.sh <ios|tvos> cloudkit    # uses CloudKit
+    ./ipabuild.sh <ios|tvos> local       # uses local storage
+    ./ipabuild.sh <ios|tvos>             # uses local storage
+    ```
+- The script will echo a warning if no storage mode is supplied and will default to LOCAL
 
 ## Frequently Asked Questions
 

@@ -226,8 +226,8 @@ final class ProgressManager {
         
         accessQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber)
-            ?? EpisodeProgressEntry(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
+            var entry = self.progressData.findEpisode(showId: showId, season: seasonNumber, episode: episodeNumber) 
+                ?? EpisodeProgressEntry(showId: showId, seasonNumber: seasonNumber, episodeNumber: episodeNumber)
             
             entry.currentTime = currentTime
             entry.totalDuration = totalDuration
@@ -348,84 +348,4 @@ final class ProgressManager {
 enum MediaInfo {
     case movie(id: Int, title: String)
     case episode(showId: Int, seasonNumber: Int, episodeNumber: Int)
-}
-
-// MARK: - Continue Watching Item
-
-struct ContinueWatchingItem: Identifiable {
-    let id: String
-    let tmdbId: Int
-    let title: String
-    let isMovie: Bool
-    let progress: Double
-    let currentTime: Double
-    let totalDuration: Double
-    let lastUpdated: Date
-    let seasonNumber: Int?
-    let episodeNumber: Int?
-    
-    var remainingTime: String {
-        let remaining = totalDuration - currentTime
-        let minutes = Int(remaining) / 60
-        if minutes < 60 {
-            return "\(minutes)m left"
-        } else {
-            let hours = minutes / 60
-            let mins = minutes % 60
-            return "\(hours)h \(mins)m left"
-        }
-    }
-    
-    var formattedProgress: String {
-        return "\(Int(progress * 100))%"
-    }
-}
-
-// MARK: - ProgressManager Continue Watching Extension
-
-extension ProgressManager {
-    func getContinueWatchingItems(limit: Int = 10) -> [ContinueWatchingItem] {
-        var items: [ContinueWatchingItem] = []
-        
-        accessQueue.sync {
-            let movieItems = self.progressData.movieProgress
-                .filter { !$0.isWatched && $0.progress > 0.02 && $0.progress < 0.95 }
-                .map { movie in
-                    ContinueWatchingItem(
-                        id: "movie_\(movie.id)",
-                        tmdbId: movie.id,
-                        title: movie.title,
-                        isMovie: true,
-                        progress: movie.progress,
-                        currentTime: movie.currentTime,
-                        totalDuration: movie.totalDuration,
-                        lastUpdated: movie.lastUpdated,
-                        seasonNumber: nil,
-                        episodeNumber: nil
-                    )
-                }
-            
-            let episodeItems = self.progressData.episodeProgress
-                .filter { !$0.isWatched && $0.progress > 0.02 && $0.progress < 0.95 }
-                .map { episode in
-                    ContinueWatchingItem(
-                        id: episode.id,
-                        tmdbId: episode.showId,
-                        title: "S\(episode.seasonNumber)E\(episode.episodeNumber)",
-                        isMovie: false,
-                        progress: episode.progress,
-                        currentTime: episode.currentTime,
-                        totalDuration: episode.totalDuration,
-                        lastUpdated: episode.lastUpdated,
-                        seasonNumber: episode.seasonNumber,
-                        episodeNumber: episode.episodeNumber
-                    )
-                }
-            
-            items = (movieItems + episodeItems)
-                .sorted { $0.lastUpdated > $1.lastUpdated }
-        }
-        
-        return Array(items.prefix(limit))
-    }
 }

@@ -965,7 +965,7 @@ final class PlayerViewController: UIViewController {
         Task { @MainActor in
             let logs = await Logger.shared.getLogsAsync()
             let vc = UIViewController()
-            vc.view.backgroundColor = UIColor(named: "background")
+            vc.view.backgroundColor = .white
             let tv = UITextView()
             tv.translatesAutoresizingMaskIntoConstraints = false
             

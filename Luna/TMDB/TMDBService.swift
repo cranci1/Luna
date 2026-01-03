@@ -321,58 +321,6 @@ class TMDBService: ObservableObject {
             return nil
         }
     }
-    
-    // MARK: - Get Images (Backdrops, Logos, Posters)
-    func getMovieImages(id: Int, preferredLanguage: String? = nil) async throws -> TMDBImagesResponse {
-        let langCode = (preferredLanguage ?? currentLanguage).components(separatedBy: "-").first ?? "en"
-        let urlString = "\(baseURL)/movie/\(id)/images?api_key=\(apiKey)&include_image_language=\(langCode),en,null"
-        
-        guard let url = URL(string: urlString) else {
-            throw TMDBError.invalidURL
-        }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBImagesResponse.self, from: data)
-            return response
-        } catch {
-            throw TMDBError.networkError(error)
-        }
-    }
-    
-    func getTVShowImages(id: Int, preferredLanguage: String? = nil) async throws -> TMDBImagesResponse {
-        let langCode = (preferredLanguage ?? currentLanguage).components(separatedBy: "-").first ?? "en"
-        let urlString = "\(baseURL)/tv/\(id)/images?api_key=\(apiKey)&include_image_language=\(langCode),en,null"
-        
-        guard let url = URL(string: urlString) else {
-            throw TMDBError.invalidURL
-        }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBImagesResponse.self, from: data)
-            return response
-        } catch {
-            throw TMDBError.networkError(error)
-        }
-    }
-    
-    func getBestLogo(from images: TMDBImagesResponse, preferredLanguage: String? = nil) -> TMDBImage? {
-        guard let logos = images.logos, !logos.isEmpty else { return nil }
-        
-        let langCode = (preferredLanguage ?? currentLanguage).components(separatedBy: "-").first ?? "en"
-        
-        if let logo = logos.first(where: { $0.iso6391 == langCode }) {
-            return logo
-        }
-        if let logo = logos.first(where: { $0.iso6391 == "en" }) {
-            return logo
-        }
-        if let logo = logos.first(where: { $0.iso6391 == nil }) {
-            return logo
-        }
-        return logos.first
-    }
 }
 
 // MARK: - Error Handling

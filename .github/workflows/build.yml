@@ -20,7 +20,7 @@ jobs:
       - name: Make build script executable
         run: chmod +x ./ipabuild.sh
       - name: Build iOS IPA
-        run: ./ipabuild.sh ios
+        run: ./ipabuild.sh ios local
       - name: Upload iOS IPA artifact
         uses: actions/upload-artifact@v4
         with:
@@ -40,7 +40,7 @@ jobs:
       - name: Make build script executable
         run: chmod +x ./ipabuild.sh
       - name: Build tvOS IPA
-        run: ./ipabuild.sh tvos
+        run: ./ipabuild.sh tvos local
       - name: Upload tvOS IPA artifact
         uses: actions/upload-artifact@v4
         with:

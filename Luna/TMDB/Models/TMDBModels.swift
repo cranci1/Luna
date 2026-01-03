@@ -566,34 +566,3 @@ struct TMDBContentRating: Codable {
     }
 }
 
-// MARK: - Images Response
-struct TMDBImagesResponse: Codable {
-    let id: Int
-    let backdrops: [TMDBImage]?
-    let logos: [TMDBImage]?
-    let posters: [TMDBImage]?
-}
-
-struct TMDBImage: Codable {
-    let aspectRatio: Double
-    let height: Int
-    let width: Int
-    let filePath: String
-    let iso6391: String?
-    let voteAverage: Double?
-    let voteCount: Int?
-    
-    enum CodingKeys: String, CodingKey {
-        case height, width
-        case aspectRatio = "aspect_ratio"
-        case filePath = "file_path"
-        case iso6391 = "iso_639_1"
-        case voteAverage = "vote_average"
-        case voteCount = "vote_count"
-    }
-    
-    var fullURL: String {
-        return "\(TMDBService.tmdbImageBaseURL)\(filePath)"
-    }
-}
-
