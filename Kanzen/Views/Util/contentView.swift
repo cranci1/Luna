@@ -8,6 +8,7 @@
 import SwiftUI
 import Foundation
 import Kingfisher
+import WrappingHStack
 
 #if !os(tvOS)
 struct contentView: View {
@@ -62,15 +63,19 @@ struct contentView: View {
                             if let authorArtist = contentData["authorArtist"] as? [String]
                             {
                                 HStack{
-                                    ForEach(Array(authorArtist.enumerated()),id: \.offset)
+                                    WrappingHStack(authorArtist,id: \.self)
                                     {
-                                        idx,item in
+                                        item in
                                         Text(item).font(.caption)
+                                            
+                                            
                                             .padding(.leading,3)
                                             .padding(.trailing,3)
                                             .background(Color.accentColor)
-                                        
                                             .cornerRadius(3)
+                                            .padding(.bottom,3)
+                                           
+                                          
                                     }
                                 }
                                 
@@ -80,15 +85,19 @@ struct contentView: View {
                             if let tags = contentData["tags"] as? [String]
                             {
                                 HStack{
-                                    ForEach(Array(tags.enumerated()),id: \.offset)
+                                    WrappingHStack(tags,id: \.self)
                                     {
-                                        idx,item in
+                                        item in
                                         Text(item).font(.caption)
-                                            .padding(.leading,3)
-                                            .padding(.trailing,3)
-                                            .background(Color.accentColor)
                                         
-                                            .cornerRadius(3)
+                                        .padding(.leading,3)
+                                        .padding(.trailing,3)
+                                        .background(Color.accentColor)
+                                        .cornerRadius(3)
+                                        .padding(.bottom,3)
+                                   
+                                    
+                                           
                                     }
                                 }
                                 

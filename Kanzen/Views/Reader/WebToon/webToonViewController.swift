@@ -145,19 +145,26 @@ struct WebtoonView: UIViewRepresentable {
         }
         
         func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+            print("LoadingNext is \(loadingNext)")
+            print("LoadingPrev is \(loadingPrevious)")
            if let collectionView = scrollView as? UICollectionView {
                let visibleIndexPaths = collectionView.indexPathsForVisibleItems
                if !loadingPrevious {
                    if visibleIndexPaths.contains(IndexPath(item:0, section:0))
                    {
+                       print("First cell is VISIBLE adding prev chapters")
+                       
                        if reader_manager.prevChapter.count  == 0 {
                            loadingPrevious = true
                            self.reader_manager.fetchTask(bool: false){
+                               print("completion handler called")
+                               
                                self.prependChapter(collectionView: collectionView)
                                
                            }
                        }
                        else {
+                           print("nextChap is not empty")
                            prependChapter(collectionView: collectionView)
                        }
                        
@@ -170,18 +177,23 @@ struct WebtoonView: UIViewRepresentable {
                if !loadingNext {
                  
                    if bottomPath == nil || bottomPath?.section == chapters.count - 1  && bottomPath?.item == chapters[chapters.count - 1].count - 1 {
+                       print("bottom path (section, idx) is (\(bottomPath?.section),\(bottomPath?.item)")
                        if reader_manager.nextChapter.count  == 0 {
                            loadingNext = true
                            self.reader_manager.fetchTask(bool: true){
+                               print("completion handler called")
+                               
                                self.appendChapter(collectionView: collectionView)
                                
                            }
                        }
                        else {
+                           print("nextChap is not empty")
                            appendChapter(collectionView: collectionView)
                        }
                    }
                }
+               
             }
         }
         //get height
@@ -243,7 +255,11 @@ struct WebtoonView: UIViewRepresentable {
                         // 2. Then update the UI
                          collectionView.performBatchUpdates({
                              collectionView.deleteSections(IndexSet(integersIn: lastSectionStart..<lastSectionStart + 2))
-                        }, completion: { _ in
+                        }, completion: { completed in
+                            if completed {
+                                print("First section removed successfully")
+                                
+                            }
                             self.loadingPrevious = false
                             UIView.setAnimationsEnabled(true)
                             CATransaction.commit()
@@ -275,7 +291,7 @@ struct WebtoonView: UIViewRepresentable {
                 
                 // Store current offset and content size
                 let oldOffset = collectionView.contentOffset
-                let _ = collectionView.collectionViewLayout.collectionViewContentSize
+                let oldContentSize = collectionView.collectionViewLayout.collectionViewContentSize
                 let removedSectionHeight = getHeightForSection(0, collectionView: collectionView)
                 if chapters.count >= 3 {
                     // Sliding window: replace first chapter with new one
@@ -598,8 +614,8 @@ class ChapterCollectionViewCell: UICollectionViewCell {
                 
                 // Handle the special case where image loaded but task was cancelled
                 if case .imageSettingError(let reason) = error,
-                   case .notCurrentSourceTask(let result, _, _) = reason,
-                   let retrieveResult = result {
+                   case .notCurrentSourceTask(let result) = reason,
+                   let retrieveResult = result.result {
                     // Image actually loaded successfully, we can still use the size info
                     let imageSize = retrieveResult.image.size
                     if let collectionView = self.findCollectionView() {

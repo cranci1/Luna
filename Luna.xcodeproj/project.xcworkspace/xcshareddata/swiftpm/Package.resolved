@@ -1,5 +1,5 @@
 {
-  "originHash" : "4561a9088cc02d530cf0726a874107be63f44ab1ddffae049809036cedc44807",
+  "originHash" : "4af77fd9d0b22d3ede401304eb96d7bd60df69ca70c6a21d497092e39009d052",
   "pins" : [
     {
       "identity" : "fakewebkit",
@@ -35,6 +35,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "50ddc160fd606e9708adefc1d9fc7003b574446b"
+      }
+    },
+    {
+      "identity" : "wrappinghstack",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dkk/WrappingHStack",
+      "state" : {
+        "revision" : "425d9488ba55f58f0b34498c64c054c77fc2a44b",
+        "version" : "2.2.11"
       }
     }
   ],
