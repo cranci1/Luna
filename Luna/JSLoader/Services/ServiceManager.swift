@@ -29,8 +29,31 @@ class ServiceManager: ObservableObject {
     @Published var downloadProgress: Double = 0.0
     @Published var downloadMessage: String = ""
 
+    private var remoteChangeObserver: NSObjectProtocol? = nil
+
     private init() {
         loadServicesFromStore()
+
+        remoteChangeObserver = NotificationCenter.default.addObserver(
+            forName: ServiceStore.remoteChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.loadServicesFromStore()
+        }
+
+        Task { [weak self] in
+            guard let self else { return }
+            let deadline = Date().addingTimeInterval(6.0)
+            while Date() < deadline {
+                if ServiceStore.shared.status() == .ready { break }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+            guard ServiceStore.shared.status() == .ready else { return }
+            await MainActor.run {
+                self.loadServicesFromStore()
+            }
+        }
     }
 
     // MARK: - Public Functions
@@ -87,6 +110,15 @@ class ServiceManager: ObservableObject {
         downloadMessage = "All services updated!"
         try? await Task.sleep(nanoseconds: delay)
         await resetDownloadState()
+    }
+
+    func refreshServicesFromStore() async {
+        if ServiceStore.shared.status() == .ready {
+            await ServiceStore.shared.syncManually()
+        }
+        await MainActor.run {
+            self.loadServicesFromStore()
+        }
     }
 
     // MARK: - Download single service from JSON URL

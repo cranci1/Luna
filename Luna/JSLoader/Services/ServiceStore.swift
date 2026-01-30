@@ -11,6 +11,7 @@ import CoreData
 public final class ServiceStore {
     public static let shared = ServiceStore()
     public static let criticalErrorNotification = Notification.Name("ServiceStoreCriticalError")
+    static let remoteChangeNotification = Notification.Name("ServiceStoreRemoteChange")
 
     // MARK: private - internal setup and update functions
 
@@ -20,6 +21,8 @@ public final class ServiceStore {
 
     private var lastStoreURL: URL? = nil
     private var lastLoadError: String? = nil
+
+    private var remoteChangeObserver: NSObjectProtocol? = nil
 
     private let storeLoadGroup = DispatchGroup()
     private var didEnterStoreLoadGroup = false
@@ -225,6 +228,16 @@ public final class ServiceStore {
                 self.lastLoadError = nil
                 self.container?.viewContext.automaticallyMergesChangesFromParent = true
                 self.container?.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+                if self.remoteChangeObserver == nil, let coordinator = self.container?.persistentStoreCoordinator {
+                    self.remoteChangeObserver = NotificationCenter.default.addObserver(
+                        forName: .NSPersistentStoreRemoteChange,
+                        object: coordinator,
+                        queue: nil
+                    ) { _ in
+                        NotificationCenter.default.post(name: ServiceStore.remoteChangeNotification, object: nil)
+                    }
+                }
                 self.finishStoreLoadIfNeeded()
             }
         }

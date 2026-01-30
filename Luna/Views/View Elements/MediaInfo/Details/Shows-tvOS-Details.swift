@@ -848,7 +848,7 @@ struct TVOSDetailsSection: View {
                     if isLoadingSeason {
                         ProgressView()
                             .scaleEffect(1.2)
-                        MoonPhaseLoader(iconSize: 30, spacing: 14, stepDuration: 0.3)
+                        MoonPhaseCoreAnimationLoader(iconSize: 30, spacing: 14, stepDuration: 0.3, isAnimating: true)
                     }
                     ForEach(seasons) { season in
                         seasonButton(tvShow: tvShow, season: season)
