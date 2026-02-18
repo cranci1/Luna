@@ -22,55 +22,109 @@ struct HomeSectionsView: View {
         List {
             Section {
                 ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(section.title)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            
-                            Text("Order: \(section.order + 1)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Toggle("", isOn: Binding(
-                            get: { section.isEnabled },
-                            set: { newValue in
-                                sections[index].isEnabled = newValue
-                                saveSections()
+                    #if !os(tvOS)
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(section.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+
+                                Text("Order: \(section.order + 1)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
-                        ))
-                        .tint(accentColorManager.currentAccentColor)
+
+                            Spacer()
+
+                            Toggle("", isOn: Binding(
+                                get: { section.isEnabled },
+                                set: { newValue in
+                                    sections[index].isEnabled = newValue
+                                    saveSections()
+                                }
+                            ))
+                            .tint(accentColorManager.currentAccentColor)
+                        }
+                    #else
+                    Button {
+                        sections[index].isEnabled.toggle()
+                        saveSections()
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(section.title)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.medium)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: Binding(
+                                get: { section.isEnabled },
+                                set: { newValue in
+                                    sections[index].isEnabled = newValue
+                                    saveSections()
+                                }
+                            ))
+                            .tint(accentColorManager.currentAccentColor)
+                        }
                     }
+                        .buttonStyle(.plain)
+                        .padding(.vertical)
+                    #endif
                 }
-                .onMove(perform: moveSection)
+                #if !os(tvOS)
+                    .onMove(perform: moveSection)
+                #endif
             } header: {
                 HStack {
-                    Text("Content Sections")
-                    Spacer()
-#if !os(tvOS)
-                    EditButton()
-                        .foregroundColor(accentColorManager.currentAccentColor)
-#endif
+                    Text("CONTENT SECTIONS")
+                        .fontWeight(.bold)
+                    #if !os(tvOS)
+                        Spacer()
+                        EditButton()
+                            .foregroundColor(accentColorManager.currentAccentColor)
+                    #endif
                 }
             } footer: {
-                Text("Toggle sections on/off and reorder them by tapping Edit.")
+                #if !os(tvOS)
+                    Text("Toggle sections on/off and reorder them by tapping Edit.")
+                        .foregroundColor(.secondary)
+                        .padding(.bottom)
+                #endif
             }
             
             Section {
-                Button("Reset to Default") {
+                Button(role: .destructive) {
                     resetToDefault()
+                } label: {
+                    Text("Reset to Default")
+                        .foregroundColor(.red)
+
+                    Spacer()
                 }
+                .buttonStyle(.plain)
+                #if os(tvOS)
+                    .padding(.vertical)
+                #endif
                 .foregroundColor(accentColorManager.currentAccentColor)
             } header: {
-                Text("Reset")
+                Text("RESET")
+                    .fontWeight(.bold)
             } footer: {
                 Text("This will restore all sections to their default state and order.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom)
             }
         }
-        .navigationTitle("Home Sections")
+        #if os(tvOS)
+            .listStyle(.grouped)
+            .padding(.horizontal, 50)
+            .scrollClipDisabled()
+        #else
+            .navigationTitle("Home Sections")
+        #endif
         .onAppear {
             loadSections()
         }

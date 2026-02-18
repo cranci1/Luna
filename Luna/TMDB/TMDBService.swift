@@ -17,6 +17,12 @@ class TMDBService: ObservableObject {
     private let baseURL = tmdbBaseURL
     
     private init() {}
+
+    private func decode<T: Decodable>(_ type: T.Type, from data: Data) async throws -> T {
+        try await Task.detached(priority: .utility) {
+            try JSONDecoder().decode(T.self, from: data)
+        }.value
+    }
     
     private var currentLanguage: String {
         return UserDefaults.standard.string(forKey: "tmdbLanguage") ?? "en-US"
@@ -35,7 +41,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBSearchResponse.self, from: data)
+            let response: TMDBSearchResponse = try await decode(TMDBSearchResponse.self, from: data)
             return response.results.filter { $0.mediaType == "movie" || $0.mediaType == "tv" }
         } catch {
             throw TMDBError.networkError(error)
@@ -55,7 +61,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBMovieSearchResponse.self, from: data)
+            let response: TMDBMovieSearchResponse = try await decode(TMDBMovieSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -75,7 +81,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBTVSearchResponse.self, from: data)
+            let response: TMDBTVSearchResponse = try await decode(TMDBTVSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -92,8 +98,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let movieDetail = try JSONDecoder().decode(TMDBMovieDetail.self, from: data)
-            return movieDetail
+            return try await decode(TMDBMovieDetail.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -109,8 +114,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let tvShowDetail = try JSONDecoder().decode(TMDBTVShowDetail.self, from: data)
-            return tvShowDetail
+            return try await decode(TMDBTVShowDetail.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -126,8 +130,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let tvShowDetail = try JSONDecoder().decode(TMDBTVShowWithSeasons.self, from: data)
-            return tvShowDetail
+            return try await decode(TMDBTVShowWithSeasons.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -143,8 +146,39 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let seasonDetail = try JSONDecoder().decode(TMDBSeasonDetail.self, from: data)
-            return seasonDetail
+            return try await decode(TMDBSeasonDetail.self, from: data)
+        } catch {
+            throw TMDBError.networkError(error)
+        }
+    }
+
+    // MARK: - Get TV Show Credits
+    func getTVShowCredits(id: Int) async throws -> TMDBCreditsResponse {
+        let urlString = "\(baseURL)/tv/\(id)/credits?api_key=\(apiKey)&language=\(currentLanguage)"
+
+        guard let url = URL(string: urlString) else {
+            throw TMDBError.invalidURL
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return try await decode(TMDBCreditsResponse.self, from: data)
+        } catch {
+            throw TMDBError.networkError(error)
+        }
+    }
+    
+    // MARK: - Get Movie Credits
+    func getMovieCredits(id: Int) async throws -> TMDBCreditsResponse {
+        let urlString = "\(baseURL)/movie/\(id)/credits?api_key=\(apiKey)&language=\(currentLanguage)"
+
+        guard let url = URL(string: urlString) else {
+            throw TMDBError.invalidURL
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return try await decode(TMDBCreditsResponse.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -160,8 +194,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let alternativeTitles = try JSONDecoder().decode(TMDBAlternativeTitles.self, from: data)
-            return alternativeTitles
+            return try await decode(TMDBAlternativeTitles.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -177,8 +210,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let alternativeTitles = try JSONDecoder().decode(TMDBTVAlternativeTitles.self, from: data)
-            return alternativeTitles
+            return try await decode(TMDBTVAlternativeTitles.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -194,7 +226,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBSearchResponse.self, from: data)
+            let response: TMDBSearchResponse = try await decode(TMDBSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -211,7 +243,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBMovieSearchResponse.self, from: data)
+            let response: TMDBMovieSearchResponse = try await decode(TMDBMovieSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -228,7 +260,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBTVSearchResponse.self, from: data)
+            let response: TMDBTVSearchResponse = try await decode(TMDBTVSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -245,7 +277,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBMovieSearchResponse.self, from: data)
+            let response: TMDBMovieSearchResponse = try await decode(TMDBMovieSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -262,7 +294,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBTVSearchResponse.self, from: data)
+            let response: TMDBTVSearchResponse = try await decode(TMDBTVSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -279,7 +311,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBTVSearchResponse.self, from: data)
+            let response: TMDBTVSearchResponse = try await decode(TMDBTVSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -296,7 +328,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBTVSearchResponse.self, from: data)
+            let response: TMDBTVSearchResponse = try await decode(TMDBTVSearchResponse.self, from: data)
             return response.results
         } catch {
             throw TMDBError.networkError(error)
@@ -306,22 +338,27 @@ class TMDBService: ObservableObject {
     // MARK: - Helper function to get romaji title
     func getRomajiTitle(for mediaType: String, id: Int) async -> String? {
         do {
+            let isRomajiType: (String?) -> Bool = { type in
+                let lowered = (type ?? "").lowercased()
+                return lowered.contains("romaji") || lowered.contains("romanized")
+            }
+
             if mediaType == "movie" {
                 let alternativeTitles = try await getMovieAlternativeTitles(id: id)
-                return alternativeTitles.titles.first { title in
-                    title.iso31661 == "JP" && (title.type?.lowercased().contains("romaji") == true || title.type?.lowercased().contains("romanized") == true)
-                }?.title
+                return alternativeTitles.titles
+                    .first(where: { $0.iso31661 == "JP" && isRomajiType($0.type) })?
+                    .title
             } else {
                 let alternativeTitles = try await getTVShowAlternativeTitles(id: id)
-                return alternativeTitles.results.first { title in
-                    title.iso31661 == "JP" && (title.type?.lowercased().contains("romaji") == true || title.type?.lowercased().contains("romanized") == true)
-                }?.title
+                return alternativeTitles.results
+                    .first(where: { $0.iso31661 == "JP" && isRomajiType($0.type) })?
+                    .title
             }
         } catch {
             return nil
         }
     }
-    
+
     // MARK: - Get Images (Backdrops, Logos, Posters)
     func getMovieImages(id: Int, preferredLanguage: String? = nil) async throws -> TMDBImagesResponse {
         let langCode = (preferredLanguage ?? currentLanguage).components(separatedBy: "-").first ?? "en"
@@ -333,8 +370,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBImagesResponse.self, from: data)
-            return response
+            return try await decode(TMDBImagesResponse.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }
@@ -350,8 +386,7 @@ class TMDBService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode(TMDBImagesResponse.self, from: data)
-            return response
+            return try await decode(TMDBImagesResponse.self, from: data)
         } catch {
             throw TMDBError.networkError(error)
         }

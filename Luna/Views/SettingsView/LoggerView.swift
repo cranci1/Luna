@@ -91,28 +91,35 @@ struct LoggerView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 20)
             } else {
-                ScrollViewReader { proxy in
-                    List {
+                List {
+                    Section {
                         ForEach(filteredLogs) { log in
                             LogEntryRow(log: log)
                                 .id(log.id)
                         }
+                    } header: {
+                        #if os(tvOS)
+                            Text("LOGS")
+                                .fontWeight(.bold)
+                        #endif
                     }
-                    .listStyle(PlainListStyle())
                 }
+                .listStyle(.plain)
             }
         }
-        .navigationTitle(NSLocalizedString("Logs", comment: ""))
+        #if os(tvOS)
+            .padding(.horizontal, 50)
+            .scrollClipDisabled()
+        #else
+            .navigationTitle("Logs")
+        #endif
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button(action: {
-                        loggerManager.clearLogs()
-                    }) {
-                        Label("Clear All Logs", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+                Button(role: .destructive, action: {
+                    loggerManager.clearLogs()
+                }) {
+                    Image(systemName: "trash")
+                        .tint(.red)
                 }
             }
         }

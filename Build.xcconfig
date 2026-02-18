@@ -11,5 +11,18 @@ BUNDLE_IDENTIFIER = me.cranci.solar
 ICLOUD_CONTAINER_ID = iCloud.me.cranci.sora
 CODE_SIGN_ENTITLEMENTS = Luna/Luna.entitlements
 
+
+// Do you have a valid Cloudkit entitlement?
+// -----------------------------------------
+// Yes    -> then use CLOUDKIT and don't forget to set the ICLOUD_CONTAINER_ID !!!
+// No     -> use LOCAL storage
+// Unsure -> use LOCAL
+// -----------------------------------------
+// Execute "Product" -> "Clean Build Folder" if you change this
+// -----------------------------------------
+// USE_STORAGE = CLOUDKIT | LOCAL | <leave empty>
+USE_STORAGE = CLOUDKIT
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) $(USE_STORAGE)
+
 // Optional local overrides (ignored in Git)
 #include? "Build.local.xcconfig"

@@ -10,15 +10,19 @@ import Kingfisher
 
 struct TVShowSeasonsSection: View {
     let tvShow: TMDBTVShowWithSeasons?
+    let isAnime: Bool = false
     @Binding var selectedSeason: TMDBSeason?
     @Binding var seasonDetail: TMDBSeasonDetail?
     @Binding var selectedEpisodeForSearch: TMDBEpisode?
+    var animeEpisodes: [AniListEpisode]? = nil
+    var animeSeasonTitles: [Int: String]? = nil
     let tmdbService: TMDBService
     
     @State private var isLoadingSeason = false
     @State private var showingSearchResults = false
     @State private var showingNoServicesAlert = false
     @State private var romajiTitle: String?
+    @State private var currentSeasonTitle: String?
     
     @StateObject private var serviceManager = ServiceManager.shared
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList: Bool = false
@@ -29,6 +33,13 @@ struct TVShowSeasonsSection: View {
     
     private var useSeasonMenu: Bool {
         return UserDefaults.standard.bool(forKey: "seasonMenu")
+    }
+
+    private func getSearchTitle() -> String {
+        if isAnime, let seasonName = selectedSeason?.name, !seasonName.isEmpty {
+            return seasonName
+        }
+        return tvShow?.name ?? "Unknown Show"
     }
     
     var body: some View {
@@ -123,11 +134,14 @@ struct TVShowSeasonsSection: View {
         }
         .sheet(isPresented: $showingSearchResults) {
             ModulesSearchResultsSheet(
-                mediaTitle: tvShow?.name ?? "Unknown Show",
+                mediaTitle: getSearchTitle(),
+                seasonTitleOverride: currentSeasonTitle,
                 originalTitle: romajiTitle,
                 isMovie: false,
                 selectedEpisode: selectedEpisodeForSearch,
-                tmdbId: tvShow?.id ?? 0
+                tmdbId: tvShow?.id ?? 0,
+                animeSeasonTitle: isAnime ? currentSeasonTitle : nil,
+                posterPath: tvShow?.posterPath
             )
         }
         .alert("No Active Services", isPresented: $showingNoServicesAlert) {
@@ -291,6 +305,8 @@ struct TVShowSeasonsSection: View {
             EpisodeCell(
                 episode: episode,
                 showId: tvShow.id,
+                showTitle: tvShow.name,
+                showPosterURL: tvShow.fullPosterURL,
                 progress: progress,
                 isSelected: isSelected,
                 onTap: { episodeTapAction(episode: episode) },
@@ -338,13 +354,56 @@ struct TVShowSeasonsSection: View {
     
     private func loadSeasonDetails(tvShowId: Int, season: TMDBSeason) {
         isLoadingSeason = true
+        seasonDetail = nil
+        selectedEpisodeForSearch = nil
+        currentSeasonTitle = animeSeasonTitles?[season.seasonNumber] ?? season.name
         
         Task {
             do {
-                let detail = try await tmdbService.getSeasonDetails(tvShowId: tvShowId, seasonNumber: season.seasonNumber)
-                await MainActor.run {
-                    self.seasonDetail = detail
-                    self.isLoadingSeason = false
+                if isAnime, let animeEpisodes = animeEpisodes {
+                    let seasonEpisodes = animeEpisodes.filter { $0.seasonNumber == season.seasonNumber }
+
+                    let tmdbEpisodes: [TMDBEpisode] = seasonEpisodes.map { aniEp in
+                        TMDBEpisode(
+                            id: tvShowId * 1000 + season.seasonNumber * 100 + aniEp.number,
+                            name: aniEp.title,
+                            overview: aniEp.description,
+                            stillPath: aniEp.stillPath,
+                            episodeNumber: aniEp.number,
+                            seasonNumber: aniEp.seasonNumber,
+                            airDate: aniEp.airDate,
+                            runtime: nil,
+                            voteAverage: 0,
+                            voteCount: 0
+                        )
+                    }
+
+                    let detail = TMDBSeasonDetail(
+                        id: season.id,
+                        name: season.name,
+                        overview: season.overview ?? "",
+                        posterPath: season.posterPath,
+                        seasonNumber: season.seasonNumber,
+                        airDate: season.airDate,
+                        episodes: tmdbEpisodes
+                    )
+
+                    await MainActor.run {
+                        self.seasonDetail = detail
+                        self.isLoadingSeason = false
+                        if let firstEpisode = detail.episodes.first {
+                            self.selectedEpisodeForSearch = firstEpisode
+                        }
+                    }
+                } else {
+                    let detail = try await tmdbService.getSeasonDetails(tvShowId: tvShowId, seasonNumber: season.seasonNumber)
+                    await MainActor.run {
+                        self.seasonDetail = detail
+                        self.isLoadingSeason = false
+                        if let firstEpisode = detail.episodes.first {
+                            self.selectedEpisodeForSearch = firstEpisode
+                        }
+                    }
                 }
             } catch {
                 await MainActor.run {

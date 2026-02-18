@@ -266,6 +266,24 @@ struct TMDBMovieDetail: Codable, Identifiable {
         guard let releaseDate = releaseDate, !releaseDate.isEmpty else { return "Unknown" }
         return String(releaseDate.prefix(4))
     }
+    
+    var asSearchResult: TMDBSearchResult {
+        return TMDBSearchResult(
+            id: id,
+            mediaType: "movie",
+            title: title,
+            name: nil,
+            overview: overview,
+            posterPath: posterPath,
+            backdropPath: backdropPath,
+            releaseDate: releaseDate,
+            firstAirDate: nil,
+            voteAverage: voteAverage,
+            popularity: popularity,
+            adult: adult,
+            genreIds: genres.map { $0.id }
+        )
+    }
 }
 
 // MARK: - TV Show Detail Model
@@ -332,6 +350,24 @@ struct TMDBTVShowDetail: Codable, Identifiable {
         guard let runtime = episodeRunTime?.first, runtime > 0 else { return "Unknown" }
         return "\(runtime)m"
     }
+    
+    var asSearchResult: TMDBSearchResult {
+        return TMDBSearchResult(
+            id: id,
+            mediaType: "tv",
+            title: nil,
+            name: name,
+            overview: overview,
+            posterPath: posterPath,
+            backdropPath: backdropPath,
+            releaseDate: nil,
+            firstAirDate: firstAirDate,
+            voteAverage: voteAverage,
+            popularity: popularity,
+            adult: nil,
+            genreIds: genres.map { $0.id }
+        )
+    }
 }
 
 // MARK: - Genre Model
@@ -360,6 +396,7 @@ struct TMDBSeason: Codable, Identifiable {
     
     var fullPosterURL: String? {
         guard let posterPath = posterPath else { return nil }
+        if posterPath.hasPrefix("http") { return posterPath }
         return "\(TMDBService.tmdbImageBaseURL)\(posterPath)"
     }
 }
@@ -566,34 +603,67 @@ struct TMDBContentRating: Codable {
     }
 }
 
-// MARK: - Images Response
+// MARK: - Credits Models - TrinityHades
+struct TMDBCreditsResponse: Codable {
+    let id: Int
+    let cast: [TMDBCastMember]
+    let crew: [TMDBCastMember]
+}
+
+struct TMDBCastMember: Codable, Identifiable {
+    let id: Int
+    let name: String
+    let profilePath: String?
+
+    // Cast-only
+    let character: String?
+
+    // Crew-only
+    let job: String?
+    let department: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, character, job, department
+        case profilePath = "profile_path"
+    }
+
+    var fullProfileURL: String? {
+        guard let profilePath else { return nil }
+        return "\(TMDBService.tmdbImageBaseURL)\(profilePath)"
+    }
+}
+
+// MARK: - Images Models
+
 struct TMDBImagesResponse: Codable {
     let id: Int
     let backdrops: [TMDBImage]?
-    let logos: [TMDBImage]?
     let posters: [TMDBImage]?
+    let logos: [TMDBImage]?
 }
 
-struct TMDBImage: Codable {
+struct TMDBImage: Codable, Identifiable {
+    var id: String { filePath }
+
     let aspectRatio: Double
     let height: Int
-    let width: Int
-    let filePath: String
     let iso6391: String?
-    let voteAverage: Double?
-    let voteCount: Int?
-    
+    let filePath: String
+    let voteAverage: Double
+    let voteCount: Int
+    let width: Int
+
     enum CodingKeys: String, CodingKey {
-        case height, width
         case aspectRatio = "aspect_ratio"
-        case filePath = "file_path"
+        case height
         case iso6391 = "iso_639_1"
+        case filePath = "file_path"
         case voteAverage = "vote_average"
         case voteCount = "vote_count"
+        case width
     }
-    
+
     var fullURL: String {
-        return "\(TMDBService.tmdbImageBaseURL)\(filePath)"
+        "\(TMDBService.tmdbImageBaseURL)\(filePath)"
     }
 }
-

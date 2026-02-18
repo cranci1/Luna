@@ -29,8 +29,43 @@ class ServiceManager: ObservableObject {
     @Published var downloadProgress: Double = 0.0
     @Published var downloadMessage: String = ""
 
+    private var remoteChangeObserver: NSObjectProtocol? = nil
+    private var profileObserver: NSObjectProtocol? = nil
+
     private init() {
-        loadServicesFromCloud()
+        loadServicesFromStore()
+
+        remoteChangeObserver = NotificationCenter.default.addObserver(
+            forName: ServiceStore.remoteChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.loadServicesFromStore()
+        }
+
+        #if os(tvOS)
+        profileObserver = NotificationCenter.default.addObserver(
+            forName: TVOSProfileManager.profileDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.loadServicesFromStore()
+        }
+        #endif
+
+        Task { [weak self] in
+            guard let self else { return }
+            let deadline = Date().addingTimeInterval(6.0)
+            while Date() < deadline {
+                if ServiceStore.shared.status() == .ready { break }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+            guard ServiceStore.shared.status() == .ready else { return }
+            await MainActor.run {
+                self.loadServicesFromStore()
+            }
+        }
     }
 
     // MARK: - Public Functions
@@ -80,11 +115,21 @@ class ServiceManager: ObservableObject {
             completed += 1
             downloadProgress = completed / total
             try? await Task.sleep(nanoseconds: delay)
+        }
 
-            // Cleanup
-            loadServicesFromCloud()
-            await resetDownloadState()
-            downloadMessage = "All services updated!"
+        // Cleanup
+        loadServicesFromStore()
+        downloadMessage = "All services updated!"
+        try? await Task.sleep(nanoseconds: delay)
+        await resetDownloadState()
+    }
+
+    func refreshServicesFromStore() async {
+        if ServiceStore.shared.status() == .ready {
+            await ServiceStore.shared.syncManually()
+        }
+        await MainActor.run {
+            self.loadServicesFromStore()
         }
     }
 
@@ -113,7 +158,7 @@ class ServiceManager: ObservableObject {
             )
             try? await Task.sleep(nanoseconds: delay)
 
-            loadServicesFromCloud()
+            loadServicesFromStore()
 
             await MainActor.run {
                 self.downloadProgress = 1.0
@@ -138,35 +183,46 @@ class ServiceManager: ObservableObject {
         if let entity = ServiceStore.shared.getServices().first(where: { $0.id == service.id }) {
             ServiceStore.shared.remove(entity)
         }
-        loadServicesFromCloud()
+        loadServicesFromStore()
     }
 
     func toggleServiceState(_ service: Service) {
-        guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return }
-        entity.isActive.toggle()
-        ServiceStore.shared.save()
-        loadServicesFromCloud()
+        ServiceStore.shared.updateService(id: service.id) { entity in
+            entity.isActive.toggle()
+        }
+        loadServicesFromStore()
     }
 
     func setServiceState(_ service: Service, isActive: Bool) {
-        guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return }
-        entity.isActive = isActive
-        ServiceStore.shared.save()
-        loadServicesFromCloud()
+        ServiceStore.shared.updateService(id: service.id) { entity in
+            entity.isActive = isActive
+        }
+        loadServicesFromStore()
+    }
+
+    func updateServiceSettings(_ service: Service, settings: [ServiceSetting]) -> Bool {
+        let jsScript = updateSettingsInJS(service.jsScript, with: settings)
+
+        ServiceStore.shared.updateService(id: service.id) { entity in
+            entity.jsScript = jsScript
+        }
+        loadServicesFromStore()
+
+        return true
     }
 
     func moveServices(fromOffsets offsets: IndexSet, toOffset: Int) {
         var mutable = services
         mutable.move(fromOffsets: offsets, toOffset: toOffset)
 
-        for (index, service) in mutable.enumerated() {
-            if let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) {
+        let updates = mutable.enumerated().map { (index, service) in
+            (id: service.id, update: { (entity: ServiceEntity) in
                 entity.sortIndex = Int64(index)
-            }
+            })
         }
 
-        ServiceStore.shared.save()
-        loadServicesFromCloud()
+        ServiceStore.shared.updateMultipleServices(updates: updates)
+        loadServicesFromStore()
     }
 
     var activeServices: [Service] {
@@ -236,19 +292,11 @@ class ServiceManager: ObservableObject {
 
     func getServiceSettings(_ service: Service) -> [ServiceSetting] {
         return parseSettingsFromJS(service.jsScript)
-     }
+    }
 
-     func updateServiceSettings(_ service: Service, settings: [ServiceSetting]) -> Bool {
-         let jsScript = updateSettingsInJS(service.jsScript, with: settings)
-
-         guard let entity = ServiceStore.shared.getEntities().first(where: { $0.id == service.id }) else { return false }
-         entity.jsScript = jsScript
-
-         ServiceStore.shared.save()
-         loadServicesFromCloud()
-
-         return true
-     }
+    public func getStatus() -> ServiceStore.StorageStatus {
+        return ServiceStore.shared.status()
+    }
 
     // MARK: - Private Helpers
 
@@ -273,7 +321,7 @@ class ServiceManager: ObservableObject {
         return jsContent
     }
 
-    private func loadServicesFromCloud() {
+    private func loadServicesFromStore() {
         services = ServiceStore.shared.getServices()
     }
 

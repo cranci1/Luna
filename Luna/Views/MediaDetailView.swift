@@ -28,7 +28,7 @@ struct MediaDetailView: View {
     @State private var showingAddToCollection = false
     @State private var selectedEpisodeForSearch: TMDBEpisode?
     @State private var romajiTitle: String?
-    @State private var logoURL: String?
+    @State private var currentUserActivity: NSUserActivity?
     
     @StateObject private var serviceManager = ServiceManager.shared
     @ObservedObject private var libraryManager = LibraryManager.shared
@@ -36,7 +36,6 @@ struct MediaDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
-    @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
 
     private var headerHeight: CGFloat {
 #if os(tvOS)
@@ -58,10 +57,41 @@ struct MediaDetailView: View {
     private var isCompactLayout: Bool {
         return verticalSizeClass == .compact
     }
+
+    private var continueProgressEntry: EpisodeProgressEntry? {
+        guard let tvShowDetail else { return nil }
+
+        return ProgressManager.shared.getEpisodesInProgress()
+            .filter { $0.showId == tvShowDetail.id }
+            .sorted {
+                if $0.lastUpdated == $1.lastUpdated {
+                    return ($0.seasonNumber, $0.episodeNumber) > ($1.seasonNumber, $1.episodeNumber)
+                }
+                return $0.lastUpdated > $1.lastUpdated
+            }
+            .first
+    }
     
+    private var continueEpisode: TMDBEpisode? {
+        guard let seasonDetail, !seasonDetail.episodes.isEmpty else { return nil }
+        guard let continueProgressEntry else { return nil }
+        guard continueProgressEntry.seasonNumber == seasonDetail.seasonNumber else { return nil }
+
+        return seasonDetail.episodes.first(where: {
+            $0.seasonNumber == continueProgressEntry.seasonNumber
+                && $0.episodeNumber == continueProgressEntry.episodeNumber
+        })
+    }
+
+    private var playTargetEpisode: TMDBEpisode? {
+        continueEpisode ?? selectedEpisodeForSearch ?? seasonDetail?.episodes.first
+    }
+
     private var playButtonText: String {
         if searchResult.isMovie {
             return "Play"
+        } else if let continueEpisode = continueEpisode {
+            return "Continue S\(continueEpisode.seasonNumber)E\(continueEpisode.episodeNumber)"
         } else if let selectedEpisode = selectedEpisodeForSearch {
             return "Play S\(selectedEpisode.seasonNumber)E\(selectedEpisode.episodeNumber)"
         } else {
@@ -70,6 +100,33 @@ struct MediaDetailView: View {
     }
     
     var body: some View {
+#if os(tvOS)
+        Group {
+            if isLoading {
+                loadingView
+            } else if let errorMessage = errorMessage {
+                errorView(errorMessage)
+            } else {
+                TVOSDetailsSection(
+                    tvShow: tvShowDetail,
+                    movie: movieDetail,
+                    selectedSeason: $selectedSeason,
+                    seasonDetail: $seasonDetail,
+                    selectedEpisodeForSearch: $selectedEpisodeForSearch,
+                    tmdbService: tmdbService
+                )
+            }
+        }
+        .navigationBarHidden(true)
+        .tvOSBackButton()
+        .onAppear {
+            loadMediaDetails()
+            updateBookmarkStatus()
+        }
+        .onChangeComp(of: libraryManager.collections) { _, _ in
+            updateBookmarkStatus()
+        }
+#else
         ZStack {
             Group {
                 ambientColor
@@ -83,12 +140,9 @@ struct MediaDetailView: View {
             } else {
                 mainScrollView
             }
-#if !os(tvOS)
             navigationOverlay
-#endif
         }
         .navigationBarHidden(true)
-#if !os(tvOS)
         .gesture(
             DragGesture()
                 .onEnded { value in
@@ -97,30 +151,42 @@ struct MediaDetailView: View {
                     }
                 }
         )
-#else
-        .onExitCommand {
-            presentationMode.wrappedValue.dismiss()
-        }
-#endif
         .onAppear {
             loadMediaDetails()
             updateBookmarkStatus()
+            setupUserActivity()
+        }
+        .onDisappear {
+            invalidateUserActivity()
         }
         .onChangeComp(of: libraryManager.collections) { _, _ in
             updateBookmarkStatus()
         }
-        .sheet(isPresented: $showingSearchResults) {
-            ModulesSearchResultsSheet(
-                mediaTitle: searchResult.displayTitle,
-                originalTitle: romajiTitle,
-                isMovie: searchResult.isMovie,
-                selectedEpisode: selectedEpisodeForSearch,
-                tmdbId: searchResult.id
-            )
-        }
+        .tvos({ view in
+            view.fullScreenCover(isPresented: $showingSearchResults) {
+                ModulesSearchResultsSheet(
+                    mediaTitle: searchResult.displayTitle,
+                    originalTitle: romajiTitle,
+                    isMovie: searchResult.isMovie,
+                    selectedEpisode: selectedEpisodeForSearch,
+                    tmdbId: searchResult.id
+                )
+            }
+        }, else: { view in
+            view.sheet(isPresented: $showingSearchResults) {
+                ModulesSearchResultsSheet(
+                    mediaTitle: searchResult.displayTitle,
+                    originalTitle: romajiTitle,
+                    isMovie: searchResult.isMovie,
+                    selectedEpisode: selectedEpisodeForSearch,
+                    tmdbId: searchResult.id
+                )
+            }
+        })
         .sheet(isPresented: $showingAddToCollection) {
             AddToCollectionView(searchResult: searchResult)
         }
+#endif
     }
     
     @ViewBuilder
@@ -128,10 +194,8 @@ struct MediaDetailView: View {
         VStack {
             ProgressView()
                 .scaleEffect(1.5)
-            Text("Loading...")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .padding(.top)
+            MoonPhaseCoreAnimationLoader(iconSize: 30, spacing: 14, stepDuration: 0.3, isAnimating: true)
+                .frame(height: 60)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -255,35 +319,18 @@ struct MediaDetailView: View {
     
     @ViewBuilder
     private var headerSection: some View {
-        VStack(alignment: .center, spacing: 8) {
-            if let logoURL = logoURL {
-                KFImage(URL(string: logoURL))
-                    .placeholder {
-                        titleText
-                    }
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 280, maxHeight: 100)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-            } else {
-                titleText
-            }
+        VStack(alignment: .leading, spacing: 8) {
+            Text(searchResult.displayTitle)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.bottom, 10)
+        .padding(.bottom, 40)
         .padding(.horizontal)
-    }
-    
-    @ViewBuilder
-    private var titleText: some View {
-        Text(searchResult.displayTitle)
-            .font(.largeTitle)
-            .fontWeight(.bold)
-            .foregroundColor(.white)
-            .lineLimit(3)
-            .multilineTextAlignment(.center)
-            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-            .frame(maxWidth: .infinity, alignment: .center)
     }
     
     @ViewBuilder
@@ -396,18 +443,17 @@ struct MediaDetailView: View {
     private func searchInServices() {
         // This function will only be called when services are available
         // since the button is disabled when no services are active
-        
-        if !searchResult.isMovie {
-            if selectedEpisodeForSearch != nil {
+        if searchResult.isMovie {
+            selectedEpisodeForSearch = nil
+        } else {
+            if let continueEp = continueEpisode {
+                selectedEpisodeForSearch = continueEp
             } else if let seasonDetail = seasonDetail, !seasonDetail.episodes.isEmpty {
                 selectedEpisodeForSearch = seasonDetail.episodes.first
             } else {
                 selectedEpisodeForSearch = nil
             }
-        } else {
-            selectedEpisodeForSearch = nil
         }
-        
         showingSearchResults = true
     }
     
@@ -418,36 +464,33 @@ struct MediaDetailView: View {
         Task {
             do {
                 if searchResult.isMovie {
-                    async let detailTask = tmdbService.getMovieDetails(id: searchResult.id)
-                    async let imagesTask = tmdbService.getMovieImages(id: searchResult.id, preferredLanguage: selectedLanguage)
-                    async let romajiTask = tmdbService.getRomajiTitle(for: "movie", id: searchResult.id)
-                    
-                    let (detail, images, romaji) = try await (detailTask, imagesTask, romajiTask)
-                    
+                    let detail = try await tmdbService.getMovieDetails(id: searchResult.id)
+                    let romaji = await tmdbService.getRomajiTitle(for: "movie", id: searchResult.id)
                     await MainActor.run {
                         self.movieDetail = detail
                         self.synopsis = detail.overview ?? ""
                         self.romajiTitle = romaji
-                        if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
-                            self.logoURL = logo.fullURL
-                        }
                         self.isLoading = false
                     }
                 } else {
-                    async let detailTask = tmdbService.getTVShowWithSeasons(id: searchResult.id)
-                    async let imagesTask = tmdbService.getTVShowImages(id: searchResult.id, preferredLanguage: selectedLanguage)
-                    async let romajiTask = tmdbService.getRomajiTitle(for: "tv", id: searchResult.id)
-                    
-                    let (detail, images, romaji) = try await (detailTask, imagesTask, romajiTask)
-                    
+                    let detail = try await tmdbService.getTVShowWithSeasons(id: searchResult.id)
+                    let romaji = await tmdbService.getRomajiTitle(for: "tv", id: searchResult.id)
                     await MainActor.run {
                         self.tvShowDetail = detail
                         self.synopsis = detail.overview ?? ""
                         self.romajiTitle = romaji
-                        if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
-                            self.logoURL = logo.fullURL
-                        }
-                        if let firstSeason = detail.seasons.first(where: { $0.seasonNumber > 0 }) {
+                        if let continueEntry = ProgressManager.shared.getEpisodesInProgress()
+                            .filter({ $0.showId == detail.id })
+                            .sorted(by: {
+                                if $0.lastUpdated == $1.lastUpdated {
+                                    return ($0.seasonNumber, $0.episodeNumber) > ($1.seasonNumber, $1.episodeNumber)
+                                }
+                                return $0.lastUpdated > $1.lastUpdated
+                            })
+                            .first,
+                           let continueSeason = detail.seasons.first(where: { $0.seasonNumber == continueEntry.seasonNumber }) {
+                            self.selectedSeason = continueSeason
+                        } else if let firstSeason = detail.seasons.first(where: { $0.seasonNumber > 0 }) {
                             self.selectedSeason = firstSeason
                         }
                         self.selectedEpisodeForSearch = nil
@@ -459,6 +502,60 @@ struct MediaDetailView: View {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
                 }
+            }
+        }
+    }
+    
+    // MARK: - Apple TV App Integration
+    private func setupUserActivity() {
+        let activity = NSUserActivity(activityType: "com.luna.details")
+        
+        // Set external media content identifier for TV app integration
+        // This allows Siri to add content to Up Next
+        let contentId = generateContentIdentifier()
+        activity.externalMediaContentIdentifier = contentId
+        
+        // Set user-friendly title
+        activity.title = searchResult.displayTitle
+        
+        // Enable for search and handoff
+        activity.isEligibleForSearch = true
+        activity.isEligibleForHandoff = true
+        
+        // Add user info for deep linking
+        var userInfo: [String: Any] = [
+            "tmdbId": searchResult.id,
+            "mediaType": searchResult.isMovie ? "movie" : "tv"
+        ]
+        
+        if !searchResult.isMovie, let episode = selectedEpisodeForSearch {
+            userInfo["seasonNumber"] = episode.seasonNumber
+            userInfo["episodeNumber"] = episode.episodeNumber
+        }
+        
+        activity.userInfo = userInfo
+        
+        // Make it current
+        activity.becomeCurrent()
+        
+        // Store strong reference
+        currentUserActivity = activity
+    }
+    
+    private func invalidateUserActivity() {
+        currentUserActivity?.invalidate()
+        currentUserActivity = nil
+    }
+    
+    private func generateContentIdentifier() -> String {
+        // Generate unique identifier for the content
+        if searchResult.isMovie {
+            return "movie_\(searchResult.id)"
+        } else {
+            if let episode = selectedEpisodeForSearch {
+                return "tv_\(searchResult.id)_s\(episode.seasonNumber)_e\(episode.episodeNumber)"
+            } else {
+                return "tv_\(searchResult.id)"
             }
         }
     }

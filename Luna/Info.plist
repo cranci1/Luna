@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>me.cranci.sora</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>luna</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>tracy</string>
@@ -21,6 +34,10 @@
 	<array>
 		<string>audio</string>
 		<string>fetch</string>
+	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>com.luna.details</string>
 	</array>
 	<key>iCloudContainerID</key>
 	<string>$(ICLOUD_CONTAINER_ID)</string>

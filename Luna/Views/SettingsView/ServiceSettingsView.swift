@@ -145,20 +145,20 @@ struct ServiceSettingsView: View {
                 Text(service.metadata.sourceName)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                
+                    .foregroundColor(.primary)
+
                 HStack(spacing: 4) {
                     Text("v\(service.metadata.version)")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
+                        .foregroundColor(.secondary)
+
                     Text("•")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
+                        .foregroundColor(.secondary)
+
                     Text(service.metadata.author.name)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundColor(.secondary)
                 }
                 
                 Text(service.metadata.language)

@@ -57,7 +57,6 @@ struct ChapterList: View {
                                             .foregroundColor(settings.accentColor) + Text(" \u{00B7} \(chapterData[0].scanlationGroup)")
                                             .foregroundColor(settings.accentColor)
                                             .font(.footnote)
-                                        //.foregroundStyle(.secondary)
                                     }
                                     else{
                                         Text("\(item.chapterNumber)").font(.subheadline)

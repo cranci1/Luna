@@ -250,7 +250,7 @@ struct contentView: View {
                     Text("\(selectedLanguage.chapters.count) Chapters")
                         .font(.headline)
                         .bold()
-                        .foregroundColor(Color.accentColor)
+                        .foregroundColor(.accentColor)
                     Spacer()
                     Image(systemName: "line.3.horizontal.decrease")
                     
@@ -312,7 +312,7 @@ struct contentView: View {
                                     if chapterData.count > 0 {
                                         
                                         Text("\(item.chapterNumber )").font(.subheadline)
-                                            .foregroundColor(Color.accentColor)  + Text(" \u{00B7} \(chapterData[0].scanlationGroup)")
+                                            .foregroundColor(.accentColor)  + Text(" \u{00B7} \(chapterData[0].scanlationGroup)")
                                             .font(.footnote)
                                             .foregroundColor(.secondary)
                                         
@@ -320,7 +320,7 @@ struct contentView: View {
                                     }
                                     else{
                                         Text("\(item.chapterNumber)").font(.subheadline)
-                                            .foregroundColor(Color.accentColor)
+                                            .foregroundColor(.accentColor)
                                     }
                                     
                                     

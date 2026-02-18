@@ -60,6 +60,10 @@ struct SearchView: View {
     }
     
     private var columnsCount: Int {
+        if isTvOS {
+            return 4
+        }
+
         if UIDevice.current.userInterfaceIdiom == .pad {
             guard
                 let screen = UIApplication.shared.connectedScenes

@@ -27,7 +27,7 @@ struct AdaptiveConfirmationDialog<Actions: View, Message: View>: ViewModifier {
                 content
                     .alert(
                         titleVisibility == .hidden ? "" : title,
-                        isPresented: $isPresented
+                        isPresented: $isPresented,
                     ) {
                         actions
                     } message: {

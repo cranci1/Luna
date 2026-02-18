@@ -10,6 +10,13 @@ import Kingfisher
 
 struct SearchResultCard: View {
     let result: TMDBSearchResult
+
+    private var posterHeight: CGFloat { isTvOS ? 380 : 180 }
+    private var posterCornerRadius: CGFloat { isTvOS ? 20 : 12 }
+    private var titleHeight: CGFloat { isTvOS ? 52 : 34 }
+    private var fallbackSize: CGSize {
+        CGSize(width: isTvOS ? 280 : 120, height: isTvOS ? 380 : 180)
+    }
     
     var body: some View {
         NavigationLink(destination: MediaDetailView(searchResult: result)) {
@@ -18,13 +25,13 @@ struct SearchResultCard: View {
                     .placeholder {
                         FallbackImageView(
                             isMovie: result.isMovie,
-                            size: CGSize(width: 120, height: 180)
+                            size: fallbackSize
                         )
                     }
                     .resizable()
                     .aspectRatio(2/3, contentMode: .fill)
-                    .frame(height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(width: isTvOS ? 280 : nil, height: posterHeight)
+                    .clipShape(RoundedRectangle(cornerRadius: posterCornerRadius))
                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                 
                 Text(result.displayTitle)
@@ -32,7 +39,7 @@ struct SearchResultCard: View {
                     .fontWeight(.medium)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(height: 34)
+                    .frame(height: titleHeight)
                     .foregroundColor(.primary)
             }
             .frame(maxWidth: .infinity)

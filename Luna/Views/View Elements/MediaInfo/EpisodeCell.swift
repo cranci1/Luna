@@ -11,6 +11,8 @@ import Kingfisher
 struct EpisodeCell: View {
     let episode: TMDBEpisode
     let showId: Int
+    let showTitle: String?
+    let showPosterURL: String?
     let progress: Double
     let isSelected: Bool
     let onTap: () -> Void
@@ -51,7 +53,7 @@ struct EpisodeCell: View {
                         .frame(width: 240, height: 135)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     
-                    if progress > 0 && progress < 0.95 {
+                    if progress > 0 && progress < ProgressManager.watchedProgressThreshold {
                         VStack {
                             Spacer()
                             ProgressView(value: progress)
@@ -154,7 +156,7 @@ struct EpisodeCell: View {
                         .frame(width: 120, height: 68)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     
-                    if progress > 0 && progress < 0.95 {
+                    if progress > 0 && progress < ProgressManager.watchedProgressThreshold {
                         VStack {
                             Spacer()
                             ProgressView(value: progress)
@@ -263,7 +265,7 @@ struct EpisodeCell: View {
                 }
             }
             
-            if progress < 0.95 {
+            if progress < ProgressManager.watchedProgressThreshold {
                 Button(action: {
                     ProgressManager.shared.markEpisodeAsWatched(
                         showId: showId,
