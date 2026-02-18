@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - undeaDD
   pull_request:
     branches:
       - main
