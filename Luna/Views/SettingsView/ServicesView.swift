@@ -61,6 +61,7 @@ struct ServicesView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             Task {
+                                await serviceManager.refreshServicesFromStore()
                                 await serviceManager.updateServices()
                             }
                         } label: {
@@ -72,6 +73,7 @@ struct ServicesView: View {
                 #endif
             }
             .refreshable {
+                await serviceManager.refreshServicesFromStore()
                 await serviceManager.updateServices()
             }
             .alert("Add Service", isPresented: $showDownloadAlert) {
