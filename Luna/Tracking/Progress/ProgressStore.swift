@@ -11,6 +11,9 @@ public final class ProgressStore {
     private var initializationFailed = false
     private var didAttemptStoreRecovery = false
 
+    private var currentProfileID: String = TVOSProfileManager.shared.currentProfileID
+    private var profileObserver: NSObjectProtocol? = nil
+
     private var lastStoreURL: URL? = nil
     private var lastLoadError: String? = nil
 
@@ -26,6 +29,8 @@ public final class ProgressStore {
 #else
         initLocal()
 #endif
+
+        setupProfileObserver()
     }
 
     private func initCloudKit() {
@@ -68,12 +73,15 @@ public final class ProgressStore {
     private func configureStoreDescription(_ description: NSPersistentStoreDescription) {
         // tvOS can fail to open the default sqlite path if the directory isn't created yet.
         // Always place the store in an app-writable Application Support subdirectory.
-        var storeURL = makeStoreURL(preferred: .applicationSupport)
+        var storeURL = makeStoreURL(preferred: .applicationSupport, profileID: currentProfileID)
         if ensureParentDirectoryExists(for: storeURL) == false {
             // Fallback: caches is always writable and acceptable for non-critical local state.
-            storeURL = makeStoreURL(preferred: .caches)
+            storeURL = makeStoreURL(preferred: .caches, profileID: currentProfileID)
             _ = ensureParentDirectoryExists(for: storeURL)
         }
+
+        migrateLegacyStoreIfNeeded(preferred: .applicationSupport, targetURL: storeURL)
+        migrateLegacyStoreIfNeeded(preferred: .caches, targetURL: storeURL)
 
         description.url = storeURL
         lastStoreURL = storeURL
@@ -121,7 +129,30 @@ public final class ProgressStore {
         case caches
     }
 
-    private func makeStoreURL(preferred: StoreBaseDirectory) -> URL {
+    private func makeStoreURL(preferred: StoreBaseDirectory, profileID: String) -> URL {
+        let fm = FileManager.default
+        let library = fm.urls(for: .libraryDirectory, in: .userDomainMask).first
+        let documents = fm.urls(for: .documentDirectory, in: .userDomainMask).first
+        let libraryBase = library ?? documents ?? fm.temporaryDirectory
+
+        let base: URL
+        switch preferred {
+        case .applicationSupport:
+            base = libraryBase.appendingPathComponent("Application Support", isDirectory: true)
+        case .caches:
+            let caches = fm.urls(for: .cachesDirectory, in: .userDomainMask).first
+            base = caches ?? libraryBase.appendingPathComponent("Caches", isDirectory: true)
+        }
+
+        let profileFolder = TVOSProfileManager.sanitizedProfileIdentifier(profileID)
+
+        return base
+            .appendingPathComponent("ProgressModels", isDirectory: true)
+            .appendingPathComponent(profileFolder, isDirectory: true)
+            .appendingPathComponent("ProgressModels.sqlite", isDirectory: false)
+    }
+
+    private func makeLegacyStoreURL(preferred: StoreBaseDirectory) -> URL {
         let fm = FileManager.default
         let library = fm.urls(for: .libraryDirectory, in: .userDomainMask).first
         let documents = fm.urls(for: .documentDirectory, in: .userDomainMask).first
@@ -139,6 +170,83 @@ public final class ProgressStore {
         return base
             .appendingPathComponent("ProgressModels", isDirectory: true)
             .appendingPathComponent("ProgressModels.sqlite", isDirectory: false)
+    }
+
+    private func migrateLegacyStoreIfNeeded(preferred: StoreBaseDirectory, targetURL: URL) {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: targetURL.path) == false else { return }
+
+        let legacyURL = makeLegacyStoreURL(preferred: preferred)
+        guard fm.fileExists(atPath: legacyURL.path) else { return }
+
+        _ = ensureParentDirectoryExists(for: targetURL)
+
+        let legacySidecars = [legacyURL, sidecarURL(for: legacyURL, suffix: "-shm"), sidecarURL(for: legacyURL, suffix: "-wal")]
+        let targetSidecars = [targetURL, sidecarURL(for: targetURL, suffix: "-shm"), sidecarURL(for: targetURL, suffix: "-wal")]
+
+        for (src, dst) in zip(legacySidecars, targetSidecars) {
+            guard fm.fileExists(atPath: src.path) else { continue }
+            do {
+                if fm.fileExists(atPath: dst.path) { try fm.removeItem(at: dst) }
+                try fm.moveItem(at: src, to: dst)
+            } catch {
+                Logger.shared.log("Failed to migrate legacy progress store file \(src.lastPathComponent): \(error.localizedDescription)", type: "CloudKit")
+            }
+        }
+    }
+
+    private func sidecarURL(for baseURL: URL, suffix: String) -> URL {
+        URL(fileURLWithPath: baseURL.path + suffix)
+    }
+
+    private func setupProfileObserver() {
+        #if os(tvOS)
+        profileObserver = NotificationCenter.default.addObserver(
+            forName: TVOSProfileManager.profileDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self else { return }
+            let newID = (notification.userInfo?["profileID"] as? String) ?? TVOSProfileManager.shared.currentProfileID
+            self.switchToProfile(newID)
+        }
+        #endif
+    }
+
+    private func switchToProfile(_ profileID: String) {
+        guard profileID != currentProfileID else { return }
+        Logger.shared.log("Switching ProgressStore to profile: \(profileID)", type: "CloudKit")
+        currentProfileID = profileID
+        resetContainerForProfileChange()
+    }
+
+    private func resetContainerForProfileChange() {
+        if let observer = remoteChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            remoteChangeObserver = nil
+        }
+
+        if let container = container {
+            container.viewContext.reset()
+            let coordinator = container.persistentStoreCoordinator
+            for store in coordinator.persistentStores {
+                try? coordinator.remove(store)
+            }
+        }
+
+        container = nil
+        initializationFailed = false
+        didAttemptStoreRecovery = false
+        didEnterStoreLoadGroup = false
+        didFinishStoreLoad = false
+        lastLoadError = nil
+        lastStoreURL = nil
+
+#if CLOUDKIT
+        initCloudKit()
+#else
+        initLocal()
+#endif
     }
 
     @discardableResult

@@ -42,6 +42,9 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
     private var subtitleOverlayVC: UIHostingController<SubtitleOverlayView>?
     private var subtitleOffsetContainerView: UIView?
     private var subtitleOffsetLabel: UILabel?
+    private var hlsInterceptor: HLSManifestInterceptor?
+    private var overlaySubtitleMenuButton: UIButton?
+    private var overlaySubtitleURL: String?
     
 #if os(iOS)
     private var holdGesture: UILongPressGestureRecognizer?
@@ -95,23 +98,27 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
         }
         subtitleController?.detach()
     }
+
+    func setHLSInterceptor(_ interceptor: HLSManifestInterceptor?) {
+        hlsInterceptor = interceptor
+    }
     
     // MARK: - Subtitle Overlay Setup
     
     private func setupSubtitleOverlay() {
-        guard let subs = subtitles, !subs.isEmpty, let firstSubtitle = subs.first else {
-            Logger.shared.log("[SUBTITLE] No subtitles to setup", type: "Stream")
+        guard let subs = subtitles, !subs.isEmpty, let overlaySubtitle = overlaySubtitleURL(from: subs) else {
+            Logger.shared.log("[SUBTITLE] No overlay subtitle URL to setup", type: "Stream")
             return
         }
         
-        Logger.shared.log("[SUBTITLE] Setting up subtitle overlay with: \(firstSubtitle)", type: "Stream")
+        Logger.shared.log("[SUBTITLE] Setting up subtitle overlay with: \(overlaySubtitle)", type: "Stream")
         
         // Create subtitle controller
         let controller = SubtitleController()
         self.subtitleController = controller
         
         // Load subtitles
-        controller.loadSubtitles(from: firstSubtitle)
+        controller.loadSubtitles(from: overlaySubtitle)
         
         // Attach to player when it's ready
         if let player = player {
@@ -141,9 +148,75 @@ class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
         
         Logger.shared.log("[SUBTITLE] Subtitle overlay added to player", type: "Stream")
 
+        overlaySubtitleURL = overlaySubtitle
+        setupOverlaySubtitleMenu()
+
         // Add offset controls (tvOS-friendly) so you can sync live.
         // Disabled: cannot be focused with remote
         // setupSubtitleOffsetControls()
+    }
+
+    private func setupOverlaySubtitleMenu() {
+        guard overlaySubtitleMenuButton == nil else { return }
+        guard overlaySubtitleURL != nil else { return }
+
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+        button.setImage(UIImage(systemName: "captions.bubble", withConfiguration: config), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = UIColor(white: 0.0, alpha: 0.4)
+        button.layer.cornerRadius = 18
+        button.clipsToBounds = true
+        button.showsMenuAsPrimaryAction = true
+
+        let disableAction = UIAction(title: "Disable Overlay", image: UIImage(systemName: "xmark")) { [weak self] _ in
+            guard let self else { return }
+            self.subtitleController?.setManualOverlaySelection(false)
+            self.subtitleController?.subtitlesEnabled = false
+            Logger.shared.log("[SUBTITLE] Manual overlay disabled", type: "Stream")
+        }
+
+        let overlayAction = UIAction(title: SubtitleController.overlayTrackName, image: UIImage(systemName: "captions.bubble.fill")) { [weak self] _ in
+            guard let self else { return }
+            self.subtitleController?.setManualOverlaySelection(true)
+            self.subtitleController?.subtitlesEnabled = true
+            Logger.shared.log("[SUBTITLE] Manual overlay enabled", type: "Stream")
+        }
+
+        button.menu = UIMenu(title: "Overlay Subtitles", children: [disableAction, overlayAction])
+
+        let parent = contentOverlayView ?? view
+        parent?.addSubview(button)
+
+        NSLayoutConstraint.activate([
+            button.trailingAnchor.constraint(equalTo: parent!.trailingAnchor, constant: -24),
+            button.topAnchor.constraint(equalTo: parent!.topAnchor, constant: 24),
+            button.widthAnchor.constraint(equalToConstant: 36),
+            button.heightAnchor.constraint(equalToConstant: 36)
+        ])
+
+        overlaySubtitleMenuButton = button
+    }
+
+    private func overlaySubtitleURL(from subtitles: [String]) -> String? {
+        let overlayName = SubtitleController.overlayTrackName
+        for (index, entry) in subtitles.enumerated() {
+            if entry.trimmingCharacters(in: .whitespacesAndNewlines)
+                .caseInsensitiveCompare(overlayName) == .orderedSame {
+                let nextIndex = index + 1
+                if nextIndex < subtitles.count, isSubtitleURL(subtitles[nextIndex]) {
+                    return subtitles[nextIndex]
+                }
+            }
+        }
+
+        return subtitles.first(where: { isSubtitleURL($0) })
+    }
+
+    private func isSubtitleURL(_ value: String) -> Bool {
+        let lowercased = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
     }
 
     private func setupSubtitleOffsetControls() {

@@ -9,6 +9,59 @@ private enum LunaAppGroup {
     }
 }
 
+private enum ProfileScopedKeys {
+    static let continueWatchingBaseV2 = "topShelf.continueWatching.v2"
+    static let continueWatchingBaseV1 = "topShelf.continueWatching.v1"
+
+    static func resolveContinueWatchingData(defaults: UserDefaults) -> Data? {
+        let scopedV2 = scopedKey(continueWatchingBaseV2)
+        let scopedV1 = scopedKey(continueWatchingBaseV1)
+
+        if let data = defaults.data(forKey: scopedV2) { return data }
+        if let data = defaults.data(forKey: scopedV1) { return data }
+
+        // Legacy fallback (pre-profile)
+        if let legacy = defaults.data(forKey: continueWatchingBaseV2) {
+            defaults.set(legacy, forKey: scopedV2)
+            return legacy
+        }
+        if let legacy = defaults.data(forKey: continueWatchingBaseV1) {
+            defaults.set(legacy, forKey: scopedV1)
+            return legacy
+        }
+
+        return nil
+    }
+
+    private static func scopedKey(_ base: String) -> String {
+        let safe = sanitizedProfileIdentifier(currentProfileID())
+        return "\(base).\(safe)"
+    }
+
+    private static func currentProfileID() -> String {
+        let manager = TVUserManager()
+
+        if #available(tvOS 16.0, *) {
+            if let identifier = manager.currentUserIdentifier {
+                return identifier
+            }
+
+            return manager.shouldStorePreferencesForCurrentUser ? "currentUser" : "default"
+        } else {
+            return manager.currentUserIdentifier ?? "default"
+        }
+    }
+
+    private static func sanitizedProfileIdentifier(_ raw: String) -> String {
+        guard raw.isEmpty == false else { return "default" }
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        let mapped = raw.unicodeScalars.map { allowed.contains($0) ? Character($0) : "-" }
+        let trimmed = String(mapped).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+        let limited = trimmed.isEmpty ? "default" : String(trimmed.prefix(64))
+        return limited
+    }
+}
+
 private struct TopShelfContinueWatchingEntry: Codable, Identifiable {
     enum MediaKind: String, Codable {
         case movie
@@ -62,12 +115,9 @@ private struct TopShelfContinueWatchingEntry: Codable, Identifiable {
 }
 
 final class ServiceProvider: TVTopShelfContentProvider {
-    private let continueWatchingKeyV2 = "topShelf.continueWatching.v2"
-    private let continueWatchingKeyV1 = "topShelf.continueWatching.v1"
-
     override func loadTopShelfContent(completionHandler: @escaping ((any TVTopShelfContent)?) -> Void) {
         guard let defaults = LunaAppGroup.userDefaults,
-              let data = defaults.data(forKey: continueWatchingKeyV2) ?? defaults.data(forKey: continueWatchingKeyV1),
+              let data = ProfileScopedKeys.resolveContinueWatchingData(defaults: defaults),
               let entries = try? JSONDecoder().decode([TopShelfContinueWatchingEntry].self, from: data)
         else {
             completionHandler(nil)
@@ -102,7 +152,7 @@ final class ServiceProvider: TVTopShelfContentProvider {
         }
 
         let collection = TVTopShelfItemCollection(items: items)
-        collection.title = "DAISY IS BEAUTIFUL"
+        collection.title = "Continue Watching"
 
         let content = TVTopShelfSectionedContent(sections: [collection])
         completionHandler(content)

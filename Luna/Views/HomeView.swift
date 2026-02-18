@@ -13,10 +13,10 @@ struct HomeView: View {
     @State private var trendingContent: [TMDBSearchResult] = []
     @State private var popularMovies: [TMDBMovie] = []
     @State private var popularTVShows: [TMDBTVShow] = []
-    @State private var popularAnime: [TMDBTVShow] = []
+    @State private var popularAnime: [TMDBSearchResult] = []
     @State private var topRatedMovies: [TMDBMovie] = []
     @State private var topRatedTVShows: [TMDBTVShow] = []
-    @State private var topRatedAnime: [TMDBTVShow] = []
+    @State private var topRatedAnime: [TMDBSearchResult] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var heroContent: TMDBSearchResult?
@@ -33,6 +33,7 @@ struct HomeView: View {
         }
         return Data()
     }()
+    @AppStorage("animeCatalogSource") private var animeCatalogSource = AnimeCatalogSource.tmdb.rawValue
     
     private var homeSections: [HomeSection] {
         if let sections = try? JSONDecoder().decode([HomeSection].self, from: homeSectionsData) {
@@ -89,6 +90,11 @@ struct HomeView: View {
             loadContinueWatching()
         }
         .onChangeComp(of: contentFilter.filterHorror) { _, _ in
+            if hasLoadedContent {
+                loadContent()
+            }
+        }
+        .onChangeComp(of: animeCatalogSource) { _, _ in
             if hasLoadedContent {
                 loadContent()
             }
@@ -337,7 +343,7 @@ struct HomeView: View {
                     if !popularAnime.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: popularAnime.prefix(15).map { $0.asSearchResult }
+                            items: Array(popularAnime.prefix(15))
                         )
                     }
                 case "topRatedMovies":
@@ -358,7 +364,7 @@ struct HomeView: View {
                     if !topRatedAnime.isEmpty {
                         MediaSection(
                             title: section.title,
-                            items: topRatedAnime.prefix(15).map { $0.asSearchResult }
+                            items: Array(topRatedAnime.prefix(15))
                         )
                     }
                 default:
@@ -374,16 +380,17 @@ struct HomeView: View {
     private func loadContent() {
         isLoading = true
         errorMessage = nil
+        let selectedSource = AnimeCatalogSource(rawValue: animeCatalogSource) ?? .tmdb
 
         Task.detached(priority: .userInitiated) {
             do {
                 async let trending = TMDBService.shared.getTrending()
                 async let popularM = TMDBService.shared.getPopularMovies()
                 async let popularTV = TMDBService.shared.getPopularTVShows()
-                async let popularA = TMDBService.shared.getPopularAnime()
+                async let popularA = fetchPopularAnime(source: selectedSource)
                 async let topRatedM = TMDBService.shared.getTopRatedMovies()
                 async let topRatedTV = TMDBService.shared.getTopRatedTVShows()
-                async let topRatedA = TMDBService.shared.getTopRatedAnime()
+                async let topRatedA = fetchTopRatedAnime(source: selectedSource)
 
                 let (trendingResult, popularMoviesResult, popularTVResult, popularAnimeResult, topRatedMoviesResult, topRatedTVResult, topRatedAnimeResult) = try await (trending, popularM, popularTV, popularA, topRatedM, topRatedTV, topRatedA)
 
@@ -392,10 +399,10 @@ struct HomeView: View {
                         self.trendingContent = contentFilter.filterSearchResults(trendingResult)
                         self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
                         self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
-                        self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
+                        self.popularAnime = contentFilter.filterSearchResults(popularAnimeResult)
                         self.topRatedMovies = contentFilter.filterMovies(topRatedMoviesResult)
                         self.topRatedTVShows = contentFilter.filterTVShows(topRatedTVResult)
-                        self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                        self.topRatedAnime = contentFilter.filterSearchResults(topRatedAnimeResult)
 
                         self.heroContent = self.trendingContent.first { $0.backdropPath != nil } ?? self.trendingContent.first
                         self.isLoading = false
@@ -409,6 +416,26 @@ struct HomeView: View {
                     Logger.shared.log("Error loading content: \(error)", type: "Error")
                 }
             }
+        }
+    }
+
+    private func fetchPopularAnime(source: AnimeCatalogSource) async throws -> [TMDBSearchResult] {
+        switch source {
+        case .anilist:
+            return try await AniListService.shared.fetchAnimeCatalog(.popular, tmdbService: TMDBService.shared)
+        case .tmdb:
+            let results = try await TMDBService.shared.getPopularAnime()
+            return results.map { $0.asSearchResult }
+        }
+    }
+
+    private func fetchTopRatedAnime(source: AnimeCatalogSource) async throws -> [TMDBSearchResult] {
+        switch source {
+        case .anilist:
+            return try await AniListService.shared.fetchAnimeCatalog(.topRated, tmdbService: TMDBService.shared)
+        case .tmdb:
+            let results = try await TMDBService.shared.getTopRatedAnime()
+            return results.map { $0.asSearchResult }
         }
     }
     

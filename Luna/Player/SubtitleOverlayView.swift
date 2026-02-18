@@ -62,6 +62,8 @@ struct SubtitleOverlayView: View {
 
 /// Controller that manages subtitle parsing and synchronization
 class SubtitleController: ObservableObject {
+    static let overlayTrackName = "Overlay English"
+
     @Published var currentCue: SubtitleCue?
     @Published var isLoaded: Bool = false
     @Published var subtitlesEnabled: Bool = true
@@ -76,6 +78,7 @@ class SubtitleController: ObservableObject {
     private weak var player: AVPlayer?
     private var lastCueIndex: Int = -1
     private var lastSystemSubtitleSelectionEnabled: Bool?
+    private var manualOverlaySelection: Bool = false
     
     init() {}
     
@@ -186,23 +189,48 @@ class SubtitleController: ObservableObject {
 
         let selected = item.currentMediaSelection.selectedMediaOption(in: group)
         let systemEnabled = (selected != nil)
+        let selectedName = selected?.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isOverlaySelection = selectedName?.caseInsensitiveCompare(Self.overlayTrackName) == .orderedSame
 
-        // Sync overlay subtitles with system subtitle state
-        if systemEnabled {
-            // System subtitles enabled -> enable overlay subtitles
+        suppressedBySystemSubtitles = systemEnabled && !isOverlaySelection
+
+        if manualOverlaySelection {
+            if systemEnabled {
+                item.select(nil, in: group)
+            }
             if !subtitlesEnabled {
                 subtitlesEnabled = true
-                Logger.shared.log("[SUBTITLE] System subtitles enabled; enabling overlay subtitles", type: "Stream")
+                Logger.shared.log("[SUBTITLE] Manual overlay selection active; enabling overlay subtitles", type: "Stream")
+            }
+            lastSystemSubtitleSelectionEnabled = systemEnabled
+            return
+        }
+
+        // Sync overlay subtitles with the specific overlay track selection.
+        if isOverlaySelection {
+            if !subtitlesEnabled {
+                subtitlesEnabled = true
+                Logger.shared.log("[SUBTITLE] Overlay track selected; enabling overlay subtitles", type: "Stream")
             }
         } else {
-            // System subtitles disabled -> disable overlay subtitles
             if subtitlesEnabled {
                 subtitlesEnabled = false
-                Logger.shared.log("[SUBTITLE] System subtitles disabled; disabling overlay subtitles", type: "Stream")
+                let selectedLabel = selectedName ?? "none"
+                Logger.shared.log("[SUBTITLE] Overlay track not selected (current: \(selectedLabel)); disabling overlay subtitles", type: "Stream")
+            }
+            if systemEnabled {
+                manualOverlaySelection = false
             }
         }
 
         lastSystemSubtitleSelectionEnabled = systemEnabled
+    }
+
+    func setManualOverlaySelection(_ active: Bool) {
+        manualOverlaySelection = active
+        if active {
+            syncWithSystemSubtitleSelection()
+        }
     }
     
     private func findCue(for time: TimeInterval) -> SubtitleCue? {

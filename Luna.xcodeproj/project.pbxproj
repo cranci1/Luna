@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F60718293A4B60 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* ProgressStore.swift */; };
-		A1B2C3D4E5F60718293A4B61 /* ProgressEntities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* ProgressEntities.swift */; };
-		A1B2C3D4E5F60718293A4B62 /* ProgressModels.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* ProgressModels.xcdatamodeld */; };
 		12201F512EBE918D0033073C /* ServiceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12201F502EBE91870033073C /* ServiceStore.swift */; };
 		12201F542EBE922D0033073C /* ServiceModels.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 12201F522EBE922D0033073C /* ServiceModels.xcdatamodeld */; };
 		129A8FB52F095BED00B77C95 /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129A8FB42F095BE500B77C95 /* LanguageSelectionView.swift */; };
@@ -125,15 +122,22 @@
 		76710FFD2F11E05D0061B452 /* MoonPhaseLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76710FFC2F11E05D0061B452 /* MoonPhaseLoader.swift */; };
 		76710FFF2F11E0670061B452 /* TVOSBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76710FFE2F11E0670061B452 /* TVOSBackButton.swift */; };
 		767110012F11F45D0061B452 /* SubtitleOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767110002F11F45D0061B452 /* SubtitleOverlayView.swift */; };
+		7671181B2F30712F00643621 /* AnimeCatalogSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7671181A2F30712F00643621 /* AnimeCatalogSourceView.swift */; };
+		7671181D2F30713B00643621 /* AniListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7671181C2F30713B00643621 /* AniListService.swift */; };
+		7671181F2F30716400643621 /* AnimeCatalogSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7671181E2F30716400643621 /* AnimeCatalogSource.swift */; };
 		768E969D2F14679600DED96B /* DeepLinkHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768E969C2F14679600DED96B /* DeepLinkHandler.swift */; };
 		768E96AC2F1484B300DED96B /* LunaTopShelf2.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 768E96A22F1484B200DED96B /* LunaTopShelf2.appex */; platformFilters = (tvos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		768E96BD2F14861700DED96B /* ContentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768E96B72F14861700DED96B /* ContentProvider.swift */; };
 		768E96BE2F14861700DED96B /* ServiceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768E96BA2F14861700DED96B /* ServiceProvider.swift */; };
 		768E96CB2F148D8E00DED96B /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768E96C92F148D8600DED96B /* TVServices.framework */; };
 		768E96CC2F148D8E00DED96B /* TVServices.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 768E96C92F148D8600DED96B /* TVServices.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		769AADD02F301E5B00C68B60 /* TVOSProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 769AADCE2F301E5B00C68B60 /* TVOSProfileManager.swift */; };
 		76E6F12B2F16164400CF8C09 /* CoreAnimationSpinner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E6F12A2F16164400CF8C09 /* CoreAnimationSpinner.swift */; };
 		76E6F12D2F16178900CF8C09 /* MoonPhaseCoreAnimationLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E6F12C2F16178900CF8C09 /* MoonPhaseCoreAnimationLoader.swift */; };
 		9F0A1B2C3D4E5F60718293A7 /* TopShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0A1B2C3D4E5F60718293A5 /* TopShelfStore.swift */; };
+		A1B2C3D4E5F60718293A4B60 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* ProgressStore.swift */; };
+		A1B2C3D4E5F60718293A4B61 /* ProgressEntities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* ProgressEntities.swift */; };
+		A1B2C3D4E5F60718293A4B62 /* ProgressModels.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* ProgressModels.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,9 +186,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A1B2C3D4E5F60718293A4B5C /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5D /* ProgressEntities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressEntities.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProgressModels.xcdatamodel; sourceTree = "<group>"; };
 		12201F502EBE91870033073C /* ServiceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceStore.swift; sourceTree = "<group>"; };
 		12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ServiceModels.xcdatamodel; sourceTree = "<group>"; };
 		1240112B2EFF3B8B00CEC6EB /* Luna.local.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Luna.local.entitlements; sourceTree = "<group>"; };
@@ -301,6 +302,9 @@
 		76710FFC2F11E05D0061B452 /* MoonPhaseLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonPhaseLoader.swift; sourceTree = "<group>"; };
 		76710FFE2F11E0670061B452 /* TVOSBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSBackButton.swift; sourceTree = "<group>"; };
 		767110002F11F45D0061B452 /* SubtitleOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtitleOverlayView.swift; sourceTree = "<group>"; };
+		7671181A2F30712F00643621 /* AnimeCatalogSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeCatalogSourceView.swift; sourceTree = "<group>"; };
+		7671181C2F30713B00643621 /* AniListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AniListService.swift; path = Luna/TMDB/AniListService.swift; sourceTree = SOURCE_ROOT; };
+		7671181E2F30716400643621 /* AnimeCatalogSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeCatalogSource.swift; sourceTree = "<group>"; };
 		768E969C2F14679600DED96B /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
 		768E96A22F1484B200DED96B /* LunaTopShelf2.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LunaTopShelf2.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		768E96B72F14861700DED96B /* ContentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentProvider.swift; sourceTree = "<group>"; };
@@ -308,9 +312,13 @@
 		768E96B92F14861700DED96B /* LunaTopShelf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LunaTopShelf.entitlements; sourceTree = "<group>"; };
 		768E96BA2F14861700DED96B /* ServiceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceProvider.swift; sourceTree = "<group>"; };
 		768E96C92F148D8600DED96B /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS26.2.sdk/System/Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
+		769AADCE2F301E5B00C68B60 /* TVOSProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSProfileManager.swift; sourceTree = "<group>"; };
 		76E6F12A2F16164400CF8C09 /* CoreAnimationSpinner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAnimationSpinner.swift; sourceTree = "<group>"; };
 		76E6F12C2F16178900CF8C09 /* MoonPhaseCoreAnimationLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonPhaseCoreAnimationLoader.swift; sourceTree = "<group>"; };
 		9F0A1B2C3D4E5F60718293A5 /* TopShelfStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopShelfStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* ProgressEntities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressEntities.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ProgressModels.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -629,6 +637,7 @@
 		13F0725D2E4B2D3300EF90EB /* Luna */ = {
 			isa = PBXGroup;
 			children = (
+				769AADCF2F301E5B00C68B60 /* Profiles */,
 				13B6F3472EA4C82600DECD2B /* Info.plist */,
 				9F0A1B2C3D4E5F60718293A6 /* TopShelf */,
 				1324E7B22E940BD70036B5F5 /* Player */,
@@ -782,6 +791,7 @@
 			children = (
 				13F072982E4B2D9200EF90EB /* Models */,
 				13F0729A2E4B2D9200EF90EB /* TMDBService.swift */,
+				7671181C2F30713B00643621 /* AniListService.swift */,
 				13F5B5942E730CB200565E75 /* TMDBContentFilter.swift */,
 			);
 			path = TMDB;
@@ -809,6 +819,7 @@
 		13F072C42E4B364B00EF90EB /* SettingsView */ = {
 			isa = PBXGroup;
 			children = (
+				7671181A2F30712F00643621 /* AnimeCatalogSourceView.swift */,
 				129A8FB42F095BE500B77C95 /* LanguageSelectionView.swift */,
 				13830AEF2E55C04F00B3CDE4 /* AlgorithmSelectionView.swift */,
 				13631B312E4F1A200035C39F /* ServiceSettingsView.swift */,
@@ -847,6 +858,7 @@
 			children = (
 				13F5B5932E730B0200565E75 /* Library */,
 				13F5B5912E73090000565E75 /* HomeSection.swift */,
+				7671181E2F30716400643621 /* AnimeCatalogSource.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -878,6 +890,14 @@
 			);
 			path = LunaTopShelf;
 			sourceTree = SOURCE_ROOT;
+		};
+		769AADCF2F301E5B00C68B60 /* Profiles */ = {
+			isa = PBXGroup;
+			children = (
+				769AADCE2F301E5B00C68B60 /* TVOSProfileManager.swift */,
+			);
+			path = Profiles;
+			sourceTree = "<group>";
 		};
 		9F0A1B2C3D4E5F60718293A6 /* TopShelf */ = {
 			isa = PBXGroup;
@@ -1066,6 +1086,7 @@
 				13F072AC2E4B2D9200EF90EB /* Shows-Details.swift in Sources */,
 				13E1EDDD2ED9E66000087629 /* KanzenOutputFormatter.swift in Sources */,
 				13830AF22E55F51300B3CDE4 /* AlternativeUIView.swift in Sources */,
+				7671181F2F30716400643621 /* AnimeCatalogSource.swift in Sources */,
 				13F072BA2E4B2D9200EF90EB /* TMDBService.swift in Sources */,
 				13E1EDE82ED9E66000087629 /* MainMenu.swift in Sources */,
 				13E1EDE32ED9E66000087629 /* readerSettingsView.swift in Sources */,
@@ -1109,6 +1130,7 @@
 				13830AF02E55C04F00B3CDE4 /* AlgorithmSelectionView.swift in Sources */,
 				13F0729E2E4B2D9200EF90EB /* JSController-Details.swift in Sources */,
 				13F187AF2E6F38CE00747F7E /* AddToCollectionView.swift in Sources */,
+				7671181D2F30713B00643621 /* AniListService.swift in Sources */,
 				13E1EDD12ED9E65F00087629 /* Module.swift in Sources */,
 				13830AEE2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift in Sources */,
 				12201F542EBE922D0033073C /* ServiceModels.xcdatamodeld in Sources */,
@@ -1130,8 +1152,10 @@
 				13F072B72E4B2D9200EF90EB /* Logger.swift in Sources */,
 				13E1EDD72ED9E65F00087629 /* favouriteManager.swift in Sources */,
 				13B2E5742E7597B9009F3271 /* JSController-NetworkFetch.swift in Sources */,
+				769AADD02F301E5B00C68B60 /* TVOSProfileManager.swift in Sources */,
 				13F315B02EAD03F70025BD7A /* SubtitleLoader.swift in Sources */,
 				13F072B82E4B2D9200EF90EB /* LevenshteinDistance.swift in Sources */,
+				7671181B2F30712F00643621 /* AnimeCatalogSourceView.swift in Sources */,
 				13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */,
 				13E1EDD42ED9E65F00087629 /* mangaData.swift in Sources */,
 				13F072B32E4B2D9200EF90EB /* ServicesResultsSheet.swift in Sources */,
@@ -1565,16 +1589,6 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		A1B2C3D4E5F60718293A4B5E /* ProgressModels.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */,
-			);
-			currentVersion = A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */;
-			path = ProgressModels.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
 		12201F522EBE922D0033073C /* ServiceModels.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
@@ -1602,6 +1616,16 @@
 			);
 			currentVersion = 13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */;
 			path = ContentModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+		A1B2C3D4E5F60718293A4B5E /* ProgressModels.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */,
+			);
+			currentVersion = A1B2C3D4E5F60718293A4B5F /* ProgressModels.xcdatamodel */;
+			path = ProgressModels.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

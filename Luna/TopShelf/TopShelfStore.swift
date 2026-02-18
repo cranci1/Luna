@@ -136,8 +136,8 @@ final class TopShelfStore {
 
     private init() {}
 
-    private let continueWatchingKey = "topShelf.continueWatching.v2"
-    private let artworkCacheKey = "topShelf.artworkCache.v1"
+    private let continueWatchingKeyBase = "topShelf.continueWatching.v2"
+    private let artworkCacheKeyBase = "topShelf.artworkCache.v1"
 
     private let watchedProgressThreshold: Double = 0.89
 
@@ -247,7 +247,7 @@ final class TopShelfStore {
         if items.count > 10 { items = Array(items.prefix(10)) }
 
         if let data = try? JSONEncoder().encode(items) {
-            defaults.set(data, forKey: continueWatchingKey)
+            defaults.set(data, forKey: scopedKey(continueWatchingKeyBase))
 
             #if canImport(TVServices)
             // Ask the system to refresh Top Shelf.
@@ -261,12 +261,32 @@ final class TopShelfStore {
     }
 
     private func loadArtworkCache(from defaults: UserDefaults) -> [String: ArtworkCacheEntry] {
-        guard let data = defaults.data(forKey: artworkCacheKey) else { return [:] }
+        guard let data = resolveData(for: artworkCacheKeyBase, defaults: defaults) else { return [:] }
         return (try? JSONDecoder().decode([String: ArtworkCacheEntry].self, from: data)) ?? [:]
     }
 
     private func saveArtworkCache(_ cache: [String: ArtworkCacheEntry], to defaults: UserDefaults) {
         guard let data = try? JSONEncoder().encode(cache) else { return }
-        defaults.set(data, forKey: artworkCacheKey)
+        defaults.set(data, forKey: scopedKey(artworkCacheKeyBase))
+    }
+
+    private func scopedKey(_ base: String) -> String {
+        #if os(tvOS)
+        let profile = TVOSProfileManager.shared.currentProfileID
+        let safe = TVOSProfileManager.sanitizedProfileIdentifier(profile)
+        return "\(base).\(safe)"
+        #else
+        return base
+        #endif
+    }
+
+    private func resolveData(for baseKey: String, defaults: UserDefaults) -> Data? {
+        let scoped = scopedKey(baseKey)
+        if let data = defaults.data(forKey: scoped) { return data }
+        if scoped != baseKey, let legacy = defaults.data(forKey: baseKey) {
+            defaults.set(legacy, forKey: scoped)
+            return legacy
+        }
+        return nil
     }
 }

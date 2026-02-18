@@ -254,6 +254,7 @@ final class ProgressManager: ObservableObject {
     private var pendingLegacyMigration: ProgressData? = nil
     private var dirtyMovieIds: Set<Int> = []
     private var dirtyEpisodeIds: Set<String> = []
+    private var profileObserver: NSObjectProtocol? = nil
     
     private init() {
         load()
@@ -266,6 +267,16 @@ final class ProgressManager: ObservableObject {
             guard let self else { return }
             self.handleRemoteStoreChange()
         }
+
+        #if os(tvOS)
+        profileObserver = NotificationCenter.default.addObserver(
+            forName: TVOSProfileManager.profileDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleProfileChange()
+        }
+        #endif
     }
 
     private func handleRemoteStoreChange() {
@@ -304,6 +315,13 @@ final class ProgressManager: ObservableObject {
         progressData = merged
         isLoadingFromDisk = false
         updateTopShelfSnapshot()
+    }
+
+    private func handleProfileChange() {
+        pendingLegacyMigration = nil
+        dirtyMovieIds.removeAll()
+        dirtyEpisodeIds.removeAll()
+        load()
     }
     
     // MARK: - Data Persistence (Core Data / CloudKit)

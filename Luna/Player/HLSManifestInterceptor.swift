@@ -75,12 +75,14 @@ class HLSManifestInterceptor: NSObject, AVAssetResourceLoaderDelegate {
                 if nextIndex < subtitles.count, isURL(subtitles[nextIndex]) {
                     if let url = convertToVTTURL(subtitles[nextIndex]) {
                         Logger.shared.log("Parsed subtitle '\(entry)': \(url.absoluteString)", type: "Stream")
+                        let isOverlayTrack = entry.trimmingCharacters(in: .whitespacesAndNewlines)
+                            .caseInsensitiveCompare(SubtitleController.overlayTrackName) == .orderedSame
                         let track = SubtitleTrack(
                             name: entry,
                             language: detectLanguage(from: entry),
                             url: url,
-                            isDefault: trackNumber == 1,
-                            autoSelect: true
+                            isDefault: (trackNumber == 1 && !isOverlayTrack),
+                            autoSelect: !isOverlayTrack
                         )
                         tracks.append(track)
                         trackNumber += 1

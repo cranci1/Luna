@@ -220,6 +220,12 @@ final class PlayerViewController: UIViewController {
     private var subtitleURLs: [String] = []
     private var currentSubtitleIndex: Int = 0
     private var subtitleEntries: [SubtitleEntry] = []
+    private var subtitleOptions: [SubtitleOption] = []
+
+    private struct SubtitleOption {
+        let name: String
+        let url: String
+    }
     
     class SubtitleModel: ObservableObject {
         @Published var currentAttributedText: NSAttributedString = NSAttributedString()
@@ -733,10 +739,10 @@ final class PlayerViewController: UIViewController {
         }
         trackActions.append(disableAction)
         
-        for (index, _) in subtitleURLs.enumerated() {
+        for (index, option) in subtitleOptions.enumerated() {
             let isSelected = subtitleModel.isVisible && currentSubtitleIndex == index
             let action = UIAction(
-                title: "Subtitle \(index + 1)",
+                title: option.name,
                 image: UIImage(systemName: "captions.bubble"),
                 state: isSelected ? .on : .off
             ) { [weak self] _ in
@@ -851,7 +857,7 @@ final class PlayerViewController: UIViewController {
     }
     
     private func updateCurrentSubtitleAppearance() {
-        if subtitleModel.isVisible && currentSubtitleIndex < subtitleURLs.count {
+        if subtitleModel.isVisible && currentSubtitleIndex < subtitleOptions.count {
             loadCurrentSubtitle()
         }
     }
@@ -864,9 +870,10 @@ final class PlayerViewController: UIViewController {
     }
     
     private func loadSubtitles(_ urls: [String]) {
-        subtitleURLs = urls
+        subtitleOptions = parseSubtitleOptions(from: urls)
+        subtitleURLs = subtitleOptions.map { $0.url }
         
-        if !urls.isEmpty {
+        if !subtitleOptions.isEmpty {
             subtitleButton.isHidden = false
             currentSubtitleIndex = 0
             subtitleModel.isVisible = true
@@ -877,8 +884,8 @@ final class PlayerViewController: UIViewController {
     }
     
     private func loadCurrentSubtitle() {
-        guard currentSubtitleIndex < subtitleURLs.count else { return }
-        let urlString = subtitleURLs[currentSubtitleIndex]
+        guard currentSubtitleIndex < subtitleOptions.count else { return }
+        let urlString = subtitleOptions[currentSubtitleIndex].url
         
         guard let url = URL(string: urlString) else {
             Logger.shared.log("Invalid subtitle URL: \(urlString)", type: "Error")
@@ -929,8 +936,8 @@ final class PlayerViewController: UIViewController {
         }
         alert.addAction(disableAction)
         
-        for (index, _) in subtitleURLs.enumerated() {
-            let action = UIAlertAction(title: "Subtitle \(index + 1)", style: .default) { [weak self] _ in
+        for (index, option) in subtitleOptions.enumerated() {
+            let action = UIAlertAction(title: option.name, style: .default) { [weak self] _ in
                 self?.currentSubtitleIndex = index
                 self?.subtitleModel.isVisible = true
                 self?.loadCurrentSubtitle()
@@ -958,6 +965,37 @@ final class PlayerViewController: UIViewController {
                 button.transform = .identity
             }
         }
+    }
+
+    private func parseSubtitleOptions(from values: [String]) -> [SubtitleOption] {
+        var options: [SubtitleOption] = []
+        var index = 0
+        var trackNumber = 1
+
+        while index < values.count {
+            let entry = values[index].trimmingCharacters(in: .whitespacesAndNewlines)
+            if isSubtitleURL(entry) {
+                options.append(SubtitleOption(name: "Subtitle \(trackNumber)", url: entry))
+                trackNumber += 1
+                index += 1
+            } else {
+                let nextIndex = index + 1
+                if nextIndex < values.count, isSubtitleURL(values[nextIndex]) {
+                    options.append(SubtitleOption(name: entry, url: values[nextIndex]))
+                    trackNumber += 1
+                    index += 2
+                } else {
+                    index += 1
+                }
+            }
+        }
+
+        return options
+    }
+
+    private func isSubtitleURL(_ value: String) -> Bool {
+        let lowercased = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
     }
     
     private func updateProgressHostingController() {

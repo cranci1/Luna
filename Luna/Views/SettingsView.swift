@@ -13,6 +13,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
 
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
+    @AppStorage("animeCatalogSource") private var animeCatalogSource = AnimeCatalogSource.tmdb.rawValue
     @AppStorage("showKanzen") private var showKanzen: Bool = false
 
     @StateObject private var algorithmManager = AlgorithmManager.shared
@@ -114,11 +115,24 @@ struct SettingsView: View {
                 NavigationLink(destination: TMDBFiltersView()) {
                     Text("Content Filters")
                 }
+
+                NavigationLink(destination: AnimeCatalogSourceView(selectedSource: $animeCatalogSource)) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Anime Catalog Source")
+                        }
+
+                        Spacer()
+
+                        Text(AnimeCatalogSource(rawValue: animeCatalogSource)?.displayName ?? AnimeCatalogSource.tmdb.displayName)
+                            .foregroundColor(.secondary)
+                    }
+                }
             } header: {
                 Text("TMDB SETTINGS")
                     .fontWeight(.bold)
             } footer: {
-                Text("Configure language preferences and content filtering options for TMDB data.")
+                Text("Configure language preferences, content filtering, and the source used for anime catalogs.")
                     .foregroundColor(.secondary)
                     .padding(.bottom)
             }
@@ -205,6 +219,7 @@ struct SettingsView: View {
 private struct CloudKitDiagnosticsView: View {
     @State private var iCloudContainerID: String = Bundle.main.iCloudContainerID ?? "—"
     @State private var accountStatusText: String = "—"
+    @State private var profileID: String = TVOSProfileManager.shared.currentProfileID
 
     @State private var servicesStatus: ServiceStore.StorageStatus = ServiceStore.shared.status()
     @State private var servicesCount: Int = 0
@@ -245,6 +260,36 @@ private struct CloudKitDiagnosticsView: View {
                         .multilineTextAlignment(.trailing)
                         .maybeTextSelectionEnabled(true)
                 }
+
+                #if os(tvOS)
+                HStack {
+                    Text("Apple TV Profile")
+                    Spacer()
+                    Text(profileID)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.trailing)
+                        .maybeTextSelectionEnabled(true)
+                }
+
+                HStack {
+                    Text("tvOS User Identifier")
+                    Spacer()
+                    Text(TVOSProfileManager.debugCurrentUserIdentifier() ?? "nil")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.trailing)
+                        .maybeTextSelectionEnabled(true)
+                }
+
+                if let shouldStore = TVOSProfileManager.debugShouldStorePreferencesForCurrentUser() {
+                    HStack {
+                        Text("Store Prefs for Current User")
+                        Spacer()
+                        Text(shouldStore ? "Yes" : "No")
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.trailing)
+                    }
+                }
+                #endif
 
                 HStack {
                     Text("Account Status")
@@ -373,6 +418,11 @@ private struct CloudKitDiagnosticsView: View {
         .onAppear {
             refresh()
         }
+        #if os(tvOS)
+        .onReceive(NotificationCenter.default.publisher(for: TVOSProfileManager.profileDidChangeNotification)) { _ in
+            refresh()
+        }
+        #endif
         .alert("Reset Local Services Store?", isPresented: $showResetServicesConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
@@ -397,6 +447,7 @@ private struct CloudKitDiagnosticsView: View {
 
     private func refresh() {
         iCloudContainerID = Bundle.main.iCloudContainerID ?? "—"
+        profileID = TVOSProfileManager.shared.currentProfileID
 
         servicesStatus = ServiceStore.shared.status()
         servicesCount = ServiceStore.shared.getEntities().count

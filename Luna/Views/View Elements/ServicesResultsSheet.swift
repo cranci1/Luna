@@ -55,10 +55,33 @@ struct StreamOption {
 
 struct ModulesSearchResultsSheet: View {
     let mediaTitle: String
+    let seasonTitleOverride: String?
     let originalTitle: String?
     let isMovie: Bool
     let selectedEpisode: TMDBEpisode?
     let tmdbId: Int
+    let animeSeasonTitle: String?
+    let posterPath: String?
+
+    init(
+        mediaTitle: String,
+        seasonTitleOverride: String? = nil,
+        originalTitle: String?,
+        isMovie: Bool,
+        selectedEpisode: TMDBEpisode?,
+        tmdbId: Int,
+        animeSeasonTitle: String? = nil,
+        posterPath: String? = nil
+    ) {
+        self.mediaTitle = mediaTitle
+        self.seasonTitleOverride = seasonTitleOverride
+        self.originalTitle = originalTitle
+        self.isMovie = isMovie
+        self.selectedEpisode = selectedEpisode
+        self.tmdbId = tmdbId
+        self.animeSeasonTitle = animeSeasonTitle
+        self.posterPath = posterPath
+    }
     
     @Environment(\.presentationMode) var presentationMode
     @State private var moduleResults: [(service: Service, results: [SearchItem])] = []
@@ -111,19 +134,34 @@ struct ModulesSearchResultsSheet: View {
     
     private var shouldShowOriginalTitle: Bool {
         guard let originalTitle = originalTitle else { return false }
-        return !originalTitle.isEmpty && originalTitle.lowercased() != mediaTitle.lowercased()
+        return !originalTitle.isEmpty && originalTitle.lowercased() != effectiveTitle.lowercased()
+    }
+
+    private var effectiveTitle: String { seasonTitleOverride ?? mediaTitle }
+
+    private var animeEffectiveTitle: String {
+        guard animeSeasonTitle != nil else { return effectiveTitle }
+        let stripped = effectiveTitle
+            .replacingOccurrences(of: "(?i)season\\s+\\d+", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return stripped.isEmpty ? effectiveTitle : stripped
     }
     
     private var displayTitle: String {
         if let episode = selectedEpisode {
-            return "\(mediaTitle) S\(episode.seasonNumber)E\(episode.episodeNumber)"
-        } else {
-            return mediaTitle
+            if animeSeasonTitle != nil {
+                return "\(animeEffectiveTitle) E\(episode.episodeNumber)"
+            }
+            return "\(effectiveTitle) S\(episode.seasonNumber)E\(episode.episodeNumber)"
         }
+        return effectiveTitle
     }
     
     private var episodeSeasonInfo: String {
         if let episode = selectedEpisode {
+            if animeSeasonTitle != nil {
+                return "E\(episode.episodeNumber)"
+            }
             return "S\(episode.seasonNumber)E\(episode.episodeNumber)"
         }
         return ""
@@ -1703,13 +1741,25 @@ struct ModulesSearchResultsSheet: View {
                 }
                 return
             } else {
-                Logger.shared.log("[SUBTITLE] Creating NormalPlayer with subtitles: \(subtitles ?? [])", type: "Stream")
+                let normalizedSubtitles = injectingOverlaySubtitle(into: subtitles)
+                Logger.shared.log("[SUBTITLE] Creating NormalPlayer with subtitles: \(normalizedSubtitles ?? [])", type: "Stream")
                 let playerVC = NormalPlayer()
                 playerVC.streamHeaders = finalHeaders
-                playerVC.subtitles = subtitles
+                playerVC.subtitles = normalizedSubtitles
                 
-                // Create player with native AVPlayer (no interception needed)
-                let asset = AVURLAsset(url: streamURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
+                // Create player with native AVPlayer (inject overlay subtitle track when possible)
+                let asset: AVURLAsset
+                if shouldUseSubtitleInterceptor(for: streamURL, subtitles: normalizedSubtitles) {
+                    let interceptor = HLSManifestInterceptor(subtitles: normalizedSubtitles, headers: finalHeaders)
+                    let interceptedURL = interceptor.prepareURL(streamURL)
+                    asset = AVURLAsset(url: interceptedURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
+                    asset.resourceLoader.setDelegate(interceptor, queue: DispatchQueue.main)
+                    playerVC.setHLSInterceptor(interceptor)
+                    Logger.shared.log("[SUBTITLE] Using HLS interceptor for overlay track injection", type: "Stream")
+                } else {
+                    asset = AVURLAsset(url: streamURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
+                    Logger.shared.log("[SUBTITLE] HLS interceptor not used; overlay track injection unavailable", type: "Stream")
+                }
                 let item = AVPlayerItem(asset: asset)
                 item.externalMetadata = buildExternalMetadata(title: mediaTitle, artwork: nil)
                 playerVC.player = AVPlayer(playerItem: item)
@@ -1741,6 +1791,37 @@ struct ModulesSearchResultsSheet: View {
                 }
             }
         }
+    }
+
+    private func shouldUseSubtitleInterceptor(for url: URL, subtitles: [String]?) -> Bool {
+        guard let subs = subtitles, !subs.isEmpty else { return false }
+        let lowercased = url.absoluteString.lowercased()
+        if url.pathExtension.lowercased() == "m3u8" { return true }
+        return lowercased.contains("m3u8")
+    }
+
+    private func injectingOverlaySubtitle(into subtitles: [String]?) -> [String]? {
+        guard var subs = subtitles, !subs.isEmpty else { return subtitles }
+
+        let overlayName = SubtitleController.overlayTrackName
+        if subs.contains(where: { $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            .caseInsensitiveCompare(overlayName) == .orderedSame }) {
+            return subs
+        }
+
+        guard let overlayURL = firstSubtitleURL(in: subs) else { return subs }
+        subs.append(overlayName)
+        subs.append(overlayURL)
+        return subs
+    }
+
+    private func firstSubtitleURL(in subtitles: [String]) -> String? {
+        return subtitles.first(where: { isSubtitleURL($0) })
+    }
+
+    private func isSubtitleURL(_ value: String) -> Bool {
+        let lowercased = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
     }
     
     private func safeConvertToHeaders(_ value: Any?) -> [String: String]? {
@@ -1836,17 +1917,24 @@ struct ModulesSearchResultsSheet: View {
     private func loadArtworkImage() async -> UIImage? {
         // Fetch poster image from TMDB
         do {
-            let posterPath: String?
-            if isMovie {
+            let resolvedPath: String?
+            if let posterPath {
+                resolvedPath = posterPath
+            } else if isMovie {
                 let movie = try await TMDBService.shared.getMovieDetails(id: tmdbId)
-                posterPath = movie.posterPath
+                resolvedPath = movie.posterPath
             } else {
                 let tvShow = try await TMDBService.shared.getTVShowWithSeasons(id: tmdbId)
-                posterPath = tvShow.posterPath
+                resolvedPath = tvShow.posterPath
             }
-            
-            guard let posterPath = posterPath else { return nil }
-            let posterURL = URL(string: "\(TMDBService.tmdbImageBaseURL)\(posterPath)")
+
+            guard let resolvedPath else { return nil }
+            let posterURL: URL?
+            if resolvedPath.hasPrefix("http") {
+                posterURL = URL(string: resolvedPath)
+            } else {
+                posterURL = URL(string: "\(TMDBService.tmdbImageBaseURL)\(resolvedPath)")
+            }
             
             guard let url = posterURL else { return nil }
 
@@ -1854,7 +1942,7 @@ struct ModulesSearchResultsSheet: View {
             TopShelfStore.shared.updateArtworkCache(
                 tmdbId: tmdbId,
                 kind: isMovie ? .movie : .episode,
-                title: mediaTitle,
+                title: effectiveTitle,
                 posterURL: url.absoluteString
             )
             

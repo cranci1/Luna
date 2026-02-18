@@ -11,6 +11,8 @@ import Kingfisher
 struct EpisodeCell: View {
     let episode: TMDBEpisode
     let showId: Int
+    let showTitle: String?
+    let showPosterURL: String?
     let progress: Double
     let isSelected: Bool
     let onTap: () -> Void

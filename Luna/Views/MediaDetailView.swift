@@ -57,26 +57,30 @@ struct MediaDetailView: View {
     private var isCompactLayout: Bool {
         return verticalSizeClass == .compact
     }
+
+    private var continueProgressEntry: EpisodeProgressEntry? {
+        guard let tvShowDetail else { return nil }
+
+        return ProgressManager.shared.getEpisodesInProgress()
+            .filter { $0.showId == tvShowDetail.id }
+            .sorted {
+                if $0.lastUpdated == $1.lastUpdated {
+                    return ($0.seasonNumber, $0.episodeNumber) > ($1.seasonNumber, $1.episodeNumber)
+                }
+                return $0.lastUpdated > $1.lastUpdated
+            }
+            .first
+    }
     
     private var continueEpisode: TMDBEpisode? {
-        guard let tvShowDetail = tvShowDetail, let seasonDetail = seasonDetail, !seasonDetail.episodes.isEmpty else { return nil }
-        var bestEpisode: TMDBEpisode?
-        for episode in seasonDetail.episodes {
-            let progress = ProgressManager.shared.getEpisodeProgress(
-                showId: tvShowDetail.id,
-                seasonNumber: episode.seasonNumber,
-                episodeNumber: episode.episodeNumber
-            )
-            guard progress > 0.00, progress < ProgressManager.watchedProgressThreshold else { continue }
-            if let currentBest = bestEpisode {
-                if (episode.seasonNumber, episode.episodeNumber) > (currentBest.seasonNumber, currentBest.episodeNumber) {
-                    bestEpisode = episode
-                }
-            } else {
-                bestEpisode = episode
-            }
-        }
-        return bestEpisode
+        guard let seasonDetail, !seasonDetail.episodes.isEmpty else { return nil }
+        guard let continueProgressEntry else { return nil }
+        guard continueProgressEntry.seasonNumber == seasonDetail.seasonNumber else { return nil }
+
+        return seasonDetail.episodes.first(where: {
+            $0.seasonNumber == continueProgressEntry.seasonNumber
+                && $0.episodeNumber == continueProgressEntry.episodeNumber
+        })
     }
 
     private var playTargetEpisode: TMDBEpisode? {
@@ -190,10 +194,8 @@ struct MediaDetailView: View {
         VStack {
             ProgressView()
                 .scaleEffect(1.5)
-            MoonPhaseLoader()
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .padding(.top)
+            MoonPhaseCoreAnimationLoader(iconSize: 30, spacing: 14, stepDuration: 0.3, isAnimating: true)
+                .frame(height: 60)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -477,7 +479,18 @@ struct MediaDetailView: View {
                         self.tvShowDetail = detail
                         self.synopsis = detail.overview ?? ""
                         self.romajiTitle = romaji
-                        if let firstSeason = detail.seasons.first(where: { $0.seasonNumber > 0 }) {
+                        if let continueEntry = ProgressManager.shared.getEpisodesInProgress()
+                            .filter({ $0.showId == detail.id })
+                            .sorted(by: {
+                                if $0.lastUpdated == $1.lastUpdated {
+                                    return ($0.seasonNumber, $0.episodeNumber) > ($1.seasonNumber, $1.episodeNumber)
+                                }
+                                return $0.lastUpdated > $1.lastUpdated
+                            })
+                            .first,
+                           let continueSeason = detail.seasons.first(where: { $0.seasonNumber == continueEntry.seasonNumber }) {
+                            self.selectedSeason = continueSeason
+                        } else if let firstSeason = detail.seasons.first(where: { $0.seasonNumber > 0 }) {
                             self.selectedSeason = firstSeason
                         }
                         self.selectedEpisodeForSearch = nil

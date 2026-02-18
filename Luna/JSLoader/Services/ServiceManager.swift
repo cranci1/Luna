@@ -30,6 +30,7 @@ class ServiceManager: ObservableObject {
     @Published var downloadMessage: String = ""
 
     private var remoteChangeObserver: NSObjectProtocol? = nil
+    private var profileObserver: NSObjectProtocol? = nil
 
     private init() {
         loadServicesFromStore()
@@ -41,6 +42,17 @@ class ServiceManager: ObservableObject {
         ) { [weak self] _ in
             self?.loadServicesFromStore()
         }
+
+        #if os(tvOS)
+        profileObserver = NotificationCenter.default.addObserver(
+            forName: TVOSProfileManager.profileDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.loadServicesFromStore()
+        }
+        #endif
 
         Task { [weak self] in
             guard let self else { return }

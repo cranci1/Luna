@@ -55,10 +55,12 @@ struct SoraApp: App {
         }
     }
 #else
+    @StateObject private var profileManager = TVOSProfileManager.shared
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(deepLinkHandler)
+                .environmentObject(profileManager)
                 .storageErrorOverlay()
                 .onOpenURL { url in
                     deepLinkHandler.handle(url: url)
