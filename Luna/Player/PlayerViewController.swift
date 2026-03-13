@@ -8,8 +8,6 @@
 import UIKit
 import SwiftUI
 import AVFoundation
-import QuartzCore
-import Metal
 
 final class PlayerViewController: UIViewController {
     private let videoContainer: UIView = {
@@ -20,26 +18,10 @@ final class PlayerViewController: UIViewController {
         return v
     }()
     
-    private let primaryRenderView: UIView = {
-        let v = UIView()
+    private let primaryRenderView: MetalVideoView = {
+        let v = MetalVideoView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .black
-        v.isOpaque = true
         return v
-    }()
-    
-    private let primaryMetalLayer: CAMetalLayer = {
-        let layer = CAMetalLayer()
-        layer.isOpaque = true
-        layer.pixelFormat = .bgra8Unorm
-        layer.presentsWithTransaction = false
-        layer.colorspace = CGColorSpace(name: CGColorSpace.sRGB)
-        layer.framebufferOnly = true
-        layer.backgroundColor = UIColor.black.cgColor
-        layer.contentsGravity = .resizeAspect
-        layer.device = MTLCreateSystemDefaultDevice()
-        layer.drawableSize = .zero
-        return layer
     }()
     
     private let displayLayer = AVSampleBufferDisplayLayer()
@@ -233,7 +215,7 @@ final class PlayerViewController: UIViewController {
     private var progressModel = ProgressModel()
     
     private lazy var renderer: MPVSoftwareRenderer = {
-        let r = MPVSoftwareRenderer(primaryRenderLayer: primaryMetalLayer, pipDisplayLayer: displayLayer)
+        let r = MPVSoftwareRenderer(primaryRenderView: primaryRenderView, pipDisplayLayer: displayLayer)
         r.delegate = self
         return r
     }()
@@ -409,13 +391,7 @@ final class PlayerViewController: UIViewController {
         CATransaction.setDisableActions(true)
         
         primaryRenderView.frame = videoContainer.bounds
-        primaryMetalLayer.frame = primaryRenderView.bounds
-        let scale = view.window?.screen.scale ?? UIScreen.main.scale
-        primaryMetalLayer.contentsScale = scale
-        primaryMetalLayer.drawableSize = CGSize(
-            width: primaryRenderView.bounds.width * scale,
-            height: primaryRenderView.bounds.height * scale
-        )
+        primaryRenderView.layoutIfNeeded()
         
         displayLayer.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
         displayLayer.isHidden = true
@@ -497,7 +473,6 @@ final class PlayerViewController: UIViewController {
     private func setupLayout() {
         view.addSubview(videoContainer)
         videoContainer.addSubview(primaryRenderView)
-        primaryRenderView.layer.addSublayer(primaryMetalLayer)
         
         displayLayer.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
         displayLayer.videoGravity = .resizeAspect

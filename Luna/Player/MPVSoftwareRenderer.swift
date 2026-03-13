@@ -42,7 +42,7 @@ final class MPVSoftwareRenderer {
         case renderContextCreation(Int32)
     }
     
-    private weak var primaryRenderLayer: CALayer?
+    private weak var primaryRenderView: UIView?
     private let pipDisplayLayer: AVSampleBufferDisplayLayer
     
     private let renderQueue = DispatchQueue(label: "mpv.software.render", qos: .userInitiated)
@@ -107,8 +107,8 @@ final class MPVSoftwareRenderer {
         return isPaused
     }
     
-    init(primaryRenderLayer: CALayer, pipDisplayLayer: AVSampleBufferDisplayLayer) {
-        self.primaryRenderLayer = primaryRenderLayer
+    init(primaryRenderView: UIView, pipDisplayLayer: AVSampleBufferDisplayLayer) {
+        self.primaryRenderView = primaryRenderView
         self.pipDisplayLayer = pipDisplayLayer
         renderQueue.setSpecific(key: renderQueueKey, value: ())
     }
@@ -297,12 +297,13 @@ final class MPVSoftwareRenderer {
     }
     
     private func configureWindowEmbedding() {
-        guard let primaryRenderLayer else {
-            Logger.shared.log("Primary render layer is missing, mpv window embedding disabled", type: "Warn")
+        guard let primaryRenderView else {
+            Logger.shared.log("Primary render view is missing, mpv window embedding disabled", type: "Warn")
             return
         }
         
-        let pointerValue = UInt(bitPattern: Unmanaged.passUnretained(primaryRenderLayer).toOpaque())
+        let renderTarget = primaryRenderView.layer
+        let pointerValue = UInt(bitPattern: Unmanaged.passUnretained(renderTarget).toOpaque())
         let wid = Int64(bitPattern: UInt64(pointerValue))
         setOption(name: "wid", int64Value: wid)
     }

@@ -68,6 +68,7 @@
 		13E1EDF12ED9E66000087629 /* kanzenModuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */; };
 		13E1EDF42ED9E67000087629 /* ContentModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */; };
 		13EFB91F2F644F8400F9B8E4 /* IntroDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFB91E2F644F8400F9B8E4 /* IntroDBService.swift */; };
+		13EFB9212F647D5B00F9B8E4 /* MetalVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFB9202F647D5B00F9B8E4 /* MetalVideoView.swift */; };
 		13F0725F2E4B2D3300EF90EB /* SoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0725E2E4B2D3300EF90EB /* SoraApp.swift */; };
 		13F072632E4B2D3700EF90EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13F072622E4B2D3700EF90EB /* Assets.xcassets */; };
 		13F0729B2E4B2D9200EF90EB /* ServicesEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F0726E2E4B2D9000EF90EB /* ServicesEntity.swift */; };
@@ -190,6 +191,7 @@
 		13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kanzenModuleView.swift; sourceTree = "<group>"; };
 		13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ContentModel.xcdatamodel; sourceTree = "<group>"; };
 		13EFB91E2F644F8400F9B8E4 /* IntroDBService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroDBService.swift; sourceTree = "<group>"; };
+		13EFB9202F647D5B00F9B8E4 /* MetalVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalVideoView.swift; sourceTree = "<group>"; };
 		13F0725B2E4B2D3300EF90EB /* Luna.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luna.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13F0725E2E4B2D3300EF90EB /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		13F072622E4B2D3700EF90EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -266,6 +268,7 @@
 				1324E7B32E940BD70036B5F5 /* PlayerPreset.swift */,
 				1324E7BA2E940BD70036B5F5 /* PiPController.swift */,
 				13F315AF2EAD03F70025BD7A /* SubtitleLoader.swift */,
+				13EFB9202F647D5B00F9B8E4 /* MetalVideoView.swift */,
 				1324E7B52E940BD70036B5F5 /* PlayerViewController.swift */,
 				1324E7B42E940BD70036B5F5 /* MPVSoftwareRenderer.swift */,
 				1324E7B62E940BD70036B5F5 /* SampleBufferDisplayView.swift */,
@@ -925,6 +928,7 @@
 				13F072B62E4B2D9200EF90EB /* AmbientColor.swift in Sources */,
 				13E1EDD22ED9E65F00087629 /* ModuleManager.swift in Sources */,
 				13E1EDEE2ED9E66000087629 /* Library.swift in Sources */,
+				13EFB9212F647D5B00F9B8E4 /* MetalVideoView.swift in Sources */,
 				13E1EDD82ED9E65F00087629 /* Settings.swift in Sources */,
 				13F187AE2E6F38CE00747F7E /* LibraryCollection.swift in Sources */,
 				13830AF02E55C04F00B3CDE4 /* AlgorithmSelectionView.swift in Sources */,
