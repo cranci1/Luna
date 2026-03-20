@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVKit
 
 enum ExternalPlayer: String, CaseIterable, Identifiable {
     case none = "Default"
@@ -168,7 +169,60 @@ struct PlayerSettingsView: View {
                     .pickerStyle(.menu)
                 }
             }
+            
+            Section(header: Text("Testing")) {
+                Button(action: {
+                    playTestVideo()
+                }) {
+                    Text("Test Video Player")
+                        .foregroundColor(accentColorManager.currentAccentColor)
+                }
+            }
         }
         .navigationTitle("Media Player")
+    }
+    
+    private func playTestVideo() {
+        let testUrlString = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        guard let streamURL = URL(string: testUrlString) else { return }
+        
+        let external = store.externalPlayer
+        if let schemeUrl = external.schemeURL(for: testUrlString), external != .none, UIApplication.shared.canOpenURL(schemeUrl) {
+            UIApplication.shared.open(schemeUrl, options: [:], completionHandler: nil)
+            return
+        }
+        
+        let inAppPlayer = store.inAppPlayer
+        
+        if inAppPlayer == .mpv {
+            let preset = PlayerPreset.presets.first
+            let pvc = PlayerViewController(
+                url: streamURL,
+                preset: preset ?? PlayerPreset(title: "Default", summary: "", stream: nil, commands: []),
+                headers: nil,
+                subtitles: nil
+            )
+            pvc.mediaInfo = .movie(id: 0, title: "Big Buck Bunny")
+            pvc.modalPresentationStyle = .fullScreen
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                rootVC.topmostViewController().present(pvc, animated: true, completion: nil)
+            }
+        } else {
+            let playerVC = NormalPlayer()
+            let asset = AVURLAsset(url: streamURL)
+            let item = AVPlayerItem(asset: asset)
+            playerVC.player = AVPlayer(playerItem: item)
+            playerVC.mediaInfo = .movie(id: 0, title: "Big Buck Bunny")
+            playerVC.modalPresentationStyle = .fullScreen
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                rootVC.topmostViewController().present(playerVC, animated: true) {
+                    playerVC.player?.play()
+                }
+            }
+        }
     }
 }
