@@ -11,6 +11,14 @@ struct SettingsView: View {
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
     @StateObject private var algorithmManager = AlgorithmManager.shared
     @AppStorage("showKanzen") private var showKanzen: Bool = false
+
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+    }
     
     let languages = [
         ("en-US", "English (US)"),
@@ -50,7 +58,7 @@ struct SettingsView: View {
                     .shadow(radius: 10)
                 
                 VStack(spacing: 15) {
-                    Text("Version \(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
+                    Text("Version \(appVersion) (\(buildNumber))")
                         .font(.footnote)
                         .fontWeight(.regular)
                         .foregroundColor(.secondary)

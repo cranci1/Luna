@@ -254,6 +254,34 @@ final class ProgressSyncManager: NSObject, ObservableObject {
         Logger.shared.log("AniList login successful", type: "Sync")
     }
 
+    private func runAuthSession(url: URL) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            authSession = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { callbackURL, error in
+                if let callbackURL {
+                    continuation.resume(returning: callbackURL)
+                    return
+                }
+
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                continuation.resume(throwing: SyncError.authorizationFailed("Authentication was cancelled"))
+            }
+
+            authSession?.presentationContextProvider = self
+            authSession?.prefersEphemeralWebBrowserSession = false
+            if authSession?.start() != true {
+                continuation.resume(throwing: SyncError.authorizationFailed("Unable to start authentication"))
+            }
+        }
+    }
+#else
+    func loginTrakt() async throws { throw SyncError.unsupportedPlatform }
+    func loginAniList() async throws { throw SyncError.unsupportedPlatform }
+#endif
+
     private func refreshTraktUsername() async {
         do {
             let token = try await validToken(for: .trakt)
@@ -316,34 +344,6 @@ final class ProgressSyncManager: NSObject, ObservableObject {
             Logger.shared.log("Failed to load AniList username: \(error.localizedDescription)", type: "Sync")
         }
     }
-
-    private func runAuthSession(url: URL) async throws -> URL {
-        try await withCheckedThrowingContinuation { continuation in
-            authSession = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { callbackURL, error in
-                if let callbackURL {
-                    continuation.resume(returning: callbackURL)
-                    return
-                }
-
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                continuation.resume(throwing: SyncError.authorizationFailed("Authentication was cancelled"))
-            }
-
-            authSession?.presentationContextProvider = self
-            authSession?.prefersEphemeralWebBrowserSession = false
-            if authSession?.start() != true {
-                continuation.resume(throwing: SyncError.authorizationFailed("Unable to start authentication"))
-            }
-        }
-    }
-#else
-    func loginTrakt() async throws { throw SyncError.unsupportedPlatform }
-    func loginAniList() async throws { throw SyncError.unsupportedPlatform }
-#endif
 
     func pushMovieProgress(tmdbId: Int, title: String, progress: Double) {
         Task {

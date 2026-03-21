@@ -192,7 +192,17 @@ final class PlayerViewController: UIViewController {
         b.backgroundColor = UIColor(white: 0.2, alpha: 0.55)
         b.layer.cornerRadius = 18
         b.layer.cornerCurve = .continuous
+#if os(tvOS)
+        if #available(tvOS 15.0, *) {
+            var config = UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+            b.configuration = config
+        } else {
+            b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        }
+#else
         b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+#endif
         b.alpha = 0.0
         b.isHidden = true
         return b
