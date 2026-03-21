@@ -6,7 +6,7 @@
       "location" : "https://github.com/undeaDD/FakeWebKit",
       "state" : {
         "branch" : "main",
-        "revision" : "851ab88f8558e5af93d4f4f7160586ad0aa5e93b"
+        "revision" : "d0c32ecfff9f7bbe158ff0a1e0f4414648872d6b"
       }
     },
     {
@@ -14,17 +14,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
-        "revision" : "e227df15448d2ad1a5d4e4c49722a71c68f9058a",
-        "version" : "8.7.0"
+        "revision" : "c92b84898e34ab46ff0dad86c02a0acbe2d87008",
+        "version" : "8.8.0"
       }
     },
     {
       "identity" : "mpvkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mpvkit/MPVKit",
+      "location" : "https://github.com/edde746/MPVKit/",
       "state" : {
-        "revision" : "613c0ccc3acf70e136aaff880a9b5fe8fdfaf5b8",
-        "version" : "0.41.0"
+        "branch" : "main",
+        "revision" : "29803ccbfa631997d496f34c2c1ed191cc8fd2c3"
       }
     },
     {
