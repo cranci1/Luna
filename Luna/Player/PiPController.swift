@@ -25,6 +25,8 @@ protocol PiPControllerDelegate: AnyObject {
 final class PiPController: NSObject {
     private var pipController: AVPictureInPictureController?
     private weak var sampleBufferDisplayLayer: AVSampleBufferDisplayLayer?
+    private var pendingStartWorkItem: DispatchWorkItem?
+    private var isStartInProgress = false
     
     weak var delegate: PiPControllerDelegate?
     
@@ -66,19 +68,49 @@ final class PiPController: NSObject {
     }
     
     func startPictureInPicture() {
-        guard let pipController = pipController,
-              pipController.isPictureInPicturePossible else {
+        guard isPictureInPictureSupported else {
+            Logger.shared.log("PiP is not supported on this device", type: "mpv")
             return
         }
+
+        if pipController == nil {
+            setupPictureInPicture()
+        }
+
+        guard let pipController = pipController else { return }
+        guard !isStartInProgress, !pipController.isPictureInPictureActive else { return }
+
+        let canStart = pipController.isPictureInPicturePossible
+        if !canStart {
+            pendingStartWorkItem?.cancel()
+            let retry = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                self.isStartInProgress = false
+                self.startPictureInPicture()
+            }
+            pendingStartWorkItem = retry
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: retry)
+            Logger.shared.log("PiP start deferred: not yet possible, retrying shortly", type: "mpv")
+            return
+        }
+
+        isStartInProgress = true
+        pipController.invalidatePlaybackState()
         
         pipController.startPictureInPicture()
     }
     
     func stopPictureInPicture() {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
+        isStartInProgress = false
         pipController?.stopPictureInPicture()
     }
     
     func invalidate() {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
+        isStartInProgress = false
         pipController?.invalidatePlaybackState()
     }
     
@@ -95,10 +127,16 @@ extension PiPController: AVPictureInPictureControllerDelegate {
     }
     
     func pictureInPictureControllerDidStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
+        isStartInProgress = false
         delegate?.pipController(self, didStartPictureInPicture: true)
     }
     
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController, failedToStartPictureInPictureWithError error: Error) {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
+        isStartInProgress = false
         Logger.shared.log("Failed to start PiP: \(error)", type: "mpv")
         delegate?.pipController(self, didStartPictureInPicture: false)
     }
@@ -108,6 +146,9 @@ extension PiPController: AVPictureInPictureControllerDelegate {
     }
     
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
+        isStartInProgress = false
         delegate?.pipController(self, didStopPictureInPicture: true)
     }
     

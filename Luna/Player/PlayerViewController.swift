@@ -404,8 +404,8 @@ final class PlayerViewController: UIViewController {
         primaryRenderView.layoutIfNeeded()
         
         displayLayer.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
-        displayLayer.isHidden = true
-        displayLayer.opacity = 0.0
+        displayLayer.isHidden = false
+        displayLayer.opacity = 0.001
         
         if let gradientLayer = controlsOverlayView.layer.sublayers?.first(where: { $0.name == "gradientLayer" }) {
             gradientLayer.frame = controlsOverlayView.bounds
@@ -416,9 +416,27 @@ final class PlayerViewController: UIViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        coordinator.animate(alongsideTransition: { [weak self] _ in
-            self?.videoContainer.layoutIfNeeded()
-            self?.primaryRenderView.layoutIfNeeded()
+        coordinator.animate(alongsideTransition: { [weak self] context in
+            guard let self else { return }
+            let previousTransform = self.primaryRenderView.transform
+            self.primaryRenderView.transform = previousTransform.scaledBy(x: 0.985, y: 0.985)
+            
+            UIView.animateKeyframes(
+                withDuration: context.transitionDuration,
+                delay: 0,
+                options: [.beginFromCurrentState, .calculationModeCubic, .allowUserInteraction]
+            ) {
+                UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.75) {
+                    self.videoContainer.layoutIfNeeded()
+                    self.primaryRenderView.layoutIfNeeded()
+                }
+                
+                UIView.addKeyframe(withRelativeStartTime: 0.2, relativeDuration: 0.8) {
+                    self.primaryRenderView.transform = previousTransform
+                }
+            }
+        }, completion: { [weak self] _ in
+            self?.primaryRenderView.transform = .identity
         })
     }
     
@@ -502,8 +520,8 @@ final class PlayerViewController: UIViewController {
         }
 #endif
         displayLayer.backgroundColor = UIColor.black.cgColor
-        displayLayer.opacity = 0.0
-        displayLayer.isHidden = true
+        displayLayer.opacity = 0.001
+        displayLayer.isHidden = false
         
         videoContainer.layer.addSublayer(displayLayer)
         videoContainer.addSubview(controlsOverlayView)
@@ -1148,6 +1166,8 @@ final class PlayerViewController: UIViewController {
         if pip.isPictureInPictureActive {
             pip.stopPictureInPicture()
         } else if pip.isPictureInPicturePossible {
+            renderer.startPiPRendering()
+            pip.updatePlaybackState()
             pip.startPictureInPicture()
         }
     }
@@ -1342,6 +1362,8 @@ extension PlayerViewController: PiPControllerDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self, let pip = self.pipController else { return }
             if pip.isPictureInPicturePossible && !pip.isPictureInPictureActive {
+                self.renderer.startPiPRendering()
+                pip.updatePlaybackState()
                 pip.startPictureInPicture()
             }
         }
