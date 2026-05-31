@@ -1,6 +1,12 @@
 # Luna
 <div align="center"> 
 
+<p align="center">
+	<img src="https://www.cranci.me/screenshots/Luna/home.png" alt="Luna screenshot 1" width="260">
+	<img src="https://www.cranci.me/screenshots/Luna/media.png" alt="Luna screenshot 2" width="260">
+	<img src="https://www.cranci.me/screenshots/Luna/search.png" alt="Luna screenshot 3" width="260">
+</p>
+
 **A modular media player for iOS, tvOS and macOS, under the GPLv3.0 License.**
 
 [![Build and Release IPA](https://github.com/cranci1/Luna/actions/workflows/build.yml/badge.svg)](https://github.com/cranci1/Luna/actions/workflows/build.yml)
