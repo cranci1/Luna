@@ -7,8 +7,11 @@
 
 import SwiftUI
 import Kingfisher
+
 #if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
 #endif
 
 struct ServicesView: View {
@@ -207,6 +210,15 @@ struct ServiceRow: View {
         service.metadata.settings == true
     }
     
+    private func copyServiceURL(_ url: String) {
+#if os(iOS)
+        UIPasteboard.general.string = url
+#elseif os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(url, forType: .string)
+#endif
+    }
+    
     var body: some View {
         HStack {
             KFImage(URL(string: service.metadata.iconUrl))
@@ -273,6 +285,15 @@ struct ServiceRow: View {
             }
         }
         .contentShape(Rectangle())
+#if os(iOS) || os(macOS)
+        .contextMenu {
+            Button {
+                copyServiceURL(service.url)
+            } label: {
+                Label("Copy URL", systemImage: "doc.on.doc")
+            }
+        }
+#endif
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.2)) {
                 serviceManager.setServiceState(service, isActive: !isServiceActive)
