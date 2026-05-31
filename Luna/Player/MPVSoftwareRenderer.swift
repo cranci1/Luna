@@ -163,7 +163,7 @@ final class MPVSoftwareRenderer {
         isStopping = true
         var handleForShutdown: OpaquePointer?
         
-        renderQueue.sync { [weak self] in
+        renderQueueSync { [weak self] in
             guard let self else { return }
             self.stopPiPRenderingLocked()
             
@@ -184,7 +184,7 @@ final class MPVSoftwareRenderer {
         
         eventQueueGroup.wait()
         
-        renderQueue.sync { [weak self] in
+        renderQueueSync { [weak self] in
             guard let self else { return }
             
             if let handle = handleForShutdown {
@@ -228,6 +228,7 @@ final class MPVSoftwareRenderer {
                     return
                 }
             }
+            self.pipDisplayLinkRequested = true
             self.startPiPDisplayLinkLocked()
         }
     }
@@ -814,6 +815,14 @@ final class MPVSoftwareRenderer {
             renderQueue.sync(execute: block)
         }
     }
+
+    private func dispatchToMain(_ block: @escaping () -> Void) {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.async(execute: block)
+        }
+    }
     
     private func currentVideoSize() -> CGSize {
         stateQueue.sync { videoSize }
@@ -884,7 +893,7 @@ final class MPVSoftwareRenderer {
             guard let self else { return }
             while !self.isStopping {
                 guard let handle = self.mpv else { return }
-                guard let eventPointer = mpv_wait_event(handle, 0) else { return }
+                guard let eventPointer = mpv_wait_event(handle, -1) else { return }
                 let event = eventPointer.pointee
                 if event.event_id == MPV_EVENT_NONE { continue }
                 self.handleEvent(event)
@@ -944,14 +953,20 @@ final class MPVSoftwareRenderer {
             let status = getProperty(handle: handle, name: name, format: MPV_FORMAT_DOUBLE, value: &value)
             if status >= 0 {
                 cachedDuration = value
-                delegate?.renderer(self, didUpdatePosition: cachedPosition, duration: cachedDuration)
+                dispatchToMain { [weak self] in
+                    guard let self else { return }
+                    self.delegate?.renderer(self, didUpdatePosition: self.cachedPosition, duration: self.cachedDuration)
+                }
             }
         case "time-pos":
             var value = Double(0)
             let status = getProperty(handle: handle, name: name, format: MPV_FORMAT_DOUBLE, value: &value)
             if status >= 0 {
                 cachedPosition = value
-                delegate?.renderer(self, didUpdatePosition: cachedPosition, duration: cachedDuration)
+                dispatchToMain { [weak self] in
+                    guard let self else { return }
+                    self.delegate?.renderer(self, didUpdatePosition: self.cachedPosition, duration: self.cachedDuration)
+                }
             }
         case "pause":
             var flag: Int32 = 0
@@ -960,7 +975,10 @@ final class MPVSoftwareRenderer {
                 let newPaused = flag != 0
                 if newPaused != isPaused {
                     isPaused = newPaused
-                    delegate?.renderer(self, didChangePause: isPaused)
+                    dispatchToMain { [weak self] in
+                        guard let self else { return }
+                        self.delegate?.renderer(self, didChangePause: self.isPaused)
+                    }
                 }
             }
         default:

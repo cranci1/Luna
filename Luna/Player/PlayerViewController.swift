@@ -1165,7 +1165,7 @@ final class PlayerViewController: UIViewController {
         guard let pip = pipController else { return }
         if pip.isPictureInPictureActive {
             pip.stopPictureInPicture()
-        } else if pip.isPictureInPicturePossible {
+        } else {
             renderer.startPiPRendering()
             pip.updatePlaybackState()
             pip.startPictureInPicture()
@@ -1361,7 +1361,7 @@ extension PlayerViewController: PiPControllerDelegate {
     @objc private func appDidEnterBackground() {
         DispatchQueue.main.async { [weak self] in
             guard let self, let pip = self.pipController else { return }
-            if pip.isPictureInPicturePossible && !pip.isPictureInPictureActive {
+            if !pip.isPictureInPictureActive {
                 self.renderer.startPiPRendering()
                 pip.updatePlaybackState()
                 pip.startPictureInPicture()
