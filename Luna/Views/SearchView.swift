@@ -155,7 +155,7 @@ struct SearchView: View {
                         .padding(.horizontal)
                     
                     Button("Try Again") {
-                            performSearch()
+                        performSearch()
                     }
                     .padding(.top)
                 }
@@ -168,7 +168,7 @@ struct SearchView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.secondary)
                         
-                        Text("Search Movies & TV Shows")
+                        Text(contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows")
                             .font(.title2)
                             .foregroundColor(.secondary)
                             .padding()
@@ -306,6 +306,11 @@ struct SearchView: View {
                 performSearch()
             }
         }
+        .onChangeComp(of: contentFilter.animeOnlyMode) { _, _ in
+            if !searchText.isEmpty {
+                performSearch()
+            }
+        }
         .onAppear {
             loadSearchHistory()
         }
@@ -389,7 +394,6 @@ struct SearchBarLuna: View {
     var body: some View {
         HStack {
             TextField("Search...", text: $text, onCommit: onSearchButtonClicked)
-                
                 .padding(7)
                 .padding(.horizontal, 25)
 #if !os(tvOS)

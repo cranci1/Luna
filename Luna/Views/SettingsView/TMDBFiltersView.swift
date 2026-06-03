@@ -16,6 +16,30 @@ struct TMDBFiltersView: View {
             Section {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
+                        Text("Anime Only Mode")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text("Show only anime content throughout the app. Hides Trending and Top Rated Movies/Shows sections.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $contentFilter.animeOnlyMode)
+                        .tint(accentColorManager.currentAccentColor)
+                }
+            } header: {
+                Text("Anime Mode")
+            } footer: {
+                Text("When enabled, search results and home sections will only display anime (Japanese animation). Trending and non-anime sections are hidden and disabled in Home Sections settings.")
+            }
+            
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("Filter Horror Content")
                             .font(.subheadline)
                             .fontWeight(.medium)
@@ -50,11 +74,5 @@ struct TMDBFiltersView: View {
             }
         }
         .navigationTitle("Content Filters")
-    }
-}
-
-#Preview {
-    NavigationView {
-        TMDBFiltersView()
     }
 }

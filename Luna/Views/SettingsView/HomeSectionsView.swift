@@ -17,33 +17,44 @@ struct HomeSectionsView: View {
     
     @State private var sections: [HomeSection] = []
     @StateObject private var accentColorManager = AccentColorManager.shared
+    @StateObject private var contentFilter = TMDBContentFilter.shared
     
     var body: some View {
         List {
             Section {
                 ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
+                    let isLocked = contentFilter.animeOnlyMode && contentFilter.isNonAnimeSection(section.id)
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(section.title)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             
-                            Text("Order: \(section.order + 1)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            if isLocked {
+                                Text("Hidden in Anime Only Mode")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            } else {
+                                Text("Order: \(section.order + 1)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         
                         Spacer()
                         
                         Toggle("", isOn: Binding(
-                            get: { section.isEnabled },
+                            get: { isLocked ? false : section.isEnabled },
                             set: { newValue in
+                                guard !isLocked else { return }
                                 sections[index].isEnabled = newValue
                                 saveSections()
                             }
                         ))
                         .tint(accentColorManager.currentAccentColor)
+                        .disabled(isLocked)
                     }
+                    .opacity(isLocked ? 0.4 : 1.0)
                 }
                 .onMove(perform: moveSection)
             } header: {

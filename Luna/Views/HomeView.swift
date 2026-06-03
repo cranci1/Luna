@@ -96,6 +96,10 @@ struct HomeView: View {
                 loadContent()
             }
         }
+        .onChangeComp(of: contentFilter.animeOnlyMode) { _, _ in
+            hasLoadedContent = false
+            loadContent()
+        }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
         }
@@ -338,59 +342,63 @@ struct HomeView: View {
     private var contentSections: some View {
         VStack(spacing: 0) {
             ForEach(homeSections.filter { $0.isEnabled }) { section in
-                switch section.id {
-                case "trending":
-                    if !trendingContent.isEmpty {
-                        let filteredTrending = trendingContent.filter { $0.id != heroContent?.id }
-                        MediaSection(
-                            title: section.title,
-                            items: Array(filteredTrending.prefix(15))
-                        )
-                    }
-                case "popularMovies":
-                    if !popularMovies.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: popularMovies.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                case "popularTVShows":
-                    if !popularTVShows.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: popularTVShows.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                case "popularAnime":
-                    if !popularAnime.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: popularAnime.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                case "topRatedMovies":
-                    if !topRatedMovies.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: topRatedMovies.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                case "topRatedTVShows":
-                    if !topRatedTVShows.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: topRatedTVShows.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                case "topRatedAnime":
-                    if !topRatedAnime.isEmpty {
-                        MediaSection(
-                            title: section.title,
-                            items: topRatedAnime.prefix(15).map { $0.asSearchResult }
-                        )
-                    }
-                default:
+                if contentFilter.animeOnlyMode && contentFilter.isNonAnimeSection(section.id) {
                     EmptyView()
+                } else {
+                    switch section.id {
+                    case "trending":
+                        if !trendingContent.isEmpty {
+                            let filteredTrending = trendingContent.filter { $0.id != heroContent?.id }
+                            MediaSection(
+                                title: section.title,
+                                items: Array(filteredTrending.prefix(15))
+                            )
+                        }
+                    case "popularMovies":
+                        if !popularMovies.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularMovies.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "popularTVShows":
+                        if !popularTVShows.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularTVShows.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "popularAnime":
+                        if !popularAnime.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularAnime.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedMovies":
+                        if !topRatedMovies.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedMovies.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedTVShows":
+                        if !topRatedTVShows.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedTVShows.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedAnime":
+                        if !topRatedAnime.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedAnime.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    default:
+                        EmptyView()
+                    }
                 }
             }
             
@@ -406,29 +414,56 @@ struct HomeView: View {
         
         Task {
             do {
-                async let trending = tmdbService.getTrending()
-                async let popularM = tmdbService.getPopularMovies()
-                async let popularTV = tmdbService.getPopularTVShows()
-                async let popularA = tmdbService.getPopularAnime()
-                async let topRatedM = tmdbService.getTopRatedMovies()
-                async let topRatedTV = tmdbService.getTopRatedTVShows()
-                async let topRatedA = tmdbService.getTopRatedAnime()
-                
-                let (trendingResult, popularMoviesResult, popularTVResult, popularAnimeResult, topRatedMoviesResult, topRatedTVResult, topRatedAnimeResult) = try await (trending, popularM, popularTV, popularA, topRatedM, topRatedTV, topRatedA)
-                
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        self.trendingContent = contentFilter.filterSearchResults(trendingResult)
-                        self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
-                        self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
-                        self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
-                        self.topRatedMovies = contentFilter.filterMovies(topRatedMoviesResult)
-                        self.topRatedTVShows = contentFilter.filterTVShows(topRatedTVResult)
-                        self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
-                        
-                        self.heroContent = self.trendingContent.first { $0.backdropPath != nil } ?? self.trendingContent.first
-                        self.isLoading = false
-                        self.hasLoadedContent = true
+                if contentFilter.animeOnlyMode {
+                    async let popularA = tmdbService.getPopularAnime()
+                    async let topRatedA = tmdbService.getTopRatedAnime()
+                    
+                    let (popularAnimeResult, topRatedAnimeResult) = try await (popularA, topRatedA)
+                    
+                    await MainActor.run {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            self.trendingContent = []
+                            self.popularMovies = []
+                            self.popularTVShows = []
+                            self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
+                            self.topRatedMovies = []
+                            self.topRatedTVShows = []
+                            self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                            
+                            self.heroContent = self.popularAnime
+                                .first { $0.backdropPath != nil }
+                                .map { $0.asSearchResult }
+                            ?? self.popularAnime.first.map { $0.asSearchResult }
+                            
+                            self.isLoading = false
+                            self.hasLoadedContent = true
+                        }
+                    }
+                } else {
+                    async let trending = tmdbService.getTrending()
+                    async let popularM = tmdbService.getPopularMovies()
+                    async let popularTV = tmdbService.getPopularTVShows()
+                    async let popularA = tmdbService.getPopularAnime()
+                    async let topRatedM = tmdbService.getTopRatedMovies()
+                    async let topRatedTV = tmdbService.getTopRatedTVShows()
+                    async let topRatedA = tmdbService.getTopRatedAnime()
+                    
+                    let (trendingResult, popularMoviesResult, popularTVResult, popularAnimeResult, topRatedMoviesResult, topRatedTVResult, topRatedAnimeResult) = try await (trending, popularM, popularTV, popularA, topRatedM, topRatedTV, topRatedA)
+                    
+                    await MainActor.run {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            self.trendingContent = contentFilter.filterSearchResults(trendingResult)
+                            self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
+                            self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
+                            self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
+                            self.topRatedMovies = contentFilter.filterMovies(topRatedMoviesResult)
+                            self.topRatedTVShows = contentFilter.filterTVShows(topRatedTVResult)
+                            self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                            
+                            self.heroContent = self.trendingContent.first { $0.backdropPath != nil } ?? self.trendingContent.first
+                            self.isLoading = false
+                            self.hasLoadedContent = true
+                        }
                     }
                 }
                 
@@ -562,7 +597,7 @@ struct MediaCard: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
-
+                    
                     HStack(alignment: .center, spacing: isTvOS ? 18 : 8) {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Image(systemName: "star.fill")
@@ -575,12 +610,12 @@ struct MediaCard: View {
                                 .lineLimit(1)
                                 .fixedSize()
                         }
-                            .padding(.horizontal, isTvOS ? 16 : 8)
-                            .padding(.vertical, isTvOS ? 10 : 4)
-                            .applyLiquidGlassBackground(cornerRadius: 12)
-
+                        .padding(.horizontal, isTvOS ? 16 : 8)
+                        .padding(.vertical, isTvOS ? 10 : 4)
+                        .applyLiquidGlassBackground(cornerRadius: 12)
+                        
                         Spacer()
-
+                        
                         Text(result.isMovie ? "Movie" : "TV")
                             .font(.caption2)
                             .foregroundColor(.white)

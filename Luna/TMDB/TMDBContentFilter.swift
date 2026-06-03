@@ -16,25 +16,45 @@ class TMDBContentFilter: ObservableObject {
         }
     }
     
+    @Published var animeOnlyMode: Bool {
+        didSet {
+            UserDefaults.standard.set(animeOnlyMode, forKey: "animeOnlyMode")
+        }
+    }
+    
     private let horrorGenreIds = [27]
+    private let animationGenreId = 16
     
     private init() {
         self.filterHorror = UserDefaults.standard.bool(forKey: "filterHorror")
+        self.animeOnlyMode = UserDefaults.standard.bool(forKey: "animeOnlyMode")
     }
     
     // MARK: - Filter Functions
     
     func filterSearchResults(_ results: [TMDBSearchResult]) -> [TMDBSearchResult] {
-        if !filterHorror {
-            return results
+        var filtered = results
+        
+        if animeOnlyMode {
+            filtered = filtered.filter { result in
+                result.mediaType == "tv" && isAnimeContent(genreIds: result.genreIds)
+            }
         }
         
-        return results.filter { result in
-            shouldIncludeContent(genreIds: result.genreIds)
+        if filterHorror {
+            filtered = filtered.filter { result in
+                shouldIncludeContent(genreIds: result.genreIds)
+            }
         }
+        
+        return filtered
     }
     
     func filterMovies(_ movies: [TMDBMovie]) -> [TMDBMovie] {
+        if animeOnlyMode {
+            return []
+        }
+        
         if !filterHorror {
             return movies
         }
@@ -60,6 +80,16 @@ class TMDBContentFilter: ObservableObject {
     
     func filterTVShowDetail(_ tvShow: TMDBTVShowDetail) -> Bool {
         return shouldIncludeContent(genres: tvShow.genres)
+    }
+    
+    func isAnimeContent(genreIds: [Int]?) -> Bool {
+        guard let genreIds = genreIds else { return false }
+        return genreIds.contains(animationGenreId)
+    }
+    
+    func isNonAnimeSection(_ sectionId: String) -> Bool {
+        let nonAnimeSections = ["trending", "popularMovies", "popularTVShows", "topRatedMovies", "topRatedTVShows"]
+        return nonAnimeSections.contains(sectionId)
     }
     
     private func shouldIncludeContent(genreIds: [Int]?) -> Bool {
