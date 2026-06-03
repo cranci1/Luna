@@ -96,6 +96,11 @@ struct HomeView: View {
                 loadContent()
             }
         }
+        .onChangeComp(of: contentFilter.filterNSFW) { _, _ in
+            if hasLoadedContent {
+                loadContent()
+            }
+        }
         .onChangeComp(of: contentFilter.animeOnlyMode) { _, _ in
             hasLoadedContent = false
             loadContent()

@@ -55,6 +55,24 @@ struct TMDBFiltersView: View {
                     Toggle("", isOn: $contentFilter.filterHorror)
                         .tint(accentColorManager.currentAccentColor)
                 }
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Filter NSFW Content")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text("Hide titles with explicit or near-explicit sexual content")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $contentFilter.filterNSFW)
+                        .tint(accentColorManager.currentAccentColor)
+                }
             } header: {
                 Text("Content Filters")
             } footer: {

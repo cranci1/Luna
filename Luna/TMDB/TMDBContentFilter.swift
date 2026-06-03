@@ -22,12 +22,19 @@ class TMDBContentFilter: ObservableObject {
         }
     }
     
+    @Published var filterNSFW: Bool {
+        didSet {
+            UserDefaults.standard.set(filterNSFW, forKey: "filterNSFW")
+        }
+    }
+    
     private let horrorGenreIds = [27]
     private let animationGenreId = 16
     
     private init() {
         self.filterHorror = UserDefaults.standard.bool(forKey: "filterHorror")
         self.animeOnlyMode = UserDefaults.standard.bool(forKey: "animeOnlyMode")
+        self.filterNSFW = UserDefaults.standard.bool(forKey: "filterNSFW")
     }
     
     // MARK: - Filter Functions
@@ -37,7 +44,7 @@ class TMDBContentFilter: ObservableObject {
         
         if animeOnlyMode {
             filtered = filtered.filter { result in
-                result.mediaType == "tv" && isAnimeContent(genreIds: result.genreIds)
+                isAnimeContent(genreIds: result.genreIds)
             }
         }
         
@@ -47,38 +54,61 @@ class TMDBContentFilter: ObservableObject {
             }
         }
         
+        if filterNSFW {
+            filtered = filtered.filter { result in
+                !isNSFWContent(id: result.id, isAdult: result.adult)
+            }
+        }
+        
         return filtered
     }
     
     func filterMovies(_ movies: [TMDBMovie]) -> [TMDBMovie] {
         if animeOnlyMode {
-            return []
+            var filtered = movies.filter { isAnimeContent(genreIds: $0.genreIds) }
+            if filterHorror {
+                filtered = filtered.filter { shouldIncludeContent(genreIds: $0.genreIds) }
+            }
+            if filterNSFW {
+                filtered = filtered.filter { !isNSFWContent(id: $0.id, isAdult: $0.adult) }
+            }
+            return filtered
         }
         
-        if !filterHorror {
-            return movies
+        var filtered = movies
+        
+        if filterHorror {
+            filtered = filtered.filter { shouldIncludeContent(genreIds: $0.genreIds) }
         }
         
-        return movies.filter { movie in
-            shouldIncludeContent(genreIds: movie.genreIds)
+        if filterNSFW {
+            filtered = filtered.filter { !isNSFWContent(id: $0.id, isAdult: $0.adult) }
         }
+        
+        return filtered
     }
     
     func filterTVShows(_ tvShows: [TMDBTVShow]) -> [TMDBTVShow] {
-        if !filterHorror {
-            return tvShows
+        var filtered = tvShows
+        
+        if filterHorror {
+            filtered = filtered.filter { shouldIncludeContent(genreIds: $0.genreIds) }
         }
         
-        return tvShows.filter { tvShow in
-            shouldIncludeContent(genreIds: tvShow.genreIds)
+        if filterNSFW {
+            filtered = filtered.filter { !isNSFWContent(id: $0.id, isAdult: nil) }
         }
+        
+        return filtered
     }
     
     func filterMovieDetail(_ movie: TMDBMovieDetail) -> Bool {
+        if filterNSFW && isNSFWContent(id: movie.id, isAdult: movie.adult) { return false }
         return shouldIncludeContent(genres: movie.genres)
     }
     
     func filterTVShowDetail(_ tvShow: TMDBTVShowDetail) -> Bool {
+        if filterNSFW && isNSFWContent(id: tvShow.id, isAdult: tvShow.adult) { return false }
         return shouldIncludeContent(genres: tvShow.genres)
     }
     
@@ -90,6 +120,11 @@ class TMDBContentFilter: ObservableObject {
     func isNonAnimeSection(_ sectionId: String) -> Bool {
         let nonAnimeSections = ["trending", "popularMovies", "popularTVShows", "topRatedMovies", "topRatedTVShows"]
         return nonAnimeSections.contains(sectionId)
+    }
+    
+    func isNSFWContent(id: Int, isAdult: Bool?) -> Bool {
+        if isAdult == true { return true }
+        return false
     }
     
     private func shouldIncludeContent(genreIds: [Int]?) -> Bool {
