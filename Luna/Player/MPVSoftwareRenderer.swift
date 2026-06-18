@@ -51,9 +51,6 @@ final class MPVSoftwareRenderer {
     private let eventQueueGroup = DispatchGroup()
     private let renderQueueKey = DispatchSpecificKey<Void>()
     
-    private var dimensionsArray = [Int32](repeating: 0, count: 2)
-    private var renderParams = [mpv_render_param](repeating: mpv_render_param(type: MPV_RENDER_PARAM_INVALID, data: nil), count: 5)
-    
     private var mpv: OpaquePointer?
     private var pipRenderContext: OpaquePointer?
     private var videoSize: CGSize = .zero
@@ -65,13 +62,11 @@ final class MPVSoftwareRenderer {
     private var poolWidth: Int = 0
     private var poolHeight: Int = 0
     private var preAllocatedBuffers: [CVPixelBuffer] = []
-    private let maxPreAllocatedBuffers = 12
+    private let maxPreAllocatedBuffers = 6
     
     private var currentPreset: PlayerPreset?
     private var currentURL: URL?
     private var currentHeaders: [String: String]?
-    
-    private var disposeBag: [() -> Void] = []
     
     private var isRunning = false
     private var isStopping = false
@@ -124,24 +119,25 @@ final class MPVSoftwareRenderer {
         }
         
         mpv = handle
+        
         setOption(name: "vo", value: "gpu-next")
-        setOption(name: "gpu-api", value: "vulkan")
+        setOption(name: "gpu-api", value: "metal")
         setOption(name: "hwdec", value: "videotoolbox")
-        setOption(name: "gpu-context", value: "moltenvk")
         
         setOption(name: "idle", value: "yes")
-        setOption(name: "ytdl", value: "yes")
-        setOption(name: "sub-ass", value: "yes")
         setOption(name: "hr-seek", value: "yes")
-        setOption(name: "terminal", value: "yes")
         setOption(name: "keep-open", value: "yes")
+        setOption(name: "video-sync", value: "audio")
         setOption(name: "interpolation", value: "no")
-        setOption(name: "subs-fallback", value: "yes")
-        setOption(name: "msg-level", value: "all=warn")
         setOption(name: "demuxer-thread", value: "yes")
-        setOption(name: "sub-ass-override", value: "yes")
-        setOption(name: "video-sync", value: "display-resample")
         setOption(name: "audio-normalize-downmix", value: "yes")
+        
+        setOption(name: "sub-ass", value: "yes")
+        setOption(name: "subs-fallback", value: "yes")
+        setOption(name: "sub-ass-override", value: "yes")
+        
+        setOption(name: "msg-level", value: "all=warn")
+        
         configureWindowEmbedding()
         
         let initStatus = mpv_initialize(handle)
@@ -199,9 +195,6 @@ final class MPVSoftwareRenderer {
             self.poolWidth = 0
             self.poolHeight = 0
             self.lastRenderDimensions = .zero
-            
-            self.disposeBag.forEach { $0() }
-            self.disposeBag.removeAll()
         }
         
         DispatchQueue.main.async { [weak self] in
@@ -284,29 +277,19 @@ final class MPVSoftwareRenderer {
         }
     }
     
-    private func setOption(name: String, int64Value: Int64) {
-        guard let handle = mpv else { return }
-        var mutableValue = int64Value
-        let status = name.withCString { namePointer in
-            withUnsafeMutablePointer(to: &mutableValue) { valuePointer in
-                mpv_set_option(handle, namePointer, MPV_FORMAT_INT64, valuePointer)
-            }
-        }
-        if status < 0 {
-            Logger.shared.log("Failed to set option \(name)=\(int64Value) (\(status))", type: "Warn")
-        }
-    }
-    
     private func configureWindowEmbedding() {
         guard let primaryRenderView else {
             Logger.shared.log("Primary render view is missing, mpv window embedding disabled", type: "Warn")
             return
         }
+        guard let handle = mpv else { return }
         
         let renderTarget = primaryRenderView.layer
         let pointerValue = UInt(bitPattern: Unmanaged.passUnretained(renderTarget).toOpaque())
-        let wid = Int64(bitPattern: UInt64(pointerValue))
-        setOption(name: "wid", int64Value: wid)
+        var wid = Int64(bitPattern: UInt64(pointerValue))
+        withUnsafeMutablePointer(to: &wid) { ptr in
+            _ = mpv_set_option(handle, "wid", MPV_FORMAT_INT64, ptr)
+        }
     }
     
     private func setProperty(name: String, value: String) {
@@ -395,13 +378,6 @@ final class MPVSoftwareRenderer {
             let instance = Unmanaged<MPVSoftwareRenderer>.fromOpaque(userdata).takeUnretainedValue()
             instance.processEvents()
         }, Unmanaged.passUnretained(self).toOpaque())
-        renderQueue.async { [weak self] in
-            guard let self else { return }
-            self.disposeBag.append { [weak self] in
-                guard let self, let handle = self.mpv else { return }
-                mpv_set_wakeup_callback(handle, nil, nil)
-            }
-        }
     }
     
     private func requestPiPDisplayLink() {
@@ -421,7 +397,12 @@ final class MPVSoftwareRenderer {
             
             let proxy = PiPDisplayLinkProxy(owner: self)
             let displayLink = CADisplayLink(target: proxy, selector: #selector(PiPDisplayLinkProxy.onDisplayLinkTick))
-            displayLink.preferredFramesPerSecond = 30
+            
+            if #available(iOS 15.0, *) {
+                displayLink.preferredFrameRateRange = CAFrameRateRange(minimum: 8, maximum: 24, preferred: 24)
+            } else {
+                displayLink.preferredFramesPerSecond = 24
+            }
             displayLink.add(to: .main, forMode: .common)
             
             self.pipDisplayLinkProxy = proxy
@@ -508,11 +489,6 @@ final class MPVSoftwareRenderer {
             return
         }
         
-        let actualFormat = CVPixelBufferGetPixelFormatType(buffer)
-        if actualFormat != kCVPixelFormatType_32BGRA {
-            Logger.shared.log("Pixel buffer format mismatch: expected BGRA (0x42475241), got \(actualFormat)", type: "Error")
-        }
-        
         CVPixelBufferLockBaseAddress(buffer, [])
         guard let baseAddress = CVPixelBufferGetBaseAddress(buffer) else {
             CVPixelBufferUnlockBaseAddress(buffer, [])
@@ -520,17 +496,15 @@ final class MPVSoftwareRenderer {
         }
         
         if shouldClearPixelBuffer {
-            let bufferDataSize = CVPixelBufferGetDataSize(buffer)
-            memset(baseAddress, 0, bufferDataSize)
+            memset(baseAddress, 0, CVPixelBufferGetDataSize(buffer))
             shouldClearPixelBuffer = false
         }
         
-        dimensionsArray[0] = Int32(width)
-        dimensionsArray[1] = Int32(height)
+        var dimensionsArray: [Int32] = [Int32(width), Int32(height)]
         let stride = Int32(CVPixelBufferGetBytesPerRow(buffer))
-        let expectedMinStride = Int32(width * 4)
-        if stride < expectedMinStride {
-            Logger.shared.log("Unexpected pixel buffer stride \(stride) < expected \(expectedMinStride) - skipping render to avoid memory corruption", type: "Error")
+        
+        if stride < Int32(width * 4) {
+            Logger.shared.log("Unexpected pixel buffer stride \(stride) < expected \(width * 4) - skipping render to avoid memory corruption", type: "Error")
             CVPixelBufferUnlockBaseAddress(buffer, [])
             return
         }
@@ -538,12 +512,13 @@ final class MPVSoftwareRenderer {
         dimensionsArray.withUnsafeMutableBufferPointer { dimsPointer in
             bgraFormatCString.withUnsafeBufferPointer { formatPointer in
                 withUnsafePointer(to: stride) { stridePointer in
-                    renderParams[0] = mpv_render_param(type: MPV_RENDER_PARAM_SW_SIZE, data: UnsafeMutableRawPointer(dimsPointer.baseAddress))
-                    renderParams[1] = mpv_render_param(type: MPV_RENDER_PARAM_SW_FORMAT, data: UnsafeMutableRawPointer(mutating: formatPointer.baseAddress))
-                    renderParams[2] = mpv_render_param(type: MPV_RENDER_PARAM_SW_STRIDE, data: UnsafeMutableRawPointer(mutating: stridePointer))
-                    renderParams[3] = mpv_render_param(type: MPV_RENDER_PARAM_SW_POINTER, data: baseAddress)
-                    renderParams[4] = mpv_render_param(type: MPV_RENDER_PARAM_INVALID, data: nil)
-                    
+                    var renderParams = [
+                        mpv_render_param(type: MPV_RENDER_PARAM_SW_SIZE,    data: UnsafeMutableRawPointer(dimsPointer.baseAddress)),
+                        mpv_render_param(type: MPV_RENDER_PARAM_SW_FORMAT,  data: UnsafeMutableRawPointer(mutating: formatPointer.baseAddress)),
+                        mpv_render_param(type: MPV_RENDER_PARAM_SW_STRIDE,  data: UnsafeMutableRawPointer(mutating: stridePointer)),
+                        mpv_render_param(type: MPV_RENDER_PARAM_SW_POINTER, data: baseAddress),
+                        mpv_render_param(type: MPV_RENDER_PARAM_INVALID,    data: nil)
+                    ]
                     let rc = mpv_render_context_render(context, &renderParams)
                     if rc < 0 {
                         Logger.shared.log("mpv_render_context_render returned error \(rc)", type: "Error")
@@ -573,13 +548,9 @@ final class MPVSoftwareRenderer {
             return videoSize
         }
         
-        var scale = screen.scale
-        if scale <= 0 { scale = 1 }
+        let scale = max(screen.scale, 1)
         let maxWidth = max(screen.bounds.width * scale, 1.0)
         let maxHeight = max(screen.bounds.height * scale, 1.0)
-        if maxWidth <= 0 || maxHeight <= 0 {
-            return videoSize
-        }
         
         let widthRatio = videoSize.width / maxWidth
         let heightRatio = videoSize.height / maxHeight
@@ -606,7 +577,7 @@ final class MPVSoftwareRenderer {
         ]
         
         let auxAttrs: [CFString: Any] = [
-            kCVPixelBufferPoolAllocationThresholdKey: 8
+            kCVPixelBufferPoolAllocationThresholdKey: 6
         ]
         
         var pool: CVPixelBufferPool?
@@ -815,7 +786,7 @@ final class MPVSoftwareRenderer {
             renderQueue.sync(execute: block)
         }
     }
-
+    
     private func dispatchToMain(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()

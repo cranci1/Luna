@@ -244,8 +244,6 @@ final class PlayerViewController: UIViewController {
     private var pendingSubtitleURLs: [String]?
     
     class SubtitleModel: ObservableObject {
-        @Published var currentAttributedText: NSAttributedString = NSAttributedString()
-        
         private var isLoading: Bool = true
         
         @Published var isVisible: Bool = false {
@@ -504,21 +502,6 @@ final class PlayerViewController: UIViewController {
         
         displayLayer.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
         displayLayer.videoGravity = .resizeAspect
-#if compiler(>=6.0)
-        if #available(iOS 26.0, tvOS 26.0, *) {
-            displayLayer.preferredDynamicRange = .automatic
-        } else {
-#if !os(tvOS)
-            if #available(iOS 17.0, *) {
-                displayLayer.wantsExtendedDynamicRangeContent = true
-            }
-#endif
-        }
-#elseif !os(tvOS)
-        if #available(iOS 17.0, *) {
-            displayLayer.wantsExtendedDynamicRangeContent = true
-        }
-#endif
         displayLayer.backgroundColor = UIColor.black.cgColor
         displayLayer.opacity = 0.001
         displayLayer.isHidden = false
@@ -873,51 +856,6 @@ final class PlayerViewController: UIViewController {
             fontSize: subtitleModel.fontSize,
             isVisible: subtitleModel.isVisible
         )
-    }
-    
-    @objc private func subtitleButtonTapped() {
-        guard !subtitleURLs.isEmpty else { return }
-        
-        if subtitleURLs.count == 1 {
-            subtitleModel.isVisible.toggle()
-            updateSubtitleButtonAppearance()
-        } else {
-            showSubtitleSelectionMenu()
-        }
-        
-        showControlsTemporarily()
-    }
-    
-    private func showSubtitleSelectionMenu() {
-        let alert = UIAlertController(title: "Select Subtitle", message: nil, preferredStyle: .actionSheet)
-        
-        let disableAction = UIAlertAction(title: "Disable Subtitles", style: .default) { [weak self] _ in
-            self?.subtitleModel.isVisible = false
-            self?.renderer.setSubtitleVisible(false)
-            self?.updateSubtitleButtonAppearance()
-        }
-        alert.addAction(disableAction)
-        
-        for (index, _) in subtitleURLs.enumerated() {
-            let action = UIAlertAction(title: "Subtitle \(index + 1)", style: .default) { [weak self] _ in
-                self?.currentSubtitleIndex = index
-                self?.subtitleModel.isVisible = true
-                self?.loadCurrentSubtitle()
-                self?.renderer.setSubtitleVisible(true)
-                self?.updateSubtitleButtonAppearance()
-            }
-            alert.addAction(action)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        alert.addAction(cancelAction)
-        
-        if let popover = alert.popoverPresentationController {
-            popover.sourceView = subtitleButton
-            popover.sourceRect = subtitleButton.bounds
-        }
-        
-        present(alert, animated: true, completion: nil)
     }
     
     private func animateButtonTap(_ button: UIButton) {
