@@ -41,7 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cranci1/Sybau",
       "state" : {
-        "revision" : "0cdb19dd5cf58de457d13923bd4b49d3f2e85b8b"
+        "branch" : "main",
+        "revision" : "35ff25397095f408cc690fee6a3e0283043d119d"
       }
     }
   ],

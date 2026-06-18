@@ -184,7 +184,7 @@ struct PlayerSettingsView: View {
     }
     
     private func playTestVideo() {
-        let testUrlString = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        let testUrlString = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4"
         guard let streamURL = URL(string: testUrlString) else { return }
         
         let external = store.externalPlayer
