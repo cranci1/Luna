@@ -2,9 +2,9 @@
 <div align="center"> 
 
 <p align="center">
-	<img src="https://www.cranci.me/screenshots/Luna/home.jpg" alt="Luna screenshot 1" width="260">
-	<img src="https://www.cranci.me/screenshots/Luna/media.jpg" alt="Luna screenshot 2" width="260">
-	<img src="https://www.cranci.me/screenshots/Luna/search.jpg" alt="Luna screenshot 3" width="260">
+	<img src="https://www.cranci.me/screenshots/Luna/home.jpg" alt="Luna screenshot 1" width="160">
+	<img src="https://www.cranci.me/screenshots/Luna/media.jpg" alt="Luna screenshot 2" width="160">
+	<img src="https://www.cranci.me/screenshots/Luna/search.jpg" alt="Luna screenshot 3" width="160">
 </p>
 
 **A modular media player for iOS, tvOS and macOS, under the GPLv3.0 License.**
