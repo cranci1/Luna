@@ -6,6 +6,7 @@
 //
 
 import AVKit
+import Sybau
 
 class NormalPlayer: AVPlayerViewController, AVPlayerViewControllerDelegate {
     private var originalRate: Float = 1.0

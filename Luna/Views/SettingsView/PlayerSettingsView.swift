@@ -5,8 +5,9 @@
 //  Created by Francesco on 19/09/25.
 //
 
-import SwiftUI
 import AVKit
+import Sybau
+import SwiftUI
 
 enum ExternalPlayer: String, CaseIterable, Identifiable {
     case none = "Default"
@@ -199,17 +200,17 @@ struct PlayerSettingsView: View {
             let pvc = PlayerViewController(
                 url: streamURL,
                 preset: preset ?? PlayerPreset(title: "Default", summary: "", stream: nil, commands: []),
-                headers: nil,
-                subtitles: nil
+                headers: nil as [String: String]?,
+                subtitles: nil as [String]?
             )
-            pvc.mediaInfo = .movie(id: 0, title: "Big Buck Bunny")
-            pvc.modalPresentationStyle = .fullScreen
-            
+            pvc.mediaInfo = MediaInfo.movie(id: 0, title: "Big Buck Bunny")
+            pvc.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let rootVC = windowScene.windows.first?.rootViewController {
                 rootVC.topmostViewController().present(pvc, animated: true, completion: nil)
             }
-        } else {
+        }else {
             let playerVC = NormalPlayer()
             let asset = AVURLAsset(url: streamURL)
             let item = AVPlayerItem(asset: asset)

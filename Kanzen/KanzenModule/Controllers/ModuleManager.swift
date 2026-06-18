@@ -4,6 +4,8 @@
 //
 //  Created by Dawud Osman on 13/05/2025.
 //
+
+import Sybau
 import Foundation
 class ModuleManager: ObservableObject {
     static let shared = ModuleManager()

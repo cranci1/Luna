@@ -35,6 +35,14 @@
         "branch" : "main",
         "revision" : "50ddc160fd606e9708adefc1d9fc7003b574446b"
       }
+    },
+    {
+      "identity" : "sybau",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cranci1/Sybau",
+      "state" : {
+        "revision" : "0cdb19dd5cf58de457d13923bd4b49d3f2e85b8b"
+      }
     }
   ],
   "version" : 2

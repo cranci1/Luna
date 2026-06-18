@@ -5,9 +5,10 @@
 //  Created by Francesco on 07/08/25.
 //
 
+import AVKit
+import Sybau
 import SwiftUI
 import Kingfisher
-import AVKit
 
 private struct ModuleDetailContext {
     let item: SearchItem
@@ -728,6 +729,8 @@ struct MediaDetailView: View {
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     rootVC.topmostViewController().present(pvc, animated: true, completion: nil)
+                } else {
+                    Logger.shared.log("Failed to find root view controller to present MPV player", type: "Error")
                 }
                 return
             }

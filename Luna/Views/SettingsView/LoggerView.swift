@@ -5,6 +5,7 @@
 //  Created by Francesco on 10/08/25.
 //
 
+import Sybau
 import SwiftUI
 
 struct LogEntry: Identifiable {
