@@ -72,6 +72,26 @@ final class PlayerSettingsStore: ObservableObject {
         didSet { UserDefaults.standard.set(skipInterval, forKey: "skipIntervalSeconds") }
     }
     
+    @Published var subtitleVisible: Bool {
+        didSet { UserDefaults.standard.set(subtitleVisible, forKey: "subtitles_isVisible") }
+    }
+    
+    @Published var subtitleForegroundColor: Color {
+        didSet { saveColor(subtitleForegroundColor, forKey: "subtitles_foregroundColor") }
+    }
+    
+    @Published var subtitleStrokeColor: Color {
+        didSet { saveColor(subtitleStrokeColor, forKey: "subtitles_strokeColor") }
+    }
+    
+    @Published var subtitleStrokeWidth: Double {
+        didSet { UserDefaults.standard.set(subtitleStrokeWidth, forKey: "subtitles_strokeWidth") }
+    }
+    
+    @Published var subtitleFontSize: Double {
+        didSet { UserDefaults.standard.set(subtitleFontSize, forKey: "subtitles_fontSize") }
+    }
+    
     init() {
         let savedSpeed = UserDefaults.standard.double(forKey: "holdSpeedPlayer")
         self.holdSpeed = savedSpeed > 0 ? savedSpeed : 2.0
@@ -86,6 +106,34 @@ final class PlayerSettingsStore: ObservableObject {
         
         let savedInterval = UserDefaults.standard.integer(forKey: "skipIntervalSeconds")
         self.skipInterval = (savedInterval >= 5 && savedInterval <= 90) ? savedInterval : 10
+        
+        self.subtitleVisible = UserDefaults.standard.object(forKey: "subtitles_isVisible") != nil
+            ? UserDefaults.standard.bool(forKey: "subtitles_isVisible")
+            : false
+        
+        self.subtitleStrokeWidth = UserDefaults.standard.double(forKey: "subtitles_strokeWidth")
+        if self.subtitleStrokeWidth <= 0 { self.subtitleStrokeWidth = 1.0 }
+        
+        self.subtitleFontSize = UserDefaults.standard.double(forKey: "subtitles_fontSize")
+        if self.subtitleFontSize <= 0 { self.subtitleFontSize = 38.0 }
+        
+        self.subtitleForegroundColor = Self.loadColor(forKey: "subtitles_foregroundColor") ?? .white
+        self.subtitleStrokeColor = Self.loadColor(forKey: "subtitles_strokeColor") ?? .black
+    }
+    
+    private func saveColor(_ color: Color, forKey key: String) {
+        let uiColor = UIColor(color)
+        if let data = try? NSKeyedArchiver.archivedData(withRootObject: uiColor, requiringSecureCoding: false) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+    
+    private static func loadColor(forKey key: String) -> Color? {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let uiColor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) else {
+            return nil
+        }
+        return Color(uiColor)
     }
 }
 
@@ -122,7 +170,7 @@ struct PlayerSettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("Seconds to skip forward/backward, only works on mpv.")
+                        Text("Duration to skip forward/backward.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
@@ -192,6 +240,53 @@ struct PlayerSettingsView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                }
+            }
+            
+            Section(header: Text("Subtitle Appearance")) {
+                Toggle("Show Subtitles", isOn: $store.subtitleVisible)
+                    .tint(accentColorManager.currentAccentColor)
+                
+                HStack {
+                    Text("Foreground Color")
+                    Spacer()
+                    ColorPicker("", selection: $store.subtitleForegroundColor)
+                        .labelsHidden()
+                }
+                
+                HStack {
+                    Text("Stroke Color")
+                    Spacer()
+                    ColorPicker("", selection: $store.subtitleStrokeColor)
+                        .labelsHidden()
+                }
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(String(format: "Stroke Width: %.1f", store.subtitleStrokeWidth))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text("Outline thickness of subtitle text.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Stepper(value: $store.subtitleStrokeWidth, in: 0...3, step: 0.5) {}
+                }
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Font Size: \(Int(store.subtitleFontSize))")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text("Text size of subtitles.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Stepper(value: $store.subtitleFontSize, in: 20...80, step: 2) {}
                 }
             }
             
