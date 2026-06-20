@@ -1180,8 +1180,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cranci1/Sybau";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = revision;
+				revision = 999493287563184bd9872d42deb89cdd5fb8987d;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
