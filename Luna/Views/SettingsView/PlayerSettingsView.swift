@@ -68,6 +68,10 @@ final class PlayerSettingsStore: ObservableObject {
         didSet { UserDefaults.standard.set(inAppPlayer.rawValue, forKey: "inAppPlayer") }
     }
     
+    @Published var skipInterval: Int {
+        didSet { UserDefaults.standard.set(skipInterval, forKey: "skipIntervalSeconds") }
+    }
+    
     init() {
         let savedSpeed = UserDefaults.standard.double(forKey: "holdSpeedPlayer")
         self.holdSpeed = savedSpeed > 0 ? savedSpeed : 2.0
@@ -79,6 +83,9 @@ final class PlayerSettingsStore: ObservableObject {
         
         let inAppRaw = UserDefaults.standard.string(forKey: "inAppPlayer") ?? InAppPlayer.normal.rawValue
         self.inAppPlayer = InAppPlayer(rawValue: inAppRaw) ?? .normal
+        
+        let savedInterval = UserDefaults.standard.integer(forKey: "skipIntervalSeconds")
+        self.skipInterval = (savedInterval >= 5 && savedInterval <= 90) ? savedInterval : 10
     }
 }
 
@@ -108,6 +115,23 @@ struct PlayerSettingsView: View {
                     Stepper(value: $store.holdSpeed, in: 0.1...3, step: 0.1) {}
                 }
 #endif
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Skip Interval: \(store.skipInterval)s")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        Text("Seconds to skip forward/backward, only works on mpv.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    
+                    Spacer()
+                    
+                    Stepper(value: $store.skipInterval, in: 5...90, step: 5) {}
+                }
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
