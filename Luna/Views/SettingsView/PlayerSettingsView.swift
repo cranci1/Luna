@@ -111,11 +111,11 @@ final class PlayerSettingsStore: ObservableObject {
             ? UserDefaults.standard.bool(forKey: "subtitles_isVisible")
             : false
         
-        self.subtitleStrokeWidth = UserDefaults.standard.double(forKey: "subtitles_strokeWidth")
-        if self.subtitleStrokeWidth <= 0 { self.subtitleStrokeWidth = 1.0 }
+        let strokeWidth = UserDefaults.standard.double(forKey: "subtitles_strokeWidth")
+        self.subtitleStrokeWidth = strokeWidth > 0 ? strokeWidth : 1.0
         
-        self.subtitleFontSize = UserDefaults.standard.double(forKey: "subtitles_fontSize")
-        if self.subtitleFontSize <= 0 { self.subtitleFontSize = 38.0 }
+        let fontSize = UserDefaults.standard.double(forKey: "subtitles_fontSize")
+        self.subtitleFontSize = fontSize > 0 ? fontSize : 38.0
         
         self.subtitleForegroundColor = Self.loadColor(forKey: "subtitles_foregroundColor") ?? .white
         self.subtitleStrokeColor = Self.loadColor(forKey: "subtitles_strokeColor") ?? .black
