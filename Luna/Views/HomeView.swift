@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var topRatedMovies: [TMDBMovie] = []
     @State private var topRatedTVShows: [TMDBTVShow] = []
     @State private var topRatedAnime: [TMDBTVShow] = []
+    @State private var anilistSeasonalAnime: [TMDBSearchResult] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var heroContent: TMDBSearchResult?
@@ -177,7 +178,7 @@ struct HomeView: View {
     private var heroSection: some View {
         ZStack(alignment: .bottom) {
             StretchyHeaderView(
-                backdropURL: heroContent?.fullBackdropURL ?? heroContent?.fullPosterURL,
+                backdropURL: heroContent?.resolvedBackdropURL ?? heroContent?.resolvedPosterURL,
                 isMovie: heroContent?.isMovie ?? true,
                 headerHeight: heroHeight,
                 minHeaderHeight: 300,
@@ -375,11 +376,20 @@ struct HomeView: View {
                             )
                         }
                     case "popularAnime":
-                        if !popularAnime.isEmpty {
-                            MediaSection(
-                                title: section.title,
-                                items: popularAnime.prefix(15).map { $0.asSearchResult }
-                            )
+                        if contentFilter.animeOnlyMode {
+                            if !anilistSeasonalAnime.isEmpty {
+                                MediaSection(
+                                    title: section.title.isEmpty ? "Seasonal Anime" : section.title,
+                                    items: Array(anilistSeasonalAnime.prefix(15))
+                                )
+                            }
+                        } else {
+                            if !popularAnime.isEmpty {
+                                MediaSection(
+                                    title: section.title,
+                                    items: popularAnime.prefix(15).map { $0.asSearchResult }
+                                )
+                            }
                         }
                     case "topRatedMovies":
                         if !topRatedMovies.isEmpty {
@@ -421,25 +431,28 @@ struct HomeView: View {
         Task {
             do {
                 if contentFilter.animeOnlyMode {
-                    async let popularA = tmdbService.getPopularAnime()
-                    async let topRatedA = tmdbService.getTopRatedAnime()
+                    let anilist = AniListService.shared
+                    async let trendingTask = anilist.fetchTrendingAnime()
+                    async let seasonalTask = anilist.fetchSeasonalAnime()
                     
-                    let (popularAnimeResult, topRatedAnimeResult) = try await (popularA, topRatedA)
+                    let (trendingAnime, seasonalAnime) = try await (trendingTask, seasonalTask)
+                    
+                    let trendingResults = trendingAnime.map { $0.toSearchResult() }
+                    let seasonalResults = seasonalAnime.map { $0.toSearchResult() }
                     
                     await MainActor.run {
                         withAnimation(.easeInOut(duration: 0.5)) {
-                            self.trendingContent = []
-                            self.popularMovies = []
-                            self.popularTVShows = []
-                            self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
-                            self.topRatedMovies = []
+                            self.trendingContent = trendingResults
+                            self.popularMovies   = []
+                            self.popularTVShows  = []
+                            self.popularAnime    = []
+                            self.topRatedMovies  = []
                             self.topRatedTVShows = []
-                            self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                            self.topRatedAnime   = []
+                            self.anilistSeasonalAnime = seasonalResults
                             
-                            self.heroContent = self.popularAnime
-                                .first { $0.backdropPath != nil }
-                                .map { $0.asSearchResult }
-                            ?? self.popularAnime.first.map { $0.asSearchResult }
+                            self.heroContent = trendingResults.first
+                            self.heroLogoURL  = nil
                             
                             self.isLoading = false
                             self.hasLoadedContent = true
@@ -473,7 +486,8 @@ struct HomeView: View {
                     }
                 }
                 
-                if let hero = await MainActor.run(body: { self.heroContent }) {
+                if !contentFilter.animeOnlyMode,
+                   let hero = await MainActor.run(body: { self.heroContent }) {
                     await loadHeroLogo(for: hero)
                 }
             } catch {
@@ -565,7 +579,7 @@ struct MediaCard: View {
     var body: some View {
         NavigationLink(destination: MediaDetailView(searchResult: result)) {
             VStack(alignment: .leading, spacing: 6) {
-                KFImage(URL(string: result.fullPosterURL ?? ""))
+                KFImage(URL(string: result.resolvedPosterURL ?? ""))
                     .placeholder {
                         FallbackImageView(
                             isMovie: result.isMovie,
