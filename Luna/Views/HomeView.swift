@@ -421,8 +421,8 @@ struct HomeView: View {
         Task {
             do {
                 if contentFilter.animeOnlyMode {
-                    async let popularA = JikanService.shared.getPopularAnime()
-                    async let topRatedA = JikanService.shared.getTopRatedAnime()
+                    async let popularA = tmdbService.getPopularAnime()
+                    async let topRatedA = tmdbService.getTopRatedAnime()
                     
                     let (popularAnimeResult, topRatedAnimeResult) = try await (popularA, topRatedA)
                     
@@ -449,10 +449,10 @@ struct HomeView: View {
                     async let trending = tmdbService.getTrending()
                     async let popularM = tmdbService.getPopularMovies()
                     async let popularTV = tmdbService.getPopularTVShows()
-                    async let popularA = JikanService.shared.getPopularAnime()
+                    async let popularA = tmdbService.getPopularAnime()
                     async let topRatedM = tmdbService.getTopRatedMovies()
                     async let topRatedTV = tmdbService.getTopRatedTVShows()
-                    async let topRatedA = JikanService.shared.getTopRatedAnime()
+                    async let topRatedA = tmdbService.getTopRatedAnime()
                     
                     let (trendingResult, popularMoviesResult, popularTVResult, popularAnimeResult, topRatedMoviesResult, topRatedTVResult, topRatedAnimeResult) = try await (trending, popularM, popularTV, popularA, topRatedM, topRatedTV, topRatedA)
                     
