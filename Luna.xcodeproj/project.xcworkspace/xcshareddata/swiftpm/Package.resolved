@@ -12,10 +12,10 @@
     {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "location" : "https://github.com/onevcat/Kingfisher",
       "state" : {
-        "revision" : "c92b84898e34ab46ff0dad86c02a0acbe2d87008",
-        "version" : "8.8.0"
+        "revision" : "ac632bd26a1c00f139ff62fd01806f21cf67325e",
+        "version" : "8.10.0"
       }
     },
     {
@@ -41,7 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cranci1/Sybau",
       "state" : {
-        "revision" : "977a74eb8ca7477e0220e580394d9bce7078ece8"
+        "branch" : "main",
+        "revision" : "f16194493a07fe103baa07dd86191939cb03b725"
       }
     }
   ],

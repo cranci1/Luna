@@ -21,6 +21,9 @@ class JSController: NSObject, ObservableObject {
     
     func setupContext() {
         context.setupJavaScriptEnvironment()
+        context.exceptionHandler = { context, exception in
+            Logger.shared.log("[JS Exception]" + (exception?.toString() ?? "unknown"), type: "Error")
+        }
     }
     
     func loadScript(_ script: String) {
