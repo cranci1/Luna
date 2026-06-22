@@ -15,6 +15,7 @@
 		133AEFF72FE3F134002ADFE3 /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 133AEFF62FE3F134002ADFE3 /* MPVKit-GPL */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
+		1370E8BC2FE9B4A800973BBC /* JikanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1370E8BB2FE9B4A800973BBC /* JikanService.swift */; };
 		13792CD32F6F09FA002948F8 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD22F6F09FA002948F8 /* Kingfisher */; };
 		13792CD92F6F0CA6002948F8 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD82F6F0CA6002948F8 /* FakeWebKit */; };
 		13792CDC2F6F0CC2002948F8 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CDB2F6F0CC2002948F8 /* SoraCore */; };
@@ -128,6 +129,7 @@
 		12E7AF5F2EB80771003B7664 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
 		13631B312E4F1A200035C39F /* ServiceSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceSettingsView.swift; sourceTree = "<group>"; };
 		136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassBackground.swift; sourceTree = "<group>"; };
+		1370E8BB2FE9B4A800973BBC /* JikanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JikanService.swift; sourceTree = "<group>"; };
 		13830AEB2E55BD9200B3CDE4 /* AlgorithmManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlgorithmManager.swift; sourceTree = "<group>"; };
 		13830AED2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JaroWinklerSimilarity.swift; sourceTree = "<group>"; };
 		13830AEF2E55C04F00B3CDE4 /* AlgorithmSelectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlgorithmSelectionView.swift; sourceTree = "<group>"; };
@@ -237,6 +239,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1370E8BA2FE9B49A00973BBC /* Jikan */ = {
+			isa = PBXGroup;
+			children = (
+				1370E8BB2FE9B4A800973BBC /* JikanService.swift */,
+			);
+			path = Jikan;
+			sourceTree = "<group>";
+		};
 		13BE85E32FE40A650097AB38 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -475,6 +485,7 @@
 			isa = PBXGroup;
 			children = (
 				13B6F3472EA4C82600DECD2B /* Info.plist */,
+				1370E8BA2FE9B49A00973BBC /* Jikan */,
 				13F5B5902E73090000565E75 /* Models */,
 				13F072972E4B2D9200EF90EB /* TMDB */,
 				13F072952E4B2D9100EF90EB /* Algorithm */,
@@ -506,10 +517,10 @@
 		13F072752E4B2D9000EF90EB /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				13F072772E4B2D9000EF90EB /* SettingsView.swift */,
-				13F072782E4B2D9000EF90EB /* SearchView.swift */,
 				13F0727A2E4B2D9000EF90EB /* HomeView.swift */,
 				13F0727B2E4B2D9000EF90EB /* LibraryView.swift */,
+				13F072782E4B2D9000EF90EB /* SearchView.swift */,
+				13F072772E4B2D9000EF90EB /* SettingsView.swift */,
 				13F0727C2E4B2D9000EF90EB /* MediaDetailView.swift */,
 				13F072C42E4B364B00EF90EB /* SettingsView */,
 				13F0727F2E4B2D9000EF90EB /* View Elements */,
@@ -796,6 +807,7 @@
 				12E7AF602EB80775003B7664 /* Platform.swift in Sources */,
 				13DCC4F62E58B40F0028AE91 /* HybridSimilarity.swift in Sources */,
 				13E1EDE92ED9E66000087629 /* customSlider.swift in Sources */,
+				1370E8BC2FE9B4A800973BBC /* JikanService.swift in Sources */,
 				13E1EDE42ED9E66000087629 /* pagedViewController.swift in Sources */,
 				13F072A32E4B2D9200EF90EB /* SearchView.swift in Sources */,
 				13830AEC2E55BD9200B3CDE4 /* AlgorithmManager.swift in Sources */,
