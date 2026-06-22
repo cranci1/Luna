@@ -98,11 +98,15 @@ final class PlayerSettingsStore: ObservableObject {
         self.inAppPlayer = InAppPlayer(rawValue: inAppRaw) ?? .normal
         
         let savedInterval = UserDefaults.standard.integer(forKey: "skipIntervalSeconds")
-        self.skipInterval = (savedInterval >= 5 && savedInterval <= 90) ? savedInterval : 10
+        self.skipInterval = (savedInterval >= 5 && savedInterval <= 90) ? savedInterval : 15
         
-        self.subtitleVisible = UserDefaults.standard.object(forKey: "subtitles_isVisible") != nil
-        ? UserDefaults.standard.bool(forKey: "subtitles_isVisible")
-        : false
+        let subtitleVisibleKey = "subtitles_isVisible"
+        if UserDefaults.standard.object(forKey: subtitleVisibleKey) != nil {
+            self.subtitleVisible = UserDefaults.standard.bool(forKey: subtitleVisibleKey)
+        } else {
+            self.subtitleVisible = false
+            UserDefaults.standard.set(false, forKey: subtitleVisibleKey)
+        }
         
         let strokeWidth = UserDefaults.standard.double(forKey: "subtitles_strokeWidth")
         self.subtitleStrokeWidth = strokeWidth > 0 ? strokeWidth : 1.0
@@ -158,7 +162,6 @@ struct PlayerSettingsView: View {
                     Spacer()
                     Stepper(value: $store.holdSpeed, in: 0.1...3, step: 0.1) {}
                 }
-#endif
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -166,7 +169,7 @@ struct PlayerSettingsView: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("Duration to skip forward/backward.")
+                        Text("Duration to skip forward/backward. (mpv exclusive)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
@@ -174,7 +177,9 @@ struct PlayerSettingsView: View {
                     
                     Spacer()
                     Stepper(value: $store.skipInterval, in: 5...90, step: 5) {}
+                        .disabled(store.inAppPlayer != .mpv)
                 }
+#endif
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -196,6 +201,7 @@ struct PlayerSettingsView: View {
             .disabled(store.externalPlayer != .none)
             
             Section(header: Text("Media Player")) {
+#if !os(tvOS)
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Media Player")
@@ -215,6 +221,7 @@ struct PlayerSettingsView: View {
                     }
                     .pickerStyle(.menu)
                 }
+#endif
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -235,6 +242,7 @@ struct PlayerSettingsView: View {
                     }
                     .pickerStyle(.menu)
                 }
+                .disabled(store.externalPlayer != .none)
             }
             
             Section(header: Text("Subtitle Appearance")) {
@@ -283,6 +291,7 @@ struct PlayerSettingsView: View {
                     Stepper(value: $store.subtitleFontSize, in: 20...80, step: 2) {}
                 }
             }
+            .disabled(store.externalPlayer != .none)
             
             Section(header: Text("Testing")) {
                 Button(action: { playTestVideo() }) {
@@ -298,6 +307,18 @@ struct PlayerSettingsView: View {
         let testUrlString = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4"
         guard let streamURL = URL(string: testUrlString) else { return }
         
+#if os(tvOS)
+        let player = AVPlayer(url: streamURL)
+        let playerVC = AVPlayerViewController()
+        playerVC.player = player
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(playerVC, animated: true) {
+                player.play()
+            }
+        }
+#else
         let external = store.externalPlayer
         if let schemeUrl = external.schemeURL(for: testUrlString), external != .none, UIApplication.shared.canOpenURL(schemeUrl) {
             UIApplication.shared.open(schemeUrl, options: [:], completionHandler: nil)
@@ -334,5 +355,6 @@ struct PlayerSettingsView: View {
                 }
             }
         }
+#endif
     }
 }

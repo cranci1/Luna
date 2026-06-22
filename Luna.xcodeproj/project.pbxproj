@@ -1181,7 +1181,7 @@
 			repositoryURL = "https://github.com/cranci1/Sybau";
 			requirement = {
 				kind = revision;
-				revision = 9f16d0a775a918b53cfe41798c78725be39b573b;
+				revision = 0636aaadddce13d7336dbc1844e8f8239bb6f975;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
