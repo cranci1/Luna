@@ -245,6 +245,7 @@ struct PlayerSettingsView: View {
                 .disabled(store.externalPlayer != .none)
             }
             
+#if !os(tvOS)
             Section(header: Text("Subtitle Appearance")) {
                 Toggle("Show Subtitles", isOn: $store.subtitleVisible)
                     .tint(accentColorManager.currentAccentColor)
@@ -292,6 +293,7 @@ struct PlayerSettingsView: View {
                 }
             }
             .disabled(store.externalPlayer != .none)
+#endif
             
             Section(header: Text("Testing")) {
                 Button(action: { playTestVideo() }) {

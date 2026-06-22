@@ -174,7 +174,7 @@ struct SettingsView: View {
                 Text("Others")
             }
             
-            Section(footer: Text("Luna 1.0.0 - cranci1")) {}
+            Section(footer: Text("Luna 1.1.0 - cranci1")) {}
         }
 #if !os(tvOS)
         .navigationTitle("Settings")

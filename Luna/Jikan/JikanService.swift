@@ -27,17 +27,15 @@ private struct JikanAnime: Decodable {
     let synopsis: String?
     let score: Double?
     let members: Int?
-    let popularity: Int?
     let images: JikanImages
     let aired: JikanAired?
     let genres: [JikanGenre]?
-    let type: String?
     
     enum CodingKeys: String, CodingKey {
         case malId = "mal_id"
         case title
         case titleEnglish = "title_english"
-        case synopsis, score, members, popularity, images, aired, genres, type
+        case synopsis, score, members, images, aired, genres
     }
 }
 
@@ -66,6 +64,8 @@ private struct JikanGenre: Decodable {
         case name
     }
 }
+
+// MARK: - TMDB
 
 private struct TMDBFindResponse: Decodable {
     let tvResults: [TMDBFindTVResult]
@@ -150,7 +150,6 @@ final class JikanService {
             path: "/top/anime",
             queryItems: [
                 URLQueryItem(name: "type", value: "tv"),
-                URLQueryItem(name: "filter", value: "byrating"),
                 URLQueryItem(name: "page", value: "\(page)"),
                 URLQueryItem(name: "limit", value: "\(pageSize)")
             ]
