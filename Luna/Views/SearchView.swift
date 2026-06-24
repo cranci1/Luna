@@ -26,7 +26,6 @@ struct SearchView: View {
     @State private var searchMode: SearchMode = .tmdb
     @State private var selectedService: Service? = nil
     @State private var serviceSearchResults: [SearchItem] = []
-    @State private var showServicePicker = false
     
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var contentFilter = TMDBContentFilter.shared
@@ -103,45 +102,6 @@ struct SearchView: View {
     private var searchContent: some View {
         ScrollView {
             VStack(spacing: 12) {
-                Picker("Search Mode", selection: $searchMode) {
-                    Text("TMDB").tag(SearchMode.tmdb)
-                    Text("Service").tag(SearchMode.service)
-                }
-                .pickerStyle(.segmented)
-                .onChangeComp(of: searchMode) { _, _ in
-                    searchText = ""
-                    searchResults = []
-                    serviceSearchResults = []
-                    errorMessage = nil
-                }
-                
-                if searchMode == .service {
-                    let serviceTitle = selectedService?.metadata.sourceName ?? "Select a Service"
-                    
-                    Button(action: { showServicePicker = true }) {
-                        HStack {
-                            Image(systemName: "puzzlepiece.extension")
-                                .foregroundColor(.accentColor)
-                            Text(serviceTitle)
-                                .foregroundColor(selectedService == nil ? .secondary : .primary)
-                            Spacer()
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    
-                    if showServicePicker {
-                        servicePickerList
-                    }
-                }
-                
                 HStack(spacing: 8) {
                     SearchBarLuna(text: $searchText) {
                         performSearch()
@@ -179,7 +139,6 @@ struct SearchView: View {
                 .animation(.easeInOut(duration: 0.2), value: hasResults)
             }
             .padding()
-            .animation(.easeInOut(duration: 0.2), value: searchMode)
             
             if isLoading {
                 VStack {
@@ -228,7 +187,7 @@ struct SearchView: View {
                             .font(.title2)
                             .foregroundColor(.secondary)
                         
-                        Text("Choose a service above to search directly through it")
+                        Text("Tap the source button at the top right to pick a service")
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -393,7 +352,12 @@ struct SearchView: View {
                 .padding(.top)
             }
         }
-        .navigationTitle("Search")
+        .navigationTitle(navigationTitle)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                sourceMenu
+            }
+        }
         .alert("Service Downloaded", isPresented: $showServiceDownloadAlert) {
             Button("OK") { }
         } message: {
@@ -431,56 +395,66 @@ struct SearchView: View {
         }
     }
     
-    // MARK: - Service Picker
-    @ViewBuilder
-    private var servicePickerList: some View {
-        let services = serviceManager.services
-        let selectedID = selectedService?.id
-        VStack(spacing: 0) {
-            ForEach(0..<services.count, id: \.self) { index in
-                servicePickerRow(
-                    service: services[index],
-                    isSelected: services[index].id == selectedID,
-                    isLast: index == services.count - 1
-                )
-            }
+    // MARK: - Source Menu
+    private var navigationTitle: String {
+        switch searchMode {
+        case .tmdb:
+            return "Search"
+        case .service:
+            return selectedService.map { $0.metadata.sourceName } ?? "Search"
         }
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
-        .transition(.move(edge: .top).combined(with: .opacity))
     }
-
+    
     @ViewBuilder
-    private func servicePickerRow(service: Service, isSelected: Bool, isLast: Bool) -> some View {
-        Button(action: {
-            showServicePicker = false
-            selectService(service)
-        }) {
-            HStack {
-                Image(systemName: "puzzlepiece.extension")
-                    .foregroundColor(.accentColor)
-                Text(service.metadata.sourceName)
-                    .foregroundColor(.primary)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.accentColor)
+    private var sourceMenu: some View {
+        Menu {
+            Button(action: {
+                searchMode = .tmdb
+                selectedService = nil
+                searchText = ""
+                searchResults = []
+                serviceSearchResults = []
+                errorMessage = nil
+            }) {
+                Label("TMDB", systemImage: searchMode == .tmdb ? "checkmark" : "magnifyingglass")
+            }
+            
+            if !serviceManager.services.isEmpty {
+                Divider()
+                ForEach(0..<serviceManager.services.count, id: \.self) { index in
+                    sourceMenuServiceButton(index: index)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-        }
-        .buttonStyle(PlainButtonStyle())
-        if !isLast {
-            Divider().padding(.leading, 12)
+        } label: {
+            HStack(spacing: 4) {
+                Text(searchMode == .tmdb ? "TMDB" : (selectedService?.metadata.sourceName ?? "Source"))
+                    .font(.subheadline)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption2)
+            }
+            .foregroundColor(.accentColor)
         }
     }
-
+    
+    @ViewBuilder
+    private func sourceMenuServiceButton(index: Int) -> some View {
+        let service = serviceManager.services[index]
+        let isSelected = searchMode == .service && selectedService?.id == service.id
+        Button(action: {
+            selectService(service)
+        }) {
+            Label(service.metadata.sourceName, systemImage: isSelected ? "checkmark" : "puzzlepiece.extension")
+        }
+    }
+    
     // MARK: - Service Selection
     private func selectService(_ service: Service) {
+        searchMode = .service
         selectedService = service
         jsController.loadScript(service.jsScript)
+        searchResults = []
         serviceSearchResults = []
+        errorMessage = nil
         if !searchText.isEmpty {
             performSearch()
         }

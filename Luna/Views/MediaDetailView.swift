@@ -725,28 +725,44 @@ struct MediaDetailView: View {
         let jsController = JSController()
         jsController.loadScript(moduleContext.service.jsScript)
         
-        let targetHref: String
-        if moduleEpisodes.isEmpty {
-            targetHref = moduleContext.item.href
-        } else {
+        if !moduleEpisodes.isEmpty {
             let safeIndex = min(max(selectedModuleEpisodeIndex, 0), moduleEpisodes.count - 1)
-            targetHref = moduleEpisodes[safeIndex].href
+            let targetHref = moduleEpisodes[safeIndex].href
+            streamFromHref(targetHref, service: moduleContext.service, jsController: jsController)
+            return
         }
         
+        isDirectStreaming = true
+        jsController.fetchDetailsJS(url: moduleContext.item.href) { [self] details, episodes in
+            DispatchQueue.main.async {
+                let targetHref: String
+                if episodes.isEmpty {
+                    targetHref = moduleContext.item.href
+                } else {
+                    self.moduleEpisodes = episodes
+                    self.selectedModuleEpisodeIndex = 0
+                    targetHref = episodes[0].href
+                }
+                self.streamFromHref(targetHref, service: moduleContext.service, jsController: jsController)
+            }
+        }
+    }
+    
+    private func streamFromHref(_ href: String, service: Service, jsController: JSController) {
         jsController.fetchStreamUrlJS(
-            episodeUrl: targetHref,
-            softsub: moduleContext.service.metadata.softsub ?? false,
-            module: moduleContext.service
+            episodeUrl: href,
+            softsub: service.metadata.softsub ?? false,
+            module: service
         ) { streamResult in
             Task { @MainActor in
+                self.isDirectStreaming = false
                 guard let stream = self.extractPreferredStream(streams: streamResult.streams, sources: streamResult.sources) else {
                     self.moduleStreamError = "No valid stream returned by this service"
                     self.showingModuleStreamError = true
                     return
                 }
-                
                 let subtitle = streamResult.subtitles?.first
-                self.playStreamURL(stream.url, service: moduleContext.service, subtitle: subtitle, headers: stream.headers)
+                self.playStreamURL(stream.url, service: service, subtitle: subtitle, headers: stream.headers)
             }
         }
     }
