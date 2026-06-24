@@ -15,9 +15,6 @@
 		133AEFF72FE3F134002ADFE3 /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 133AEFF62FE3F134002ADFE3 /* MPVKit-GPL */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
-		1370E8BF2FE9BCEA00973BBC /* AniListModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1370E8BE2FE9BCE900973BBC /* AniListModels.swift */; };
-		1370E8C12FE9BCF300973BBC /* TMDBSearchResult+AniList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1370E8C02FE9BCF300973BBC /* TMDBSearchResult+AniList.swift */; };
-		1370E8C42FE9BD2E00973BBC /* AniListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1370E8C22FE9BD2C00973BBC /* AniListService.swift */; };
 		13792CD32F6F09FA002948F8 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD22F6F09FA002948F8 /* Kingfisher */; };
 		13792CD92F6F0CA6002948F8 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD82F6F0CA6002948F8 /* FakeWebKit */; };
 		13792CDC2F6F0CC2002948F8 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CDB2F6F0CC2002948F8 /* SoraCore */; };
@@ -131,9 +128,6 @@
 		12E7AF5F2EB80771003B7664 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
 		13631B312E4F1A200035C39F /* ServiceSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceSettingsView.swift; sourceTree = "<group>"; };
 		136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassBackground.swift; sourceTree = "<group>"; };
-		1370E8BE2FE9BCE900973BBC /* AniListModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListModels.swift; sourceTree = "<group>"; };
-		1370E8C02FE9BCF300973BBC /* TMDBSearchResult+AniList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TMDBSearchResult+AniList.swift"; sourceTree = "<group>"; };
-		1370E8C22FE9BD2C00973BBC /* AniListService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListService.swift; sourceTree = "<group>"; };
 		13830AEB2E55BD9200B3CDE4 /* AlgorithmManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlgorithmManager.swift; sourceTree = "<group>"; };
 		13830AED2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JaroWinklerSimilarity.swift; sourceTree = "<group>"; };
 		13830AEF2E55C04F00B3CDE4 /* AlgorithmSelectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlgorithmSelectionView.swift; sourceTree = "<group>"; };
@@ -243,24 +237,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1370E8BD2FE9BCDF00973BBC /* AniList */ = {
-			isa = PBXGroup;
-			children = (
-				1370E8C32FE9BD2E00973BBC /* Models */,
-				1370E8C02FE9BCF300973BBC /* TMDBSearchResult+AniList.swift */,
-				1370E8C22FE9BD2C00973BBC /* AniListService.swift */,
-			);
-			path = AniList;
-			sourceTree = "<group>";
-		};
-		1370E8C32FE9BD2E00973BBC /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				1370E8BE2FE9BCE900973BBC /* AniListModels.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		13BE85E32FE40A650097AB38 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -498,7 +474,6 @@
 		13F0725D2E4B2D3300EF90EB /* Luna */ = {
 			isa = PBXGroup;
 			children = (
-				1370E8BD2FE9BCDF00973BBC /* AniList */,
 				13B6F3472EA4C82600DECD2B /* Info.plist */,
 				13F5B5902E73090000565E75 /* Models */,
 				13F072972E4B2D9200EF90EB /* TMDB */,
@@ -822,7 +797,6 @@
 				13DCC4F62E58B40F0028AE91 /* HybridSimilarity.swift in Sources */,
 				13E1EDE92ED9E66000087629 /* customSlider.swift in Sources */,
 				13E1EDE42ED9E66000087629 /* pagedViewController.swift in Sources */,
-				1370E8C12FE9BCF300973BBC /* TMDBSearchResult+AniList.swift in Sources */,
 				13F072A32E4B2D9200EF90EB /* SearchView.swift in Sources */,
 				13830AEC2E55BD9200B3CDE4 /* AlgorithmManager.swift in Sources */,
 				13F072AD2E4B2D9200EF90EB /* DetailRow.swift in Sources */,
@@ -842,7 +816,6 @@
 				13E1EDE52ED9E66000087629 /* webToonViewController.swift in Sources */,
 				13F072AC2E4B2D9200EF90EB /* Shows-Details.swift in Sources */,
 				13E1EDDD2ED9E66000087629 /* KanzenOutputFormatter.swift in Sources */,
-				1370E8C42FE9BD2E00973BBC /* AniListService.swift in Sources */,
 				13830AF22E55F51300B3CDE4 /* AlternativeUIView.swift in Sources */,
 				13F072BA2E4B2D9200EF90EB /* TMDBService.swift in Sources */,
 				13E1EDE82ED9E66000087629 /* MainMenu.swift in Sources */,
@@ -898,7 +871,6 @@
 				13F072B82E4B2D9200EF90EB /* LevenshteinDistance.swift in Sources */,
 				13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */,
 				13E1EDD42ED9E65F00087629 /* mangaData.swift in Sources */,
-				1370E8BF2FE9BCEA00973BBC /* AniListModels.swift in Sources */,
 				13F072B32E4B2D9200EF90EB /* ServicesResultsSheet.swift in Sources */,
 				13F072A52E4B2D9200EF90EB /* HomeView.swift in Sources */,
 				13E1EDDC2ED9E65F00087629 /* JavaScriptCore.swift in Sources */,

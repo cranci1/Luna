@@ -36,7 +36,6 @@ struct MediaDetailView: View {
     @State private var showingAddToCollection = false
     @State private var selectedEpisodeForSearch: TMDBEpisode?
     @State private var romajiTitle: String?
-    @State private var anilistDetail: AniListMediaDetails?
     @State private var logoURL: String?
     @State private var moduleDetails: [MediaItem] = []
     @State private var moduleEpisodes: [EpisodeLink] = []
@@ -51,12 +50,12 @@ struct MediaDetailView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @AppStorage("useSolidBackgroundBehindHero") private var useSolidBackgroundBehindHero = false
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
-    
+
     init(searchResult: TMDBSearchResult) {
         self.searchResult = searchResult
         self.moduleContext = nil
     }
-    
+
     init(moduleItem: SearchItem, service: Service) {
         self.searchResult = TMDBSearchResult(
             id: abs(moduleItem.href.hashValue),
@@ -75,7 +74,7 @@ struct MediaDetailView: View {
         )
         self.moduleContext = ModuleDetailContext(item: moduleItem, service: service)
     }
-    
+
     private var headerHeight: CGFloat {
 #if os(tvOS)
         UIScreen.main.bounds.height * 0.8
@@ -83,8 +82,8 @@ struct MediaDetailView: View {
         550
 #endif
     }
-    
-    
+
+
     private var minHeaderHeight: CGFloat {
 #if os(tvOS)
         UIScreen.main.bounds.height * 0.8
@@ -92,22 +91,22 @@ struct MediaDetailView: View {
         400
 #endif
     }
-    
+
     private var isCompactLayout: Bool {
         return verticalSizeClass == .compact
     }
-    
+
     private var isModuleMode: Bool {
         moduleContext != nil
     }
-    
+
     private var isMovieContent: Bool {
         if isModuleMode {
             return moduleEpisodes.isEmpty
         }
         return searchResult.isMovie
     }
-    
+
     private var canPlayModule: Bool {
         if !isModuleMode {
             return !serviceManager.activeServices.isEmpty
@@ -127,7 +126,7 @@ struct MediaDetailView: View {
             let episodeNumber = moduleEpisodes[safeIndex].number
             return "Play Episode \(episodeNumber)"
         }
-        
+
         if searchResult.isMovie {
             return "Play"
         } else if let selectedEpisode = selectedEpisodeForSearch {
@@ -281,9 +280,7 @@ struct MediaDetailView: View {
                     if isModuleMode {
                         return moduleContext?.item.imageUrl
                     }
-                    if searchResult.isAniList {
-                        return searchResult.resolvedBackdropURL ?? searchResult.resolvedPosterURL
-                    }
+
                     if searchResult.isMovie {
                         return movieDetail?.fullBackdropURL ?? movieDetail?.fullPosterURL
                     } else {
@@ -313,8 +310,6 @@ struct MediaDetailView: View {
                 if isModuleMode {
                     moduleDetailsSection
                     episodesSection
-                } else if searchResult.isAniList {
-                    AniListDetailsSection(detail: anilistDetail)
                 } else if searchResult.isMovie {
                     MovieDetailsSection(movie: movieDetail)
                 } else {
@@ -490,7 +485,7 @@ struct MediaDetailView: View {
             )
         }
     }
-    
+
     @ViewBuilder
     private var moduleDetailsSection: some View {
         if let detail = moduleDetails.first {
@@ -528,6 +523,9 @@ struct MediaDetailView: View {
             searchInModuleService()
             return
         }
+
+        // This function will only be called when services are available
+        // since the button is disabled when no services are active
         
         if !searchResult.isMovie {
             if selectedEpisodeForSearch != nil {
@@ -546,14 +544,9 @@ struct MediaDetailView: View {
     private func loadMediaDetails() {
         isLoading = true
         errorMessage = nil
-        
+
         if isModuleMode {
             loadModuleDetails()
-            return
-        }
-        
-        if searchResult.isAniList {
-            loadAniListDetails()
             return
         }
         
@@ -604,17 +597,17 @@ struct MediaDetailView: View {
             }
         }
     }
-    
+
     private func loadModuleDetails() {
         guard let moduleContext else {
             errorMessage = "Missing module context"
             isLoading = false
             return
         }
-        
+
         let jsController = JSController()
         jsController.loadScript(moduleContext.service.jsScript)
-        
+
         jsController.fetchDetailsJS(url: moduleContext.item.href) { details, episodes in
             DispatchQueue.main.async {
                 self.moduleDetails = details
@@ -627,13 +620,13 @@ struct MediaDetailView: View {
             }
         }
     }
-    
+
     private func searchInModuleService() {
         guard let moduleContext else { return }
-        
+
         let jsController = JSController()
         jsController.loadScript(moduleContext.service.jsScript)
-        
+
         let targetHref: String
         if moduleEpisodes.isEmpty {
             targetHref = moduleContext.item.href
@@ -641,7 +634,7 @@ struct MediaDetailView: View {
             let safeIndex = min(max(selectedModuleEpisodeIndex, 0), moduleEpisodes.count - 1)
             targetHref = moduleEpisodes[safeIndex].href
         }
-        
+
         jsController.fetchStreamUrlJS(
             episodeUrl: targetHref,
             softsub: moduleContext.service.metadata.softsub ?? false,
@@ -653,56 +646,56 @@ struct MediaDetailView: View {
                     self.showingModuleStreamError = true
                     return
                 }
-                
+
                 let subtitle = streamResult.subtitles?.first
                 self.playStreamURL(stream.url, service: moduleContext.service, subtitle: subtitle, headers: stream.headers)
             }
         }
     }
-    
+
     private func extractPreferredStream(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
         if let source = sources?.first,
            let url = source["url"] as? String,
            !url.isEmpty {
             return (url, safeConvertToHeaders(source["headers"]))
         }
-        
+
         if let streamUrl = streams?.first,
            !streamUrl.isEmpty {
             return (streamUrl, nil)
         }
-        
+
         return nil
     }
-    
+
     private func playStreamURL(_ url: String, service: Service, subtitle: String?, headers: [String: String]?) {
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 300_000_000)
-            
+
             guard let streamURL = URL(string: url) else {
                 Logger.shared.log("Invalid stream URL: \(url)", type: "Error")
                 moduleStreamError = "Invalid stream URL. The source returned a malformed URL."
                 showingModuleStreamError = true
                 return
             }
-            
+
             let externalRaw = UserDefaults.standard.string(forKey: "externalPlayer") ?? ExternalPlayer.none.rawValue
             let external = ExternalPlayer(rawValue: externalRaw) ?? .none
             let schemeUrl = external.schemeURL(for: url)
-            
+
             if let scheme = schemeUrl, UIApplication.shared.canOpenURL(scheme) {
                 UIApplication.shared.open(scheme, options: [:], completionHandler: nil)
                 Logger.shared.log("Opening external player with scheme: \(scheme)", type: "General")
                 return
             }
-            
+
             let serviceURL = service.metadata.baseUrl
             var finalHeaders: [String: String] = [
                 "Origin": serviceURL,
                 "Referer": serviceURL,
                 "User-Agent": URLSession.randomUserAgent
             ]
-            
+
             if let custom = headers {
                 for (k, v) in custom {
                     finalHeaders[k] = v
@@ -711,10 +704,10 @@ struct MediaDetailView: View {
                     finalHeaders["User-Agent"] = URLSession.randomUserAgent
                 }
             }
-            
+
             let inAppRaw = UserDefaults.standard.string(forKey: "inAppPlayer") ?? "Normal"
             let inAppPlayer = (inAppRaw == "mpv") ? "mpv" : "Normal"
-            
+
             if inAppPlayer == "mpv" {
                 let preset = PlayerPreset.presets.first
                 let subtitleArray: [String]? = subtitle.map { [$0] }
@@ -732,7 +725,7 @@ struct MediaDetailView: View {
                     }
                 }
                 pvc.modalPresentationStyle = .fullScreen
-                
+
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
                     rootVC.topmostViewController().present(pvc, animated: true, completion: nil)
@@ -741,7 +734,7 @@ struct MediaDetailView: View {
                 }
                 return
             }
-            
+
             let playerVC = NormalPlayer()
             let asset = AVURLAsset(url: streamURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
             let item = AVPlayerItem(asset: asset)
@@ -754,7 +747,7 @@ struct MediaDetailView: View {
                 }
             }
             playerVC.modalPresentationStyle = .fullScreen
-            
+
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let rootVC = windowScene.windows.first?.rootViewController {
                 rootVC.topmostViewController().present(playerVC, animated: true) {
@@ -765,37 +758,15 @@ struct MediaDetailView: View {
             }
         }
     }
-    
-    // MARK: - AniList loading
-    
-    private func loadAniListDetails() {
-        Task {
-            do {
-                let detail = try await AniListService.shared.fetchAnimeDetails(animeID: searchResult.id)
-                await MainActor.run {
-                    self.anilistDetail = detail
-                    self.synopsis = (detail.description ?? "")
-                        .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    self.isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isLoading = false
-                }
-            }
-        }
-    }
-    
+
     private func safeConvertToHeaders(_ value: Any?) -> [String: String]? {
         guard let value = value else { return nil }
         if value is NSNull { return nil }
-        
+
         if let headers = value as? [String: String] {
             return headers
         }
-        
+
         if let headersAny = value as? [String: Any] {
             var safeHeaders: [String: String] = [:]
             for (key, val) in headersAny {
@@ -809,7 +780,7 @@ struct MediaDetailView: View {
             }
             return safeHeaders.isEmpty ? nil : safeHeaders
         }
-        
+
         if let headersAny = value as? [AnyHashable: Any] {
             var safeHeaders: [String: String] = [:]
             for (key, val) in headersAny {
@@ -824,87 +795,7 @@ struct MediaDetailView: View {
             }
             return safeHeaders.isEmpty ? nil : safeHeaders
         }
-        
+
         return nil
-    }
-}
-
-// MARK: - AniList Details Section
-
-struct AniListDetailsSection: View {
-    let detail: AniListMediaDetails?
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let detail = detail {
-                Text("Details")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .foregroundColor(.white)
-                
-                VStack(spacing: 12) {
-                    if let episodes = detail.episodes, episodes > 0 {
-                        DetailRow(title: "Episodes", value: "\(episodes)")
-                    }
-                    
-                    if let duration = detail.duration, duration > 0 {
-                        DetailRow(title: "Episode Length", value: "\(duration) min")
-                    }
-                    
-                    if let genres = detail.genres, !genres.isEmpty {
-                        DetailRow(title: "Genres", value: genres.joined(separator: ", "))
-                    }
-                    
-                    if let season = detail.season, let formattedSeason = formatSeason(season) {
-                        DetailRow(title: "Season", value: formattedSeason)
-                    }
-                    
-                    if let status = detail.status, let formattedStatus = formatStatus(status) {
-                        DetailRow(title: "Status", value: formattedStatus)
-                    }
-                    
-                    if let siteUrl = detail.siteUrl {
-                        HStack {
-                            Text("AniList")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Link("View on AniList", destination: URL(string: siteUrl)!)
-                                .font(.subheadline)
-                                .foregroundColor(.accentColor)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 16)
-                .applyLiquidGlassBackground(cornerRadius: 12)
-                .padding(.horizontal)
-            }
-        }
-    }
-    
-    private func formatSeason(_ season: String) -> String? {
-        switch season.uppercased() {
-        case "WINTER": return "Winter"
-        case "SPRING": return "Spring"
-        case "SUMMER": return "Summer"
-        case "FALL": return "Fall"
-        default: return nil
-        }
-    }
-    
-    private func formatStatus(_ status: String) -> String? {
-        switch status.uppercased() {
-        case "FINISHED": return "Finished"
-        case "RELEASING": return "Currently Airing"
-        case "NOT_YET_RELEASED": return "Not Yet Released"
-        case "CANCELLED": return "Cancelled"
-        case "HIATUS": return "On Hiatus"
-        default: return nil
-        }
     }
 }
