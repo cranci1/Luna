@@ -138,12 +138,7 @@ struct SearchView: View {
                     .confirmationDialog("Select a Service", isPresented: $showServicePicker, titleVisibility: .visible) {
                         ForEach(serviceManager.services) { service in
                             Button(service.name) {
-                                selectedService = service
-                                jsController.loadScript(service.script)
-                                serviceSearchResults = []
-                                if !searchText.isEmpty {
-                                    performSearch()
-                                }
+                                selectService(service)
                             }
                         }
                         Button("Cancel", role: .cancel) {}
@@ -440,6 +435,16 @@ struct SearchView: View {
         }
     }
     
+    // MARK: - Service Selection
+    private func selectService(_ service: Service) {
+        selectedService = service
+        jsController.loadScript(service.script)
+        serviceSearchResults = []
+        if !searchText.isEmpty {
+            performSearch()
+        }
+    }
+    
     // MARK: - Search History Management
     
     private func loadSearchHistory() {
@@ -574,6 +579,7 @@ struct SearchBarLuna: View {
         }
     }
 }
+
 struct ServiceSearchResultCard: View {
     let item: SearchItem
     
