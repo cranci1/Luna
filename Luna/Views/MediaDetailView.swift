@@ -46,6 +46,17 @@ struct MediaDetailView: View {
     @State private var showingModuleStreamError = false
     @State private var isDirectStreaming = false
     
+    @State private var streamOptions: [StreamOption] = []
+    @State private var showingStreamMenu = false
+    @State private var pendingSubtitles: [String]?
+    @State private var pendingService: Service?
+    @State private var pendingStreamURL: String?
+    @State private var pendingHeaders: [String: String]?
+    @State private var pendingDefaultSubtitle: String?
+    @State private var subtitleOptions: [(title: String, url: String)] = []
+    @State private var showingSubtitlePicker = false
+    @State private var streamFetchProgress = ""
+    
     @StateObject private var serviceManager = ServiceManager.shared
     @ObservedObject private var libraryManager = LibraryManager.shared
     
@@ -238,6 +249,47 @@ struct MediaDetailView: View {
             }
         } message: {
             Text(moduleStreamError ?? "Failed to start playback")
+        }
+        .adaptiveConfirmationDialog("Select Server", isPresented: $showingStreamMenu, titleVisibility: .visible) {
+            ForEach(streamOptions) { option in
+                Button(option.name) {
+                    if let service = pendingService {
+                        resolveSubtitleSelection(
+                            subtitles: pendingSubtitles,
+                            defaultSubtitle: option.subtitle,
+                            service: service,
+                            streamURL: option.url,
+                            headers: option.headers
+                        )
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Choose a server to stream from")
+        }
+        .adaptiveConfirmationDialog("Select Subtitle", isPresented: $showingSubtitlePicker, titleVisibility: .visible) {
+            ForEach(subtitleOptions, id: \.url) { option in
+                Button(option.title) {
+                    showingSubtitlePicker = false
+                    if let service = pendingService, let streamURL = pendingStreamURL {
+                        playStreamURL(streamURL, service: service, subtitle: option.url, headers: pendingHeaders)
+                    }
+                }
+            }
+            Button("No Subtitles") {
+                showingSubtitlePicker = false
+                if let service = pendingService, let streamURL = pendingStreamURL {
+                    playStreamURL(streamURL, service: service, subtitle: nil, headers: pendingHeaders)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                subtitleOptions = []
+                pendingStreamURL = nil
+                pendingHeaders = nil
+            }
+        } message: {
+            Text("Choose a subtitle track")
         }
     }
     
@@ -603,16 +655,12 @@ struct MediaDetailView: View {
                 ) { streamResult in
                     Task { @MainActor in
                         self.isDirectStreaming = false
-                        guard let stream = self.extractPreferredStream(
+                        self.processStreamResult(
                             streams: streamResult.streams,
-                            sources: streamResult.sources
-                        ) else {
-                            self.moduleStreamError = "No valid stream returned by \(service.metadata.sourceName)"
-                            self.showingModuleStreamError = true
-                            return
-                        }
-                        let subtitle = streamResult.subtitles?.first
-                        self.playStreamURL(stream.url, service: service, subtitle: subtitle, headers: stream.headers)
+                            subtitles: streamResult.subtitles,
+                            sources: streamResult.sources,
+                            service: service
+                        )
                     }
                 }
             }
@@ -756,15 +804,169 @@ struct MediaDetailView: View {
         ) { streamResult in
             Task { @MainActor in
                 self.isDirectStreaming = false
-                guard let stream = self.extractPreferredStream(streams: streamResult.streams, sources: streamResult.sources) else {
-                    self.moduleStreamError = "No valid stream returned by this service"
-                    self.showingModuleStreamError = true
-                    return
-                }
-                let subtitle = streamResult.subtitles?.first
-                self.playStreamURL(stream.url, service: service, subtitle: subtitle, headers: stream.headers)
+                self.processStreamResult(
+                    streams: streamResult.streams,
+                    subtitles: streamResult.subtitles,
+                    sources: streamResult.sources,
+                    service: service
+                )
             }
         }
+    }
+    
+    // MARK: - Single module stream proces
+    
+    @MainActor
+    private func processStreamResult(streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?, service: Service) {
+        streamFetchProgress = "Processing stream data..."
+        let availableStreams = parseStreamOptions(streams: streams, sources: sources)
+        
+        if availableStreams.count > 1 {
+            streamOptions = availableStreams
+            pendingSubtitles = subtitles
+            pendingService = service
+            isDirectStreaming = false
+            showingStreamMenu = true
+            return
+        }
+        
+        if let firstStream = availableStreams.first {
+            resolveSubtitleSelection(
+                subtitles: subtitles,
+                defaultSubtitle: firstStream.subtitle,
+                service: service,
+                streamURL: firstStream.url,
+                headers: firstStream.headers
+            )
+        } else if let single = extractSingleStreamURL(streams: streams, sources: sources) {
+            resolveSubtitleSelection(
+                subtitles: subtitles,
+                defaultSubtitle: nil,
+                service: service,
+                streamURL: single.url,
+                headers: single.headers
+            )
+        } else {
+            isDirectStreaming = false
+            moduleStreamError = "Failed to get a valid stream URL. The source may be temporarily unavailable."
+            showingModuleStreamError = true
+        }
+    }
+    
+    private func parseStreamOptions(streams: [String]?, sources: [[String: Any]]?) -> [StreamOption] {
+        var availableStreams: [StreamOption] = []
+        
+        if let sources = sources, !sources.isEmpty {
+            for (idx, source) in sources.enumerated() {
+                guard let rawUrl = source["streamUrl"] as? String ?? source["url"] as? String, !rawUrl.isEmpty else { continue }
+                let title = (source["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+                let headers = safeConvertToHeaders(source["headers"])
+                let subtitle = source["subtitle"] as? String
+                availableStreams.append(StreamOption(
+                    name: title?.isEmpty == false ? title! : "Stream \(idx + 1)",
+                    url: rawUrl,
+                    headers: headers,
+                    subtitle: subtitle
+                ))
+            }
+        } else if let streams = streams, streams.count > 1 {
+            availableStreams = parseStreamStrings(streams)
+        }
+        
+        return availableStreams
+    }
+    
+    private func parseStreamStrings(_ streams: [String]) -> [StreamOption] {
+        var options: [StreamOption] = []
+        var index = 0
+        var unnamedCount = 1
+        
+        while index < streams.count {
+            let entry = streams[index]
+            if isStreamURL(entry) {
+                options.append(StreamOption(name: "Stream \(unnamedCount)", url: entry, headers: nil, subtitle: nil))
+                unnamedCount += 1
+                index += 1
+            } else {
+                let nextIndex = index + 1
+                if nextIndex < streams.count, isStreamURL(streams[nextIndex]) {
+                    options.append(StreamOption(name: entry, url: streams[nextIndex], headers: nil, subtitle: nil))
+                    index += 2
+                } else {
+                    index += 1
+                }
+            }
+        }
+        return options
+    }
+    
+    private func extractSingleStreamURL(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
+        if let sources = sources, let first = sources.first {
+            if let url = first["streamUrl"] as? String { return (url, safeConvertToHeaders(first["headers"])) }
+            if let url = first["url"] as? String { return (url, safeConvertToHeaders(first["headers"])) }
+        } else if let streams = streams, !streams.isEmpty {
+            let candidates = streams.filter { $0.hasPrefix("http") }
+            if let url = candidates.first { return (url, nil) }
+            if let first = streams.first { return (first, nil) }
+        }
+        return nil
+    }
+    
+    @MainActor
+    private func resolveSubtitleSelection(subtitles: [String]?, defaultSubtitle: String?, service: Service, streamURL: String, headers: [String: String]?) {
+        guard let subtitles = subtitles, !subtitles.isEmpty else {
+            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
+            return
+        }
+        
+        let options = parseSubtitleOptions(from: subtitles)
+        guard !options.isEmpty else {
+            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
+            return
+        }
+        
+        if options.count == 1 {
+            playStreamURL(streamURL, service: service, subtitle: options[0].url, headers: headers)
+            return
+        }
+        
+        subtitleOptions = options
+        pendingStreamURL = streamURL
+        pendingHeaders = headers
+        pendingService = service
+        pendingDefaultSubtitle = defaultSubtitle
+        isDirectStreaming = false
+        showingSubtitlePicker = true
+    }
+    
+    private func parseSubtitleOptions(from subtitles: [String]) -> [(title: String, url: String)] {
+        var options: [(String, String)] = []
+        var index = 0
+        var fallbackIndex = 1
+        
+        while index < subtitles.count {
+            let entry = subtitles[index]
+            if isStreamURL(entry) {
+                options.append(("Subtitle \(fallbackIndex)", entry))
+                fallbackIndex += 1
+                index += 1
+            } else {
+                let nextIndex = index + 1
+                if nextIndex < subtitles.count, isStreamURL(subtitles[nextIndex]) {
+                    options.append((entry, subtitles[nextIndex]))
+                    fallbackIndex += 1
+                    index += 2
+                } else {
+                    index += 1
+                }
+            }
+        }
+        return options
+    }
+    
+    private func isStreamURL(_ value: String) -> Bool {
+        let lowercased = value.lowercased()
+        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
     }
     
     private func extractPreferredStream(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
