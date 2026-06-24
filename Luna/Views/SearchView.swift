@@ -135,15 +135,11 @@ struct SearchView: View {
                         .cornerRadius(10)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .confirmationDialog("Select a Service", isPresented: $showServicePicker, titleVisibility: .visible) {
-                        ForEach(serviceManager.services) { service in
-                            Button(service.name) {
-                                selectService(service)
-                            }
-                        }
-                        Button("Cancel", role: .cancel) {}
-                    }
                     .transition(.move(edge: .top).combined(with: .opacity))
+                    
+                    if showServicePicker {
+                        servicePickerList
+                    }
                 }
                 
                 HStack(spacing: 8) {
@@ -435,10 +431,55 @@ struct SearchView: View {
         }
     }
     
+    // MARK: - Service Picker
+    @ViewBuilder
+    private var servicePickerList: some View {
+        let services = serviceManager.services
+        let selectedID = selectedService?.id
+        VStack(spacing: 0) {
+            ForEach(0..<services.count, id: \.self) { index in
+                servicePickerRow(
+                    service: services[index],
+                    isSelected: services[index].id == selectedID,
+                    isLast: index == services.count - 1
+                )
+            }
+        }
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    @ViewBuilder
+    private func servicePickerRow(service: Service, isSelected: Bool, isLast: Bool) -> some View {
+        Button(action: {
+            showServicePicker = false
+            selectService(service)
+        }) {
+            HStack {
+                Image(systemName: "puzzlepiece.extension")
+                    .foregroundColor(.accentColor)
+                Text(service.metadata.sourceName)
+                    .foregroundColor(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.accentColor)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(PlainButtonStyle())
+        if !isLast {
+            Divider().padding(.leading, 12)
+        }
+    }
+
     // MARK: - Service Selection
     private func selectService(_ service: Service) {
         selectedService = service
-        jsController.loadScript(service.script)
+        jsController.loadScript(service.jsScript)
         serviceSearchResults = []
         if !searchText.isEmpty {
             performSearch()
