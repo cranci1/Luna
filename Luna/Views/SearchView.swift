@@ -23,9 +23,20 @@ struct SearchView: View {
     @State private var serviceDownloadError: String?
     @State private var searchHistory: [String] = []
     
+    @State private var searchMode: SearchMode = .tmdb
+    @State private var selectedService: Service? = nil
+    @State private var serviceSearchResults: [SearchItem] = []
+    @State private var showServicePicker = false
+    
     @StateObject private var tmdbService = TMDBService.shared
     @StateObject private var contentFilter = TMDBContentFilter.shared
+    @StateObject private var serviceManager = ServiceManager.shared
+    @StateObject private var jsController = JSController.shared
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    
+    enum SearchMode {
+        case tmdb, service
+    }
     
     enum SearchFilter: String, CaseIterable {
         case all = "All"
@@ -53,6 +64,10 @@ struct SearchView: View {
         case .tvShows:
             return "tv.fill"
         }
+    }
+    
+    var hasResults: Bool {
+        searchMode == .tmdb ? !searchResults.isEmpty : !serviceSearchResults.isEmpty
     }
     
     private var columnsCount: Int {
@@ -88,6 +103,52 @@ struct SearchView: View {
     private var searchContent: some View {
         ScrollView {
             VStack(spacing: 12) {
+                Picker("Search Mode", selection: $searchMode) {
+                    Text("TMDB").tag(SearchMode.tmdb)
+                    Text("Service").tag(SearchMode.service)
+                }
+                .pickerStyle(.segmented)
+                .onChangeComp(of: searchMode) { _, _ in
+                    searchText = ""
+                    searchResults = []
+                    serviceSearchResults = []
+                    errorMessage = nil
+                }
+                
+                if searchMode == .service {
+                    Button(action: { showServicePicker = true }) {
+                        HStack {
+                            Image(systemName: "puzzlepiece.extension")
+                                .foregroundColor(.accentColor)
+                            Text(selectedService?.name ?? "Select a Service")
+                                .foregroundColor(selectedService == nil ? .secondary : .primary)
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .confirmationDialog("Select a Service", isPresented: $showServicePicker, titleVisibility: .visible) {
+                        ForEach(serviceManager.services) { service in
+                            Button(service.name) {
+                                selectedService = service
+                                jsController.loadScript(service.script)
+                                serviceSearchResults = []
+                                if !searchText.isEmpty {
+                                    performSearch()
+                                }
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                
                 HStack(spacing: 8) {
                     SearchBarLuna(text: $searchText) {
                         performSearch()
@@ -95,11 +156,12 @@ struct SearchView: View {
                     .onChangeComp(of: searchText) { _, newValue in
                         if newValue.isEmpty {
                             searchResults = []
+                            serviceSearchResults = []
                             errorMessage = nil
                         }
                     }
                     
-                    if !searchResults.isEmpty {
+                    if searchMode == .tmdb && !searchResults.isEmpty {
                         Menu {
                             ForEach(SearchFilter.allCases, id: \.self) { filter in
                                 Button(action: {
@@ -121,9 +183,10 @@ struct SearchView: View {
                         .transition(.scale.combined(with: .opacity))
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: searchResults.isEmpty)
+                .animation(.easeInOut(duration: 0.2), value: hasResults)
             }
             .padding()
+            .animation(.easeInOut(duration: 0.2), value: searchMode)
             
             if isLoading {
                 VStack {
@@ -161,17 +224,38 @@ struct SearchView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if searchText.isEmpty {
-                if searchHistory.isEmpty {
+                if searchMode == .service && selectedService == nil {
+                    VStack(spacing: 12) {
+                        Image(systemName: "puzzlepiece.extension")
+                            .imageScale(.large)
+                            .font(.system(size: 60))
+                            .foregroundColor(.secondary)
+                        
+                        Text("Select a Service")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Choose a service above to search directly through it")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 40)
+                } else if searchHistory.isEmpty {
                     VStack {
                         Image(systemName: "magnifyingglass.circle")
                             .imageScale(.large)
                             .font(.system(size: 60))
                             .foregroundColor(.secondary)
                         
-                        Text(contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows")
-                            .font(.title2)
-                            .foregroundColor(.secondary)
-                            .padding()
+                        Text(searchMode == .service
+                             ? "Search via \(selectedService?.name ?? "Service")"
+                             : (contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows"))
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                        .padding()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -234,6 +318,38 @@ struct SearchView: View {
                         
                         Spacer()
                     }
+                }
+            } else if searchMode == .service {
+                if serviceSearchResults.isEmpty {
+                    VStack {
+                        Image(systemName: "questionmark.circle")
+                            .imageScale(.large)
+                            .font(.system(size: 60))
+                            .foregroundColor(.secondary)
+                        
+                        Text("No results found")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                            .padding()
+                        
+                        Text("Try searching for something else")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let service = selectedService {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columnsCount), spacing: 16) {
+                        ForEach(serviceSearchResults) { item in
+                            NavigationLink(destination: MediaDetailView(moduleItem: item, service: service)) {
+                                ServiceSearchResultCard(item: item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top)
                 }
             } else if filteredResults.isEmpty && !searchResults.isEmpty {
                 VStack {
@@ -362,10 +478,17 @@ struct SearchView: View {
     
     
     private func performSearch() {
-        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return
-        }
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
         
+        if searchMode == .service {
+            performServiceSearch()
+        } else {
+            performTMDBSearch()
+        }
+    }
+    
+    private func performTMDBSearch() {
         isLoading = true
         errorMessage = nil
         
@@ -386,6 +509,27 @@ struct SearchView: View {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
                 }
+            }
+        }
+    }
+    
+    private func performServiceSearch() {
+        guard let service = selectedService else {
+            errorMessage = "Please select a service first."
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        serviceSearchResults = []
+        
+        jsController.fetchJsSearchResults(keyword: searchText, module: service) { items in
+            self.isLoading = false
+            if items.isEmpty {
+                self.serviceSearchResults = []
+            } else {
+                self.serviceSearchResults = items
+                self.addToSearchHistory(self.searchText)
             }
         }
     }
@@ -424,6 +568,25 @@ struct SearchBarLuna: View {
                         }
                     }
                 )
+        }
+    }
+}
+struct ServiceSearchResultCard: View {
+    let item: SearchItem
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            KFImage(URL(string: item.imageUrl))
+                .resizable()
+                .aspectRatio(2/3, contentMode: .fill)
+                .cornerRadius(10)
+                .clipped()
+            
+            Text(item.title)
+                .font(.caption)
+                .foregroundColor(.primary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
         }
     }
 }
