@@ -116,11 +116,13 @@ struct SearchView: View {
                 }
                 
                 if searchMode == .service {
+                    let serviceTitle = selectedService?.metadata.sourceName ?? "Select a Service"
+                    
                     Button(action: { showServicePicker = true }) {
                         HStack {
                             Image(systemName: "puzzlepiece.extension")
                                 .foregroundColor(.accentColor)
-                            Text(selectedService?.metadata.sourceName ?? "Select a Service")
+                            Text(serviceTitle)
                                 .foregroundColor(selectedService == nil ? .secondary : .primary)
                             Spacer()
                             Image(systemName: "chevron.up.chevron.down")
@@ -244,18 +246,19 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.top, 40)
                 } else if searchHistory.isEmpty {
+                    let servicePrompt = "Search via \(selectedService?.metadata.sourceName ?? "Service")"
+                    let defaultPrompt = contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows"
+                    
                     VStack {
                         Image(systemName: "magnifyingglass.circle")
                             .imageScale(.large)
                             .font(.system(size: 60))
                             .foregroundColor(.secondary)
                         
-                        Text(searchMode == .service
-                             ? "Search via \(selectedService?.metadata.sourceName ?? "Service")"
-                             : (contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows"))
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                        .padding()
+                        Text(searchMode == .service ? servicePrompt : defaultPrompt)
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                            .padding()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {

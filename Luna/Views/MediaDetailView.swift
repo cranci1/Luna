@@ -607,7 +607,7 @@ struct MediaDetailView: View {
                             streams: streamResult.streams,
                             sources: streamResult.sources
                         ) else {
-                            self.moduleStreamError = "No valid stream returned by \(service.sourceName)"
+                            self.moduleStreamError = "No valid stream returned by \(service.metadata.sourceName)"
                             self.showingModuleStreamError = true
                             return
                         }
