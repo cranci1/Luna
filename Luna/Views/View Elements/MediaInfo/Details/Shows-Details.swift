@@ -20,6 +20,8 @@ struct TVShowSeasonsSection: View {
     @State private var showingSearchResults = false
     @State private var showingNoServicesAlert = false
     @State private var romajiTitle: String?
+    @State private var navigatingToDetailView = false
+    @State private var episodeForDetailView: TMDBEpisode?
     
     @StateObject private var serviceManager = ServiceManager.shared
     @AppStorage("horizontalEpisodeList") private var horizontalEpisodeList: Bool = false
@@ -131,6 +133,35 @@ struct TVShowSeasonsSection: View {
                 tmdbId: tvShow?.id ?? 0
             )
         }
+        .background(
+            Group {
+                if let tvShow = tvShow, let episode = episodeForDetailView {
+                    NavigationLink(
+                        destination: MediaDetailView(
+                            searchResult: TMDBSearchResult(
+                                id: tvShow.id,
+                                mediaType: "tv",
+                                title: tvShow.name,
+                                name: tvShow.name,
+                                overview: tvShow.overview,
+                                posterPath: tvShow.posterPath,
+                                backdropPath: tvShow.backdropPath,
+                                releaseDate: nil,
+                                firstAirDate: tvShow.firstAirDate,
+                                voteAverage: tvShow.voteAverage,
+                                popularity: 0,
+                                adult: nil,
+                                genreIds: nil
+                            ),
+                            preselectedEpisode: episode
+                        ),
+                        isActive: $navigatingToDetailView
+                    ) {
+                        EmptyView()
+                    }
+                }
+            }
+        )
         .alert("No Active Services", isPresented: $showingNoServicesAlert) {
             Button("OK") { }
         } message: {
@@ -305,10 +336,6 @@ struct TVShowSeasonsSection: View {
     
     private func episodeTapAction(episode: TMDBEpisode) {
         selectedEpisodeForSearch = episode
-        searchInServicesForEpisode(episode: episode)
-    }
-    
-    private func searchInServicesForEpisode(episode: TMDBEpisode) {
         guard (tvShow?.name) != nil else { return }
         
         if serviceManager.activeServices.isEmpty {
@@ -316,7 +343,12 @@ struct TVShowSeasonsSection: View {
             return
         }
         
-        showingSearchResults = true
+        episodeForDetailView = episode
+        navigatingToDetailView = true
+    }
+    
+    private func searchInServicesForEpisode(episode: TMDBEpisode) {
+        episodeTapAction(episode: episode)
     }
     
     private func markAsWatched(episode: TMDBEpisode) {

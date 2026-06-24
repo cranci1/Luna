@@ -11,7 +11,7 @@ extension View {
     @ViewBuilder
     func applyLiquidGlassBackground(cornerRadius: CGFloat, fallbackFill: Color = Color.black.opacity(0.2), fallbackMaterial: Material = .ultraThinMaterial, glassTint: Color? = nil) -> some View {
 #if compiler(>=6.0)
-        if #available(iOS 26.0, macOS 15.0, tvOS 20.0, *) {
+        if #available(iOS 26.0, macOS 15.0, tvOS 26.0, *) {
             self
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 .overlay(alignment: .center) {
