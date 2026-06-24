@@ -576,7 +576,7 @@ struct MediaDetailView: View {
         jsController.fetchJsSearchResults(keyword: title, module: service) { [self] items in
             guard let firstItem = items.first else {
                 DispatchQueue.main.async {
-                    self.moduleStreamError = "No results found in \(service.sourceName) for \"\(title)\""
+                    self.moduleStreamError = "No results found in \(service.metadata.sourceName) for \"\(title)\""
                     self.showingModuleStreamError = true
                     self.isDirectStreaming = false
                 }

@@ -66,6 +66,43 @@ final class ServiceManager: ObservableObject {
     }
     
     // MARK: - Download single service from JSON URL
+    func downloadService(from jsonURL: String) async {
+        await updateProgress(0.0, "Starting download...")
+        await pause()
+        
+        do {
+            await updateProgress(0.2, "Downloading metadata...")
+            let metadata = try await downloadAndParseMetadata(from: jsonURL)
+            await pause()
+            
+            await updateProgress(0.5, "Downloading JavaScript...")
+            let jsContent = try await downloadJavaScript(from: metadata.scriptUrl)
+            await pause()
+            
+            await updateProgress(0.8, "Saving service...")
+            let serviceId = generateServiceUUID(from: metadata)
+            ServiceStore.shared.storeService(
+                id: serviceId,
+                url: jsonURL,
+                jsonMetadata: String(data: try jsonEncoder.encode(metadata), encoding: .utf8) ?? "",
+                jsScript: jsContent,
+                isActive: false
+            )
+            await pause()
+            
+            loadServicesFromCloud()
+            await finalizeDownload(with: "Service downloaded successfully!")
+        } catch {
+            await resetDownloadState()
+            Logger.shared.log("Failed to download service: \(error.localizedDescription)", type: "ServiceManager")
+        }
+    }
+    
+    func handlePotentialServiceURL(_ text: String) async -> Bool {
+        guard isValidJSONURL(text) else { return false }
+        await downloadService(from: text)
+        return true
+    }
     
     func removeService(_ service: Service) {
         if let entity = ServiceStore.shared.getServices().first(where: { $0.id == service.id }) {

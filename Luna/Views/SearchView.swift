@@ -120,7 +120,7 @@ struct SearchView: View {
                         HStack {
                             Image(systemName: "puzzlepiece.extension")
                                 .foregroundColor(.accentColor)
-                            Text(selectedService?.sourceName ?? "Select a Service")
+                            Text(selectedService?.metadata.sourceName ?? "Select a Service")
                                 .foregroundColor(selectedService == nil ? .secondary : .primary)
                             Spacer()
                             Image(systemName: "chevron.up.chevron.down")
@@ -251,7 +251,7 @@ struct SearchView: View {
                             .foregroundColor(.secondary)
                         
                         Text(searchMode == .service
-                             ? "Search via \(selectedService?.sourceName ?? "Service")"
+                             ? "Search via \(selectedService?.metadata.sourceName ?? "Service")"
                              : (contentFilter.animeOnlyMode ? "Search Anime" : "Search Movies & TV Shows"))
                         .font(.title2)
                         .foregroundColor(.secondary)
