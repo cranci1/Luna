@@ -45,6 +45,7 @@ struct MediaDetailView: View {
     @State private var moduleStreamError: String?
     @State private var showingModuleStreamError = false
     @State private var isDirectStreaming = false
+    @State private var activeJSController: JSController?
     
     @State private var streamOptions: [StreamOption] = []
     @State private var showingStreamMenu = false
@@ -55,7 +56,6 @@ struct MediaDetailView: View {
     @State private var pendingDefaultSubtitle: String?
     @State private var subtitleOptions: [(title: String, url: String)] = []
     @State private var showingSubtitlePicker = false
-    @State private var streamFetchProgress = ""
     
     @StateObject private var serviceManager = ServiceManager.shared
     @ObservedObject private var libraryManager = LibraryManager.shared
@@ -272,21 +272,19 @@ struct MediaDetailView: View {
             ForEach(subtitleOptions, id: \.url) { option in
                 Button(option.title) {
                     showingSubtitlePicker = false
-                    if let service = pendingService, let streamURL = pendingStreamURL {
-                        playStreamURL(streamURL, service: service, subtitle: option.url, headers: pendingHeaders)
+                    if let service = pendingService, let url = pendingStreamURL {
+                        playStreamURL(url, service: service, subtitle: option.url, headers: pendingHeaders)
                     }
                 }
             }
             Button("No Subtitles") {
                 showingSubtitlePicker = false
-                if let service = pendingService, let streamURL = pendingStreamURL {
-                    playStreamURL(streamURL, service: service, subtitle: nil, headers: pendingHeaders)
+                if let service = pendingService, let url = pendingStreamURL {
+                    playStreamURL(url, service: service, subtitle: nil, headers: pendingHeaders)
                 }
             }
             Button("Cancel", role: .cancel) {
-                subtitleOptions = []
-                pendingStreamURL = nil
-                pendingHeaders = nil
+                subtitleOptions = []; pendingStreamURL = nil; pendingHeaders = nil
             }
         } message: {
             Text("Choose a subtitle track")
@@ -624,6 +622,7 @@ struct MediaDetailView: View {
         
         let jsController = JSController()
         jsController.loadScript(service.jsScript)
+        activeJSController = jsController
         
         jsController.fetchJsSearchResults(keyword: title, module: service) { [self] items in
             guard let firstItem = items.first else {
@@ -640,9 +639,7 @@ struct MediaDetailView: View {
                 if isMovie || episodes.isEmpty {
                     targetHref = firstItem.href
                 } else if let episode = episode {
-                    let match = episodes.first {
-                        $0.number == episode.episodeNumber
-                    } ?? episodes.first
+                    let match = episodes.first { $0.number == episode.episodeNumber } ?? episodes.first
                     targetHref = match?.href ?? firstItem.href
                 } else {
                     targetHref = episodes.first?.href ?? firstItem.href
@@ -770,8 +767,10 @@ struct MediaDetailView: View {
     private func searchInModuleService() {
         guard let moduleContext else { return }
         
+        isDirectStreaming = true
         let jsController = JSController()
         jsController.loadScript(moduleContext.service.jsScript)
+        activeJSController = jsController
         
         if !moduleEpisodes.isEmpty {
             let safeIndex = min(max(selectedModuleEpisodeIndex, 0), moduleEpisodes.count - 1)
@@ -780,8 +779,7 @@ struct MediaDetailView: View {
             return
         }
         
-        isDirectStreaming = true
-        jsController.fetchDetailsJS(url: moduleContext.item.href) { [self] details, episodes in
+        jsController.fetchDetailsJS(url: moduleContext.item.href) { details, episodes in
             DispatchQueue.main.async {
                 let targetHref: String
                 if episodes.isEmpty {
@@ -818,96 +816,60 @@ struct MediaDetailView: View {
     
     @MainActor
     private func processStreamResult(streams: [String]?, subtitles: [String]?, sources: [[String: Any]]?, service: Service) {
-        streamFetchProgress = "Processing stream data..."
         let availableStreams = parseStreamOptions(streams: streams, sources: sources)
         
         if availableStreams.count > 1 {
             streamOptions = availableStreams
             pendingSubtitles = subtitles
             pendingService = service
-            isDirectStreaming = false
             showingStreamMenu = true
             return
         }
         
-        if let firstStream = availableStreams.first {
-            resolveSubtitleSelection(
-                subtitles: subtitles,
-                defaultSubtitle: firstStream.subtitle,
-                service: service,
-                streamURL: firstStream.url,
-                headers: firstStream.headers
-            )
+        if let first = availableStreams.first {
+            resolveSubtitleSelection(subtitles: subtitles, defaultSubtitle: first.subtitle, service: service, streamURL: first.url, headers: first.headers)
         } else if let single = extractSingleStreamURL(streams: streams, sources: sources) {
-            resolveSubtitleSelection(
-                subtitles: subtitles,
-                defaultSubtitle: nil,
-                service: service,
-                streamURL: single.url,
-                headers: single.headers
-            )
+            resolveSubtitleSelection(subtitles: subtitles, defaultSubtitle: nil, service: service, streamURL: single.url, headers: single.headers)
         } else {
-            isDirectStreaming = false
-            moduleStreamError = "Failed to get a valid stream URL. The source may be temporarily unavailable."
+            moduleStreamError = "No valid stream URL returned. The source may be temporarily unavailable."
             showingModuleStreamError = true
         }
     }
     
     private func parseStreamOptions(streams: [String]?, sources: [[String: Any]]?) -> [StreamOption] {
-        var availableStreams: [StreamOption] = []
-        
+        var result: [StreamOption] = []
         if let sources = sources, !sources.isEmpty {
             for (idx, source) in sources.enumerated() {
                 guard let rawUrl = source["streamUrl"] as? String ?? source["url"] as? String, !rawUrl.isEmpty else { continue }
                 let title = (source["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                let headers = safeConvertToHeaders(source["headers"])
-                let subtitle = source["subtitle"] as? String
-                availableStreams.append(StreamOption(
+                result.append(StreamOption(
                     name: title?.isEmpty == false ? title! : "Stream \(idx + 1)",
                     url: rawUrl,
-                    headers: headers,
-                    subtitle: subtitle
+                    headers: safeConvertToHeaders(source["headers"]),
+                    subtitle: source["subtitle"] as? String
                 ))
             }
         } else if let streams = streams, streams.count > 1 {
-            availableStreams = parseStreamStrings(streams)
-        }
-        
-        return availableStreams
-    }
-    
-    private func parseStreamStrings(_ streams: [String]) -> [StreamOption] {
-        var options: [StreamOption] = []
-        var index = 0
-        var unnamedCount = 1
-        
-        while index < streams.count {
-            let entry = streams[index]
-            if isStreamURL(entry) {
-                options.append(StreamOption(name: "Stream \(unnamedCount)", url: entry, headers: nil, subtitle: nil))
-                unnamedCount += 1
-                index += 1
-            } else {
-                let nextIndex = index + 1
-                if nextIndex < streams.count, isStreamURL(streams[nextIndex]) {
-                    options.append(StreamOption(name: entry, url: streams[nextIndex], headers: nil, subtitle: nil))
-                    index += 2
-                } else {
-                    index += 1
-                }
+            var index = 0; var n = 1
+            while index < streams.count {
+                let entry = streams[index]
+                if isStreamURL(entry) {
+                    result.append(StreamOption(name: "Stream \(n)", url: entry, headers: nil, subtitle: nil)); n += 1; index += 1
+                } else if index + 1 < streams.count, isStreamURL(streams[index + 1]) {
+                    result.append(StreamOption(name: entry, url: streams[index + 1], headers: nil, subtitle: nil)); index += 2
+                } else { index += 1 }
             }
         }
-        return options
+        return result
     }
     
     private func extractSingleStreamURL(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
-        if let sources = sources, let first = sources.first {
-            if let url = first["streamUrl"] as? String { return (url, safeConvertToHeaders(first["headers"])) }
-            if let url = first["url"] as? String { return (url, safeConvertToHeaders(first["headers"])) }
-        } else if let streams = streams, !streams.isEmpty {
-            let candidates = streams.filter { $0.hasPrefix("http") }
-            if let url = candidates.first { return (url, nil) }
-            if let first = streams.first { return (first, nil) }
+        if let src = sources?.first {
+            if let u = src["streamUrl"] as? String { return (u, safeConvertToHeaders(src["headers"])) }
+            if let u = src["url"] as? String        { return (u, safeConvertToHeaders(src["headers"])) }
+        }
+        if let streams = streams, !streams.isEmpty {
+            return (streams.first(where: { $0.hasPrefix("http") }) ?? streams[0], nil)
         }
         return nil
     }
@@ -915,59 +877,32 @@ struct MediaDetailView: View {
     @MainActor
     private func resolveSubtitleSelection(subtitles: [String]?, defaultSubtitle: String?, service: Service, streamURL: String, headers: [String: String]?) {
         guard let subtitles = subtitles, !subtitles.isEmpty else {
-            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
-            return
+            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers); return
         }
-        
         let options = parseSubtitleOptions(from: subtitles)
-        guard !options.isEmpty else {
-            playStreamURL(streamURL, service: service, subtitle: defaultSubtitle, headers: headers)
-            return
+        guard options.count > 1 else {
+            playStreamURL(streamURL, service: service, subtitle: options.first?.url ?? defaultSubtitle, headers: headers); return
         }
-        
-        if options.count == 1 {
-            playStreamURL(streamURL, service: service, subtitle: options[0].url, headers: headers)
-            return
-        }
-        
         subtitleOptions = options
         pendingStreamURL = streamURL
         pendingHeaders = headers
         pendingService = service
         pendingDefaultSubtitle = defaultSubtitle
-        isDirectStreaming = false
         showingSubtitlePicker = true
     }
     
     private func parseSubtitleOptions(from subtitles: [String]) -> [(title: String, url: String)] {
-        var options: [(String, String)] = []
-        var index = 0
-        var fallbackIndex = 1
-        
-        while index < subtitles.count {
-            let entry = subtitles[index]
-            if isStreamURL(entry) {
-                options.append(("Subtitle \(fallbackIndex)", entry))
-                fallbackIndex += 1
-                index += 1
-            } else {
-                let nextIndex = index + 1
-                if nextIndex < subtitles.count, isStreamURL(subtitles[nextIndex]) {
-                    options.append((entry, subtitles[nextIndex]))
-                    fallbackIndex += 1
-                    index += 2
-                } else {
-                    index += 1
-                }
-            }
+        var result: [(String, String)] = []; var i = 0; var n = 1
+        while i < subtitles.count {
+            let e = subtitles[i]
+            if isStreamURL(e) { result.append(("Subtitle \(n)", e)); n += 1; i += 1 }
+            else if i + 1 < subtitles.count, isStreamURL(subtitles[i + 1]) { result.append((e, subtitles[i + 1])); n += 1; i += 2 }
+            else { i += 1 }
         }
-        return options
+        return result
     }
     
-    private func isStreamURL(_ value: String) -> Bool {
-        let lowercased = value.lowercased()
-        return lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://")
-    }
+    private func isStreamURL(_ s: String) -> Bool { s.lowercased().hasPrefix("http://") || s.lowercased().hasPrefix("https://") }
     
     private func extractPreferredStream(streams: [String]?, sources: [[String: Any]]?) -> (url: String, headers: [String: String]?)? {
         if let source = sources?.first,
