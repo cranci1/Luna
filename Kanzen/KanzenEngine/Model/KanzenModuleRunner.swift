@@ -22,7 +22,7 @@ class KanzenModuleRunner
             return
         
         }
-        guard let chaptersFunc = context.objectForKeyedSubscript("getChapterImages") else {
+        guard let chaptersFunc = context.objectForKeyedSubscript("extractImages") else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
@@ -55,7 +55,7 @@ class KanzenModuleRunner
             return
         
         }
-        guard let chaptersFunc = context.objectForKeyedSubscript("getChapters") else {
+        guard let chaptersFunc = context.objectForKeyedSubscript("extractChapters") else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
@@ -89,7 +89,7 @@ class KanzenModuleRunner
             return
         }
         
-        guard let contentDataFunc = context.objectForKeyedSubscript("getContentData") else {
+        guard let contentDataFunc = context.objectForKeyedSubscript("extractDetails") else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
@@ -124,7 +124,7 @@ class KanzenModuleRunner
         }
      
 
-        guard let searchFunc = context.objectForKeyedSubscript("searchContent") else {
+        guard let searchFunc = context.objectForKeyedSubscript("searchResults") else {
             completion(nil, NSError(domain: "JSContext", code: 1, userInfo: [NSLocalizedDescriptionKey: "JS function not found"]))
             return
         }
