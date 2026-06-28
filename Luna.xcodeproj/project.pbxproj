@@ -171,7 +171,7 @@
 		13E1EDCF2ED9E65F00087629 /* browseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = browseView.swift; sourceTree = "<group>"; };
 		13E1EDD02ED9E65F00087629 /* kanzenModuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = kanzenModuleView.swift; sourceTree = "<group>"; };
 		13E1EDF32ED9E67000087629 /* ContentModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ContentModel.xcdatamodel; sourceTree = "<group>"; };
-		13F0725B2E4B2D3300EF90EB /* Luna.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Luna.app; path = /Users/Francesco/Documents/GitHub/celestial/build/Debug/Luna.app; sourceTree = "<absolute>"; };
+		13F0725B2E4B2D3300EF90EB /* Luna.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Luna.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13F0725E2E4B2D3300EF90EB /* SoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoraApp.swift; sourceTree = "<group>"; };
 		13F072622E4B2D3700EF90EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		13F072642E4B2D3700EF90EB /* Luna.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Luna.entitlements; sourceTree = "<group>"; };
@@ -237,6 +237,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		13BE85E32FE40A650097AB38 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		13E1ED992ED9E65F00087629 /* Kanzen */ = {
 			isa = PBXGroup;
 			children = (
@@ -451,7 +458,17 @@
 				13F0725D2E4B2D3300EF90EB /* Luna */,
 				13E1ED992ED9E65F00087629 /* Kanzen */,
 				13E1EDF22ED9E67000087629 /* ContentModel.xcdatamodeld */,
+				13F0725C2E4B2D3300EF90EB /* Products */,
+				13BE85E32FE40A650097AB38 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		13F0725C2E4B2D3300EF90EB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				13F0725B2E4B2D3300EF90EB /* Luna.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		13F0725D2E4B2D3300EF90EB /* Luna */ = {
@@ -503,9 +520,9 @@
 		13F0727F2E4B2D9000EF90EB /* View Elements */ = {
 			isa = PBXGroup;
 			children = (
+				12DF1FC12F040D6500E80375 /* AdaptiveConfirmationDialog.swift */,
 				13F187A32E6F38CE00747F7E /* Library */,
 				13F072802E4B2D9000EF90EB /* MediaInfo */,
-				12DF1FC12F040D6500E80375 /* AdaptiveConfirmationDialog.swift */,
 				13F072882E4B2D9000EF90EB /* SearchResultCard.swift */,
 				13F072892E4B2D9000EF90EB /* NormalPlayer.swift */,
 				13F0728A2E4B2D9000EF90EB /* FallbackImageView.swift */,
@@ -727,7 +744,7 @@
 				133AEFF52FE3F134002ADFE3 /* XCRemoteSwiftPackageReference "MPVKit" */,
 				13BE85E02FE4085D0097AB38 /* XCRemoteSwiftPackageReference "Sybau" */,
 			);
-			productRefGroup = 13F072522E4B2D3300EF90EB;
+			productRefGroup = 13F0725C2E4B2D3300EF90EB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
