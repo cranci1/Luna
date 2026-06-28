@@ -12,6 +12,8 @@
 		12DF1FC22F040D6700E80375 /* AdaptiveConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DF1FC12F040D6500E80375 /* AdaptiveConfirmationDialog.swift */; };
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
+		13372E3E2FF182D300477901 /* TurnstileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13372E3D2FF182D300477901 /* TurnstileSheet.swift */; };
+		13372E402FF182EF00477901 /* CFSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13372E3F2FF182EF00477901 /* CFSessionStore.swift */; };
 		133AEFF72FE3F134002ADFE3 /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 133AEFF62FE3F134002ADFE3 /* MPVKit-GPL */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
@@ -126,6 +128,8 @@
 		12201F532EBE922D0033073C /* ServiceModels.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ServiceModels.xcdatamodel; sourceTree = "<group>"; };
 		12DF1FC12F040D6500E80375 /* AdaptiveConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveConfirmationDialog.swift; sourceTree = "<group>"; };
 		12E7AF5F2EB80771003B7664 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
+		13372E3D2FF182D300477901 /* TurnstileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnstileSheet.swift; sourceTree = "<group>"; };
+		13372E3F2FF182EF00477901 /* CFSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFSessionStore.swift; sourceTree = "<group>"; };
 		13631B312E4F1A200035C39F /* ServiceSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceSettingsView.swift; sourceTree = "<group>"; };
 		136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassBackground.swift; sourceTree = "<group>"; };
 		13830AEB2E55BD9200B3CDE4 /* AlgorithmManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlgorithmManager.swift; sourceTree = "<group>"; };
@@ -237,6 +241,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		13372E3C2FF182AA00477901 /* Cloudflare */ = {
+			isa = PBXGroup;
+			children = (
+				13372E3D2FF182D300477901 /* TurnstileSheet.swift */,
+				13372E3F2FF182EF00477901 /* CFSessionStore.swift */,
+			);
+			path = Cloudflare;
+			sourceTree = "<group>";
+		};
 		13BF16152FF178A200963655 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -466,6 +479,7 @@
 		13F0725D2E4B2D3300EF90EB /* Luna */ = {
 			isa = PBXGroup;
 			children = (
+				13372E3C2FF182AA00477901 /* Cloudflare */,
 				13B6F3472EA4C82600DECD2B /* Info.plist */,
 				13F5B5902E73090000565E75 /* Models */,
 				13F072972E4B2D9200EF90EB /* TMDB */,
@@ -799,6 +813,8 @@
 				13E1EDF42ED9E67000087629 /* ContentModel.xcdatamodeld in Sources */,
 				13F072B42E4B2D9200EF90EB /* resized.swift in Sources */,
 				13E1EDDF2ED9E66000087629 /* KanzenEngine.swift in Sources */,
+				13372E402FF182EF00477901 /* CFSessionStore.swift in Sources */,
+				13372E3E2FF182D300477901 /* TurnstileSheet.swift in Sources */,
 				13F5B5952E730CB200565E75 /* TMDBContentFilter.swift in Sources */,
 				13F072B12E4B2D9200EF90EB /* NormalPlayer.swift in Sources */,
 				13F072AF2E4B2D9200EF90EB /* StretchyHeader.swift in Sources */,
