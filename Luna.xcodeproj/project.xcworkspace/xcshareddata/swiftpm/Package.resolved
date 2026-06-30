@@ -33,7 +33,7 @@
       "location" : "https://github.com/cranci1/SoraCore",
       "state" : {
         "branch" : "main",
-        "revision" : "50ddc160fd606e9708adefc1d9fc7003b574446b"
+        "revision" : "48da1f133de5a35dd04039006f898eceb55cf8a2"
       }
     },
     {
@@ -42,7 +42,7 @@
       "location" : "https://github.com/cranci1/Sybau",
       "state" : {
         "branch" : "main",
-        "revision" : "1b3609f0260dba977ce13bd20d6505a3f92102e5"
+        "revision" : "d30e9d0409b72fa628b7eae948006a3e94d6b115"
       }
     }
   ],

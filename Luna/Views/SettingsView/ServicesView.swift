@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SoraCore
 import Kingfisher
 
 #if os(iOS)

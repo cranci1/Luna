@@ -8,6 +8,7 @@
 import AVKit
 import Sybau
 import SwiftUI
+import SoraCore
 import Kingfisher
 
 private struct ModuleDetailContext {

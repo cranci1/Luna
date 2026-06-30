@@ -1,6 +1,6 @@
 //
-//  ModulesSearchResultsSheet.swift
-//  Sora
+//  ServicesResultsSheet.swift
+//  Luna
 //
 //  Created by Francesco on 09/08/25.
 //
@@ -8,6 +8,7 @@
 import AVKit
 import Sybau
 import SwiftUI
+import SoraCore
 import Kingfisher
 
 struct StreamOption: Identifiable {

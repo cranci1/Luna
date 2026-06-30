@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SoraCore
 import Kingfisher
 
 struct SearchView: View {
@@ -547,12 +548,14 @@ struct SearchView: View {
         serviceSearchResults = []
         
         jsController.fetchJsSearchResults(keyword: searchText, module: service) { items in
-            self.isLoading = false
-            if items.isEmpty {
-                self.serviceSearchResults = []
-            } else {
-                self.serviceSearchResults = items
-                self.addToSearchHistory(self.searchText)
+            Task { @MainActor in
+                self.isLoading = false
+                if items.isEmpty {
+                    self.serviceSearchResults = []
+                } else {
+                    self.serviceSearchResults = items
+                    self.addToSearchHistory(self.searchText)
+                }
             }
         }
     }

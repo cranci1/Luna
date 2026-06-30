@@ -1,12 +1,13 @@
 //
 //  ShowsDetails.swift
-//  Sora
+//  Luna
 //
 //  Created by Francesco on 07/08/25.
 //
 
 import Sybau
 import SwiftUI
+import SoraCore
 import Kingfisher
 
 struct TVShowSeasonsSection: View {
@@ -343,8 +344,12 @@ struct TVShowSeasonsSection: View {
             return
         }
         
-        episodeForDetailView = episode
-        navigatingToDetailView = true
+        if serviceManager.activeServices.count == 1 {
+            episodeForDetailView = episode
+            navigatingToDetailView = true
+        } else {
+            showingSearchResults = true
+        }
     }
     
     private func searchInServicesForEpisode(episode: TMDBEpisode) {
