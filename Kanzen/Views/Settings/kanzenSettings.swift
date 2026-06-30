@@ -33,7 +33,7 @@ struct KanzenSettingsView : View
                     
                 }
                 Section(header: Text("Others")){
-                    Text("Switch to Sora")
+                    Text("Switch to Luna")
                         .onTapGesture {
                             showKanzen = false
                         }
