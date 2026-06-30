@@ -69,8 +69,10 @@ struct contentView: View {
                                             .padding(.leading,3)
                                             .padding(.trailing,3)
                                             .background(Color.accentColor)
-                                        
                                             .cornerRadius(3)
+                                            .padding(.bottom,3)
+                                        
+                                        
                                     }
                                 }
                                 
@@ -84,11 +86,15 @@ struct contentView: View {
                                     {
                                         idx,item in
                                         Text(item).font(.caption)
+                                        
                                             .padding(.leading,3)
                                             .padding(.trailing,3)
                                             .background(Color.accentColor)
-                                        
                                             .cornerRadius(3)
+                                            .padding(.bottom,3)
+                                        
+                                        
+                                        
                                     }
                                 }
                                 
