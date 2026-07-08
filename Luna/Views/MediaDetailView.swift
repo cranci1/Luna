@@ -48,6 +48,10 @@ struct MediaDetailView: View {
     @State private var isDirectStreaming = false
     @State private var activeJSController: JSController?
     
+    @State private var tmdbMatch: TMDBSearchResult?
+    @State private var isMatchingTMDB: Bool = false
+    @State private var tmdbMatchAttempted: Bool = false
+    
     @State private var streamOptions: [StreamOption] = []
     @State private var showingStreamMenu = false
     @State private var pendingSubtitles: [String]?
@@ -126,6 +130,17 @@ struct MediaDetailView: View {
         moduleContext != nil
     }
     
+    private var librarySearchResult: TMDBSearchResult {
+        tmdbMatch ?? searchResult
+    }
+    
+    private var displayTitle: String {
+        if isModuleMode {
+            return tvShowDetail?.name ?? movieDetail?.title ?? tmdbMatch?.displayTitle ?? searchResult.displayTitle
+        }
+        return searchResult.displayTitle
+    }
+    
     private var isMovieContent: Bool {
         if isModuleMode {
             return moduleEpisodes.isEmpty
@@ -199,11 +214,15 @@ struct MediaDetailView: View {
         }
         .navigationBarHidden(true)
 #if !os(tvOS)
-        .gesture(
-            DragGesture()
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 20, coordinateSpace: .local)
                 .onEnded { value in
-                    if value.translation.width > 100 && abs(value.translation.height) < 50 {
-                        presentationMode.wrappedValue.dismiss()
+                    let horizontal = value.translation.width
+                    let vertical = value.translation.height
+                    if horizontal > 100 && horizontal > abs(vertical) * 2 {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            presentationMode.wrappedValue.dismiss()
+                        }
                     }
                 }
         )
@@ -214,9 +233,7 @@ struct MediaDetailView: View {
 #endif
         .onAppear {
             loadMediaDetails()
-            if !isModuleMode {
-                updateBookmarkStatus()
-            }
+            updateBookmarkStatus()
             if let episode = preselectedEpisode {
                 selectedEpisodeForSearch = episode
             }
@@ -228,21 +245,22 @@ struct MediaDetailView: View {
             }
         }
         .onChangeComp(of: libraryManager.collections) { _, _ in
-            if !isModuleMode {
-                updateBookmarkStatus()
-            }
+            updateBookmarkStatus()
+        }
+        .onChangeComp(of: tmdbMatch?.id) { _, _ in
+            updateBookmarkStatus()
         }
         .sheet(isPresented: $showingSearchResults) {
             ModulesSearchResultsSheet(
-                mediaTitle: searchResult.displayTitle,
+                mediaTitle: displayTitle,
                 originalTitle: romajiTitle,
-                isMovie: searchResult.isMovie,
+                isMovie: isMovieContent,
                 selectedEpisode: selectedEpisodeForSearch,
-                tmdbId: searchResult.id
+                tmdbId: librarySearchResult.id
             )
         }
         .sheet(isPresented: $showingAddToCollection) {
-            AddToCollectionView(searchResult: searchResult)
+            AddToCollectionView(searchResult: librarySearchResult)
         }
         .alert("Stream Error", isPresented: $showingModuleStreamError) {
             Button("OK", role: .cancel) {
@@ -369,7 +387,11 @@ struct MediaDetailView: View {
             StretchyHeaderView(
                 backdropURL: {
                     if isModuleMode {
-                        return moduleContext?.item.imageUrl
+                        return movieDetail?.fullBackdropURL
+                        ?? tvShowDetail?.fullBackdropURL
+                        ?? movieDetail?.fullPosterURL
+                        ?? tvShowDetail?.fullPosterURL
+                        ?? moduleContext?.item.imageUrl
                     }
                     
                     if searchResult.isMovie {
@@ -399,6 +421,7 @@ struct MediaDetailView: View {
                 playAndBookmarkSection
                 
                 if isModuleMode {
+                    moduleTMDBDetailsSection
                     moduleDetailsSection
                     episodesSection
                 } else if searchResult.isMovie {
@@ -452,7 +475,7 @@ struct MediaDetailView: View {
     
     @ViewBuilder
     private var titleText: some View {
-        Text(searchResult.displayTitle)
+        Text(displayTitle)
             .font(.largeTitle)
             .fontWeight(.bold)
             .foregroundColor(.white)
@@ -477,7 +500,7 @@ struct MediaDetailView: View {
                             showFullSynopsis.toggle()
                         }
                     }
-            } else if let overview = searchResult.isMovie ? movieDetail?.overview : tvShowDetail?.overview,
+            } else if let overview = isMovieContent ? movieDetail?.overview : tvShowDetail?.overview,
                       !overview.isEmpty {
                 Text(showFullSynopsis ? overview : String(overview.prefix(200)) + (overview.count > 200 ? "..." : ""))
                     .font(.body)
@@ -520,28 +543,26 @@ struct MediaDetailView: View {
             }
             .disabled(!canPlayModule)
             
-            if !isModuleMode {
-                Button(action: {
-                    toggleBookmark()
-                }) {
-                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                        .font(.title2)
-                        .frame(width: 42, height: 42)
-                        .applyLiquidGlassBackground(cornerRadius: 12)
-                        .foregroundColor(isBookmarked ? .yellow : .white)
-                        .cornerRadius(8)
-                }
-                
-                Button(action: {
-                    showingAddToCollection = true
-                }) {
-                    Image(systemName: "plus")
-                        .font(.title2)
-                        .frame(width: 42, height: 42)
-                        .applyLiquidGlassBackground(cornerRadius: 12)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
+            Button(action: {
+                toggleBookmark()
+            }) {
+                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                    .font(.title2)
+                    .frame(width: 42, height: 42)
+                    .applyLiquidGlassBackground(cornerRadius: 12)
+                    .foregroundColor(isBookmarked ? .yellow : .white)
+                    .cornerRadius(8)
+            }
+            
+            Button(action: {
+                showingAddToCollection = true
+            }) {
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .frame(width: 42, height: 42)
+                    .applyLiquidGlassBackground(cornerRadius: 12)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
             }
         }
         .padding(.horizontal)
@@ -578,6 +599,60 @@ struct MediaDetailView: View {
     }
     
     @ViewBuilder
+    private var moduleTMDBDetailsSection: some View {
+        if let movieDetail {
+            MovieDetailsSection(movie: movieDetail)
+        } else if let tvShowDetail {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Details")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.horizontal)
+                    .padding(.top)
+                    .foregroundColor(.white)
+                
+                VStack(spacing: 12) {
+                    if let numberOfSeasons = tvShowDetail.numberOfSeasons, numberOfSeasons > 0 {
+                        DetailRow(title: "Seasons", value: "\(numberOfSeasons)")
+                    }
+                    
+                    if let numberOfEpisodes = tvShowDetail.numberOfEpisodes, numberOfEpisodes > 0 {
+                        DetailRow(title: "Episodes", value: "\(numberOfEpisodes)")
+                    }
+                    
+                    if !tvShowDetail.genres.isEmpty {
+                        DetailRow(title: "Genres", value: tvShowDetail.genres.map { $0.name }.joined(separator: ", "))
+                    }
+                    
+                    if tvShowDetail.voteAverage > 0 {
+                        DetailRow(title: "Rating", value: String(format: "%.1f/10", tvShowDetail.voteAverage))
+                    }
+                    
+                    if let firstAirDate = tvShowDetail.firstAirDate, !firstAirDate.isEmpty {
+                        DetailRow(title: "First Aired", value: firstAirDate)
+                    }
+                    
+                    if let status = tvShowDetail.status {
+                        DetailRow(title: "Status", value: status)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 16)
+                .applyLiquidGlassBackground(cornerRadius: 12)
+                .padding(.horizontal)
+            }
+        } else if isMatchingTMDB {
+            HStack(spacing: 8) {
+                ProgressView()
+                Text("Matching with TMDB…")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
     private var moduleDetailsSection: some View {
         if let detail = moduleDetails.first {
             VStack(alignment: .leading, spacing: 8) {
@@ -597,16 +672,14 @@ struct MediaDetailView: View {
     }
     
     private func toggleBookmark() {
-        guard !isModuleMode else { return }
         withAnimation(.easeInOut(duration: 0.2)) {
-            libraryManager.toggleBookmark(for: searchResult)
+            libraryManager.toggleBookmark(for: librarySearchResult)
             updateBookmarkStatus()
         }
     }
     
     private func updateBookmarkStatus() {
-        guard !isModuleMode else { return }
-        isBookmarked = libraryManager.isBookmarked(searchResult)
+        isBookmarked = libraryManager.isBookmarked(librarySearchResult)
     }
     
     private func directPlayWithFirstService() {
@@ -761,7 +834,109 @@ struct MediaDetailView: View {
                     self.synopsis = firstDetail.description
                 }
                 self.isLoading = false
+                self.matchTMDBMetadata()
             }
+        }
+    }
+    
+    // MARK: - Single-module TMDB matching
+    
+    private func matchTMDBMetadata() {
+        guard let moduleContext, !tmdbMatchAttempted, tmdbMatch == nil else { return }
+        tmdbMatchAttempted = true
+        isMatchingTMDB = true
+        
+        let queryTitle = moduleContext.item.title
+        let preferMovie = moduleEpisodes.isEmpty
+        
+        Task {
+            let match = await findBestTMDBMatch(title: queryTitle, preferMovie: preferMovie)
+            
+            guard let match else {
+                await MainActor.run { self.isMatchingTMDB = false }
+                return
+            }
+            
+            await MainActor.run {
+                self.tmdbMatch = match
+            }
+            
+            await loadTMDBMatchDetails(match)
+            
+            await MainActor.run {
+                self.isMatchingTMDB = false
+            }
+        }
+    }
+    
+    private func findBestTMDBMatch(title: String, preferMovie: Bool) async -> TMDBSearchResult? {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else { return nil }
+        
+        guard let results = try? await tmdbService.searchMulti(query: trimmedTitle), !results.isEmpty else {
+            return nil
+        }
+        
+        let normalizedQuery = normalizeTitleForMatching(trimmedTitle)
+        let sameTypeResults = results.filter { preferMovie ? $0.isMovie : $0.isTVShow }
+        let candidates = sameTypeResults.isEmpty ? results : sameTypeResults
+        
+        if let exactMatch = candidates.first(where: { normalizeTitleForMatching($0.displayTitle) == normalizedQuery }) {
+            return exactMatch
+        }
+        
+        if let popularMatch = candidates.sorted(by: { $0.popularity > $1.popularity }).first {
+            return popularMatch
+        }
+        
+        return results.sorted(by: { $0.popularity > $1.popularity }).first
+    }
+    
+    private func normalizeTitleForMatching(_ title: String) -> String {
+        let lowered = title.lowercased()
+        let filteredScalars = lowered.unicodeScalars.filter {
+            CharacterSet.alphanumerics.contains($0) || $0 == " "
+        }
+        let collapsed = String(String.UnicodeScalarView(filteredScalars))
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        return collapsed
+    }
+    
+    private func loadTMDBMatchDetails(_ match: TMDBSearchResult) async {
+        do {
+            if match.isMovie {
+                async let detailTask = tmdbService.getMovieDetails(id: match.id)
+                async let imagesTask = tmdbService.getMovieImages(id: match.id, preferredLanguage: selectedLanguage)
+                let (detail, images) = try await (detailTask, imagesTask)
+                
+                await MainActor.run {
+                    self.movieDetail = detail
+                    if let overview = detail.overview, !overview.isEmpty {
+                        self.synopsis = overview
+                    }
+                    if let logo = self.tmdbService.getBestLogo(from: images, preferredLanguage: self.selectedLanguage) {
+                        self.logoURL = logo.fullURL
+                    }
+                }
+            } else {
+                async let detailTask = tmdbService.getTVShowWithSeasons(id: match.id)
+                async let imagesTask = tmdbService.getTVShowImages(id: match.id, preferredLanguage: selectedLanguage)
+                let (detail, images) = try await (detailTask, imagesTask)
+                
+                await MainActor.run {
+                    self.tvShowDetail = detail
+                    if let overview = detail.overview, !overview.isEmpty {
+                        self.synopsis = overview
+                    }
+                    if let logo = self.tmdbService.getBestLogo(from: images, preferredLanguage: self.selectedLanguage) {
+                        self.logoURL = logo.fullURL
+                    }
+                }
+            }
+        } catch {
+            Logger.shared.log("Failed to load matched TMDB details: \(error.localizedDescription)", type: "Warning")
         }
     }
     
@@ -920,6 +1095,29 @@ struct MediaDetailView: View {
         return nil
     }
     
+    private func currentMediaInfo() -> MediaInfo? {
+        if isModuleMode {
+            guard let tmdbId = tmdbMatch?.id else { return nil }
+            let title = tmdbMatch?.displayTitle ?? displayTitle
+            
+            if moduleEpisodes.isEmpty {
+                return .movie(id: tmdbId, title: title)
+            }
+            
+            let safeIndex = min(max(selectedModuleEpisodeIndex, 0), max(moduleEpisodes.count - 1, 0))
+            guard moduleEpisodes.indices.contains(safeIndex) else { return nil }
+            let episodeNumber = moduleEpisodes[safeIndex].number
+            return .episode(showId: tmdbId, showTitle: title, seasonNumber: 1, episodeNumber: episodeNumber)
+        }
+        
+        if searchResult.isMovie {
+            return .movie(id: searchResult.id, title: searchResult.displayTitle)
+        } else if let episode = selectedEpisodeForSearch {
+            return .episode(showId: searchResult.id, showTitle: searchResult.displayTitle, seasonNumber: episode.seasonNumber, episodeNumber: episode.episodeNumber)
+        }
+        return nil
+    }
+    
     private func playStreamURL(_ url: String, service: Service, subtitle: String?, headers: [String: String]?) {
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 300_000_000)
@@ -965,16 +1163,12 @@ struct MediaDetailView: View {
                 let subtitleArray: [String]? = subtitle.map { [$0] }
                 let pvc = PlayerViewController(
                     url: streamURL,
-                    preset: preset ?? PlayerPreset(title: "Default", summary: "", stream: nil, commands: []),
+                    preset: preset ?? PlayerPreset(title: displayTitle, summary: "", stream: nil, commands: []),
                     headers: finalHeaders,
                     subtitles: subtitleArray
                 )
-                if !isModuleMode {
-                    if searchResult.isMovie {
-                        pvc.mediaInfo = .movie(id: searchResult.id, title: searchResult.displayTitle)
-                    } else if let episode = selectedEpisodeForSearch {
-                        pvc.mediaInfo = .episode(showId: searchResult.id, showTitle: searchResult.displayTitle, seasonNumber: episode.seasonNumber, episodeNumber: episode.episodeNumber)
-                    }
+                if let mediaInfo = currentMediaInfo() {
+                    pvc.mediaInfo = mediaInfo
                 }
                 pvc.modalPresentationStyle = .fullScreen
                 
@@ -991,12 +1185,8 @@ struct MediaDetailView: View {
             let asset = AVURLAsset(url: streamURL, options: ["AVURLAssetHTTPHeaderFieldsKey": finalHeaders])
             let item = AVPlayerItem(asset: asset)
             playerVC.player = AVPlayer(playerItem: item)
-            if !isModuleMode {
-                if searchResult.isMovie {
-                    playerVC.mediaInfo = .movie(id: searchResult.id, title: searchResult.displayTitle)
-                } else if let episode = selectedEpisodeForSearch {
-                    playerVC.mediaInfo = .episode(showId: searchResult.id, showTitle: searchResult.displayTitle, seasonNumber: episode.seasonNumber, episodeNumber: episode.episodeNumber)
-                }
+            if let mediaInfo = currentMediaInfo() {
+                playerVC.mediaInfo = mediaInfo
             }
             playerVC.modalPresentationStyle = .fullScreen
             

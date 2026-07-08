@@ -578,8 +578,8 @@
 		13F072C42E4B364B00EF90EB /* SettingsView */ = {
 			isa = PBXGroup;
 			children = (
-				13F4584A2F4B085E00ED1C75 /* TrackingSettingsView.swift */,
 				13830AEF2E55C04F00B3CDE4 /* AlgorithmSelectionView.swift */,
+				13F4584A2F4B085E00ED1C75 /* TrackingSettingsView.swift */,
 				13631B312E4F1A200035C39F /* ServiceSettingsView.swift */,
 				13F5B58E2E7308F300565E75 /* HomeSectionsView.swift */,
 				139509A12E7DDAE100CB60D4 /* PlayerSettingsView.swift */,
