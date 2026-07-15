@@ -5,6 +5,7 @@
 //  Created by Francesco on 08/09/25.
 //
 
+import Sybau
 import Combine
 import Foundation
 
@@ -22,24 +23,69 @@ final class LibraryManager: ObservableObject {
     private var collectionCancellables: [UUID: AnyCancellable] = [:]
     private var cancellables = Set<AnyCancellable>()
     
+    private let saveTrigger = PassthroughSubject<[LibraryCollection], Never>()
+    private let persistenceQueue = DispatchQueue(label: "com.cranci.librarymanager.persistence", qos: .utility)
+    
     private init() {
+        setupPersistence()
         load()
         createDefaultBookmarksCollection()
         
         collections.forEach { observeCollection($0) }
     }
     
+    private func setupPersistence() {
+        saveTrigger
+            .debounce(for: .milliseconds(500), scheduler: persistenceQueue)
+            .sink { [weak self] snapshot in
+                self?.persist(snapshot)
+            }
+            .store(in: &cancellables)
+    }
+    
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: collectionsKey),
-           let decoded = try? JSONDecoder().decode([LibraryCollection].self, from: data) {
-            collections = decoded
-        }
+        guard let data = UserDefaults.standard.data(forKey: collectionsKey) else { return }
+        
+        do { collections = try JSONDecoder().decode([LibraryCollection].self, from: data) }
+        catch { backupCorruptedData(data, error: error) }
+    }
+    
+    private func persist(_ snapshot: [LibraryCollection]) {
+        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        UserDefaults.standard.set(data, forKey: collectionsKey)
     }
     
     private func save() {
-        if let data = try? JSONEncoder().encode(collections) {
-            UserDefaults.standard.set(data, forKey: collectionsKey)
+        saveTrigger.send(collections)
+    }
+    
+    func flushPendingSave() {
+        persist(collections)
+    }
+    
+    // MARK: - Data recovery
+    
+    private func backupCorruptedData(_ data: Data, error: Error) {
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let backupKey = "\(collectionsKey).corrupted.\(timestamp)"
+        UserDefaults.standard.set(data, forKey: backupKey)
+        Logger.shared.log("LibraryManager: failed to decode collections (\(error)). Raw data backed up under key '\(backupKey)'.", type: "Error")
+    }
+    
+    func corruptedBackupKeys() -> [String] {
+        UserDefaults.standard.dictionaryRepresentation().keys
+            .filter { $0.hasPrefix("\(collectionsKey).corrupted.") }
+            .sorted()
+    }
+    
+    @discardableResult
+    func restoreFromBackup(key: String) -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let decoded = try? JSONDecoder().decode([LibraryCollection].self, from: data) else {
+            return false
         }
+        collections = decoded
+        return true
     }
     
     private func createDefaultBookmarksCollection() {
