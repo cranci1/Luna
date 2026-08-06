@@ -67,10 +67,10 @@ You can download Luna using Xcode or using the .ipa file, which you can find in 
 ## Acknowledgements
 
 Frameworks:
+- [KingFisher](https://github.com/onevcat/Kingfisher) - MIT License
 - [Sybau](https://github.com/cranci1/Sybau) - GPLv3.0 License
 - [MPVKit](https://github.com/mpvkit/MPVKit) - GPLv3.0 License
-- [SoraCore](https://github.com/cranci1/SoraCore) – Custom License
-- [KingFisher](https://github.com/onevcat/Kingfisher) - MIT License
+- [SoraCore](https://github.com/cranci1/SoraCore) – GPLv3.0 License
 - [FakeWebkit](https://github.com/undeaDD/FakeWebKit) - GPLv3.0 License
 
 Misc:
