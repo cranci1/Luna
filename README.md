@@ -75,7 +75,6 @@ Frameworks:
 
 Misc:
 - [50/50](https://github.com/50n50) for the app icon  
-
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE) (GPLv3.0).
