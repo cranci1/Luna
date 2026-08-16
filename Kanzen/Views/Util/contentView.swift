@@ -168,6 +168,11 @@ struct contentView: View {
         .fullScreenCover(item: $selectedChapterData){ chapter in
             if let contentChapters = self.contentChapters{
                 readerManagerView(chapters: contentChapters[langaugeIdx].chapters,selectedChapter: chapter,kanzen: kanzen)
+                    // Re-inject environment objects: on "Designed for iPhone/iPad"
+                    // macOS runs, presented content can lose the inherited
+                    // environment (EnvironmentObject.error crash at present time).
+                    .environmentObject(settings)
+                    .environmentObject(favouriteManager)
             }
             
         }
