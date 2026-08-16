@@ -36,7 +36,7 @@ struct favouriteViewWrapper: View {
                             self.moduleLoaded = true
                         }
                         catch{
-                            Logger.shared.log("Error loading module", type: "Error")
+                            Logger.shared.log("Error loading module: \(error.localizedDescription)", type: "Error")
                         }
                     }
                 }
