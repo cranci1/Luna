@@ -436,7 +436,12 @@ var nextControllers: [UIViewController]?
             }
         }
         
-        pagePrefetcher = ImagePrefetcher(urls: pagesURLs)
+        // NB: ImagePrefetcher does NOT consult KingfisherManager.defaultOptions
+        // (KF 8.x builds a private manager from its own options) — the module
+        // Referer modifier and the reader sizing processor must be passed
+        // explicitly, or prefetches 403 on gated CDNs and cache keys diverge.
+        pagePrefetcher = ImagePrefetcher(urls: pagesURLs,
+                                         options: ReaderImageSizing.options + ModuleImageHeaders.kingfisherOptions)
         pagePrefetcher?.start()
         
     }

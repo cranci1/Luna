@@ -74,6 +74,14 @@ enum ModuleImageHeaders {
             KingfisherManager.shared.defaultOptions += [.requestModifier(modifier)]
         }
     }
+
+    /// The modifier as an options item for Kingfisher entry points that do
+    /// NOT consult `KingfisherManager.defaultOptions` — notably
+    /// `ImagePrefetcher`, which builds a private manager from its own
+    /// options (KF 8.x). Pass explicitly there or prefetches 403.
+    static var kingfisherOptions: KingfisherOptionsInfo {
+        [.requestModifier(modifier)]
+    }
 }
 struct ModuleDataContainer: Codable, Identifiable,Hashable
 {
