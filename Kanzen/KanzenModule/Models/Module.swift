@@ -43,8 +43,16 @@ struct ModuleData: Codable, Equatable
 /// `baseUrl` was the last one loaded, and CDNs that don't expect a Referer
 /// simply ignore it.
 enum ModuleImageHeaders {
-    private(set) static var referer: String?
+    // Written on the main thread (activate), read on Kingfisher downloader
+    // threads (modifier closure) — guard with a lock.
+    private static let lock = NSLock()
+    private static var _referer: String?
     private static var installed = false
+
+    private(set) static var referer: String? {
+        get { lock.lock(); defer { lock.unlock() }; return _referer }
+        set { lock.lock(); _referer = newValue; lock.unlock() }
+    }
 
     private static let modifier = AnyModifier { request in
         var request = request
@@ -58,9 +66,13 @@ enum ModuleImageHeaders {
     /// Call whenever a module's script is loaded for browsing/reading.
     static func activate(for moduleData: ModuleData?) {
         referer = moduleData?.baseUrl
-        guard !installed else { return }
+        lock.lock()
+        let shouldInstall = !installed
         installed = true
-        KingfisherManager.shared.defaultOptions += [.requestModifier(modifier)]
+        lock.unlock()
+        if shouldInstall {
+            KingfisherManager.shared.defaultOptions += [.requestModifier(modifier)]
+        }
     }
 }
 struct ModuleDataContainer: Codable, Identifiable,Hashable
