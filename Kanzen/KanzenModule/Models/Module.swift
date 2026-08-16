@@ -5,6 +5,7 @@
 //  Created by Dawud Osman on 13/05/2025.
 //
 import Foundation
+import Kingfisher
 struct ModuleData: Codable, Equatable
 {
 
@@ -15,11 +16,51 @@ struct ModuleData: Codable, Equatable
     let version: String
     let language: String
     let scriptURL: String
+    // Optional manifest key carrying the module site's origin (e.g.
+    // "https://allmanga.to/"). Manga CDNs that gate image requests on a
+    // platform Referer/Origin header need this; modules without it decode
+    // with baseUrl == nil and behave exactly as before.
+    let baseUrl: String?
     
     struct Author: Codable, Equatable
     {
         let name: String
         let iconURL: String
+    }
+}
+
+/// Attaches the active manga module's `baseUrl` as `Referer` to every
+/// Kingfisher image request (search covers, detail header, reader pages and
+/// the prefetcher). Some chapter-image CDNs (e.g. allmanga's
+/// youtube-anime.com hosts) answer 403 unless the platform Referer/Origin is
+/// present; module JS cannot set image headers itself — it only returns URL
+/// strings — so the app has to do it.
+///
+/// The modifier is installed once and stays a no-op until a module whose
+/// manifest declares `baseUrl` is loaded. Loading a module without `baseUrl`
+/// clears the header again. Note the modifier applies app-wide (including the
+/// anime side); the header is only attached while a manga module with
+/// `baseUrl` was the last one loaded, and CDNs that don't expect a Referer
+/// simply ignore it.
+enum ModuleImageHeaders {
+    private(set) static var referer: String?
+    private static var installed = false
+
+    private static let modifier = AnyModifier { request in
+        var request = request
+        if let referer = referer, !referer.isEmpty,
+           request.value(forHTTPHeaderField: "Referer") == nil {
+            request.setValue(referer, forHTTPHeaderField: "Referer")
+        }
+        return request
+    }
+
+    /// Call whenever a module's script is loaded for browsing/reading.
+    static func activate(for moduleData: ModuleData?) {
+        referer = moduleData?.baseUrl
+        guard !installed else { return }
+        installed = true
+        KingfisherManager.shared.defaultOptions += [.requestModifier(modifier)]
     }
 }
 struct ModuleDataContainer: Codable, Identifiable,Hashable

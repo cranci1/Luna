@@ -32,6 +32,7 @@ struct favouriteViewWrapper: View {
                         do {
                             let content = try ModuleManager.shared.getModuleScript(module: module)
                             try kanzen.loadScript(content)
+                            ModuleImageHeaders.activate(for: module.moduleData)
                             self.moduleLoaded = true
                         }
                         catch{

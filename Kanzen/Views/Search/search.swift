@@ -115,6 +115,7 @@ struct KanzenSearchView: View {
                     if let module = module {
                         let content = try moduleManager.getModuleScript(module: module)
                         try kanzen.loadScript(content)
+                        ModuleImageHeaders.activate(for: module.moduleData)
                     }
                 }
                 catch{
