@@ -1084,8 +1084,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mpvkit/MPVKit";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				kind = exactVersion;
+				version = 1.0.0;
 			};
 		};
 		130A6C7E30373DF5004C8B2D /* XCRemoteSwiftPackageReference "Sybau" */ = {
