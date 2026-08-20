@@ -561,8 +561,10 @@ class ChapterCollectionViewCell: UICollectionViewCell {
         self.currentLoadingTask = taskId
         
         // 🔧 FIX: Check if image is already cached
+        // NOTE: with a processor set, Kingfisher stores the result under the
+        // processor-qualified key (url + "@" + processor.identifier).
         let url = URL(string: rootView.page.content)
-        let isCached = url != nil && ImageCache.default.isCached(forKey: url!.absoluteString)
+        let isCached = url != nil && ImageCache.default.isCached(forKey: ReaderImageSizing.cacheKey(for: url!))
         
         if isCached {
             // 🔧 FIX: Image is cached, show it immediately without loading view
@@ -580,9 +582,8 @@ class ChapterCollectionViewCell: UICollectionViewCell {
         // 🔧 FIX: Set the image with options to prevent flicker
         imageView.kf.setImage(
             with: url,
-            options: [
-                .transition(.none), // Disable fade transition to prevent flicker
-                .cacheOriginalImage
+            options: ReaderImageSizing.options + [
+                .transition(.none) // Disable fade transition to prevent flicker
             ]
         ) { [weak self] result in
             guard let self = self,

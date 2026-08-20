@@ -32,10 +32,11 @@ struct favouriteViewWrapper: View {
                         do {
                             let content = try ModuleManager.shared.getModuleScript(module: module)
                             try kanzen.loadScript(content)
+                            ModuleImageHeaders.activate(for: module.moduleData)
                             self.moduleLoaded = true
                         }
                         catch{
-                            Logger.shared.log("Error loading module", type: "Error")
+                            Logger.shared.log("Error loading module: \(error.localizedDescription)", type: "Error")
                         }
                     }
                 }

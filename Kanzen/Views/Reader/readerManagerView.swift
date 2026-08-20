@@ -55,6 +55,9 @@ struct readerManagerView:View {
         .sheet(isPresented: $showChapterlist)
         {
             ChapterList(readerManager:  reader_manager)
+                // Same Mac-idiom environment drop as the reader cover:
+                // ChapterList reads @EnvironmentObject settings (accentColor).
+                .environmentObject(settings)
         }
         .sheet(isPresented: $showReadingModePicker){
             readerManagerSettings(readerManager: reader_manager)
