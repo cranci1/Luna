@@ -168,7 +168,8 @@ struct HomeView: View {
         if !continueWatchingItems.isEmpty {
             ContinueWatchingSection(
                 items: continueWatchingItems,
-                tmdbService: tmdbService
+                tmdbService: tmdbService,
+                onDelete: deleteContinueWatchingItem
             )
         }
     }
@@ -506,6 +507,11 @@ struct HomeView: View {
             Logger.shared.log("Error loading hero logo: \(error)", type: "Warning")
         }
     }
+    
+    private func deleteContinueWatchingItem(_ item: ContinueWatchingItem) {
+        ProgressManager.shared.removeContinueWatchingItem(item)
+        continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
+    }
 }
 
 struct MediaSection: View {
@@ -668,6 +674,7 @@ struct ContinuousHoverModifier: ViewModifier {
 struct ContinueWatchingSection: View {
     let items: [ContinueWatchingItem]
     let tmdbService: TMDBService
+    let onDelete: (ContinueWatchingItem) -> Void
     
     var gap: Double { isTvOS ? 50.0 : 16.0 }
     
@@ -686,7 +693,11 @@ struct ContinueWatchingSection: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: gap) {
                     ForEach(items) { item in
-                        ContinueWatchingCard(item: item, tmdbService: tmdbService)
+                        ContinueWatchingCard(
+                            item: item,
+                            tmdbService: tmdbService,
+                            onDelete: { onDelete(item) }
+                        )
                     }
                 }
                 .padding(.horizontal, isTvOS ? 40 : 16)
@@ -701,6 +712,7 @@ struct ContinueWatchingSection: View {
 struct ContinueWatchingCard: View {
     let item: ContinueWatchingItem
     let tmdbService: TMDBService
+    let onDelete: () -> Void
     
     @AppStorage("tmdbLanguage") private var selectedLanguage = "en-US"
     
@@ -830,6 +842,13 @@ struct ContinueWatchingCard: View {
             .scaleEffect(isHovering ? 1.02 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: isHovering)
             .modifier(ContinuousHoverModifier(isHovering: $isHovering))
+            .contextMenu {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Remove from Continue Watching", systemImage: "trash")
+                }
+            }
         }
         .tvos({ view in
             view.buttonStyle(BorderlessButtonStyle())
