@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mpvkit/MPVKit",
       "state" : {
-        "revision" : "288527dffbc6d3e63cce147fc7b520c64a791603",
-        "version" : "1.0.0"
+        "revision" : "613c0ccc3acf70e136aaff880a9b5fe8fdfaf5b8",
+        "version" : "0.41.0"
       }
     },
     {
@@ -39,10 +39,10 @@
     {
       "identity" : "sybau",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/cranci1/Sybau",
+      "location" : "https://github.com/cranci1/Sybau.git",
       "state" : {
         "branch" : "main",
-        "revision" : "bf2d56750c95a61979df37e06bb32229d7131775"
+        "revision" : "489e4653477d45013c9cc305f9f89637b28678af"
       }
     }
   ],
