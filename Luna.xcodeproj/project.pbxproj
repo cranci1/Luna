@@ -14,8 +14,8 @@
 		130A6C8030373DF5004C8B2D /* Sybau in Frameworks */ = {isa = PBXBuildFile; productRef = 130A6C7F30373DF5004C8B2D /* Sybau */; };
 		130A6C8330373E05004C8B2D /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 130A6C8230373E05004C8B2D /* SoraCore */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
+		136C9B9030375868007E88D7 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 136C9B8F30375868007E88D7 /* Kingfisher */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
-		13792CD32F6F09FA002948F8 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD22F6F09FA002948F8 /* Kingfisher */; };
 		13792CD92F6F0CA6002948F8 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD82F6F0CA6002948F8 /* FakeWebKit */; };
 		13830AEC2E55BD9200B3CDE4 /* AlgorithmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AEB2E55BD9200B3CDE4 /* AlgorithmManager.swift */; };
 		13830AEE2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13830AED2E55BEDD00B3CDE4 /* JaroWinklerSimilarity.swift */; };
@@ -205,7 +205,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13792CD32F6F09FA002948F8 /* Kingfisher in Frameworks */,
+				136C9B9030375868007E88D7 /* Kingfisher in Frameworks */,
 				130A6C7D30373DE9004C8B2D /* MPVKit-GPL in Frameworks */,
 				130A6C8030373DF5004C8B2D /* Sybau in Frameworks */,
 				12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */,
@@ -649,11 +649,11 @@
 			name = Luna;
 			packageProductDependencies = (
 				12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */,
-				13792CD22F6F09FA002948F8 /* Kingfisher */,
 				13792CD82F6F0CA6002948F8 /* FakeWebKit */,
 				130A6C7C30373DE9004C8B2D /* MPVKit-GPL */,
 				130A6C7F30373DF5004C8B2D /* Sybau */,
 				130A6C8230373E05004C8B2D /* SoraCore */,
+				136C9B8F30375868007E88D7 /* Kingfisher */,
 			);
 			productName = Sora;
 			productReference = 13BF16142FF178A200963655 /* Luna.app */;
@@ -684,11 +684,11 @@
 			);
 			mainGroup = 13F072522E4B2D3300EF90EB;
 			packageReferences = (
-				13792CD12F6F09FA002948F8 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				13792CD72F6F0CA6002948F8 /* XCRemoteSwiftPackageReference "FakeWebKit" */,
 				130A6C7B30373DE9004C8B2D /* XCRemoteSwiftPackageReference "MPVKit" */,
 				130A6C7E30373DF5004C8B2D /* XCRemoteSwiftPackageReference "Sybau" */,
 				130A6C8130373E05004C8B2D /* XCRemoteSwiftPackageReference "SoraCore" */,
+				136C9B8E30375867007E88D7 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 13BF16152FF178A200963655 /* Products */;
 			projectDirPath = "";
@@ -1104,12 +1104,12 @@
 				kind = branch;
 			};
 		};
-		13792CD12F6F09FA002948F8 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+		136C9B8E30375867007E88D7 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 8.8.0;
+				minimumVersion = 8.11.0;
 			};
 		};
 		13792CD72F6F0CA6002948F8 /* XCRemoteSwiftPackageReference "FakeWebKit" */ = {
@@ -1142,9 +1142,9 @@
 			package = 130A6C8130373E05004C8B2D /* XCRemoteSwiftPackageReference "SoraCore" */;
 			productName = SoraCore;
 		};
-		13792CD22F6F09FA002948F8 /* Kingfisher */ = {
+		136C9B8F30375868007E88D7 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 13792CD12F6F09FA002948F8 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			package = 136C9B8E30375867007E88D7 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
 		13792CD82F6F0CA6002948F8 /* FakeWebKit */ = {
