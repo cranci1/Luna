@@ -11,9 +11,9 @@
 		12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */; };
 		12E7AF602EB80775003B7664 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12E7AF5F2EB80771003B7664 /* Platform.swift */; };
 		130A6C7D30373DE9004C8B2D /* MPVKit-GPL in Frameworks */ = {isa = PBXBuildFile; productRef = 130A6C7C30373DE9004C8B2D /* MPVKit-GPL */; };
-		130A6C8030373DF5004C8B2D /* Sybau in Frameworks */ = {isa = PBXBuildFile; productRef = 130A6C7F30373DF5004C8B2D /* Sybau */; };
-		130A6C8330373E05004C8B2D /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 130A6C8230373E05004C8B2D /* SoraCore */; };
 		13631B322E4F1A200035C39F /* ServiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13631B312E4F1A200035C39F /* ServiceSettingsView.swift */; };
+		1366C1C93037615A003E4CE1 /* SoraCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1366C1C83037615A003E4CE1 /* SoraCore */; };
+		1366C1CC30376162003E4CE1 /* Sybau in Frameworks */ = {isa = PBXBuildFile; productRef = 1366C1CB30376162003E4CE1 /* Sybau */; };
 		136C9B9030375868007E88D7 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 136C9B8F30375868007E88D7 /* Kingfisher */; };
 		136D3E5C2EB75D7E0094210C /* LiquidGlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136D3E5B2EB75D7E0094210C /* LiquidGlassBackground.swift */; };
 		13792CD92F6F0CA6002948F8 /* FakeWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = 13792CD82F6F0CA6002948F8 /* FakeWebKit */; };
@@ -207,9 +207,9 @@
 			files = (
 				136C9B9030375868007E88D7 /* Kingfisher in Frameworks */,
 				130A6C7D30373DE9004C8B2D /* MPVKit-GPL in Frameworks */,
-				130A6C8030373DF5004C8B2D /* Sybau in Frameworks */,
+				1366C1C93037615A003E4CE1 /* SoraCore in Frameworks */,
+				1366C1CC30376162003E4CE1 /* Sybau in Frameworks */,
 				12E7AF5E2EB7FDB7003B7664 /* FakeWebKit in Frameworks */,
-				130A6C8330373E05004C8B2D /* SoraCore in Frameworks */,
 				13792CD92F6F0CA6002948F8 /* FakeWebKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -651,9 +651,9 @@
 				12E7AF5D2EB7FDB7003B7664 /* FakeWebKit */,
 				13792CD82F6F0CA6002948F8 /* FakeWebKit */,
 				130A6C7C30373DE9004C8B2D /* MPVKit-GPL */,
-				130A6C7F30373DF5004C8B2D /* Sybau */,
-				130A6C8230373E05004C8B2D /* SoraCore */,
 				136C9B8F30375868007E88D7 /* Kingfisher */,
+				1366C1C83037615A003E4CE1 /* SoraCore */,
+				1366C1CB30376162003E4CE1 /* Sybau */,
 			);
 			productName = Sora;
 			productReference = 13BF16142FF178A200963655 /* Luna.app */;
@@ -686,9 +686,9 @@
 			packageReferences = (
 				13792CD72F6F0CA6002948F8 /* XCRemoteSwiftPackageReference "FakeWebKit" */,
 				130A6C7B30373DE9004C8B2D /* XCRemoteSwiftPackageReference "MPVKit" */,
-				130A6C7E30373DF5004C8B2D /* XCRemoteSwiftPackageReference "Sybau" */,
-				130A6C8130373E05004C8B2D /* XCRemoteSwiftPackageReference "SoraCore" */,
 				136C9B8E30375867007E88D7 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				1366C1C73037615A003E4CE1 /* XCRemoteSwiftPackageReference "SoraCore" */,
+				1366C1CA30376162003E4CE1 /* XCRemoteSwiftPackageReference "Sybau" */,
 			);
 			productRefGroup = 13BF16152FF178A200963655 /* Products */;
 			projectDirPath = "";
@@ -1085,20 +1085,20 @@
 			repositoryURL = "https://github.com/mpvkit/MPVKit";
 			requirement = {
 				kind = exactVersion;
-				version = 1.0.0;
+				version = 0.41.0;
 			};
 		};
-		130A6C7E30373DF5004C8B2D /* XCRemoteSwiftPackageReference "Sybau" */ = {
+		1366C1C73037615A003E4CE1 /* XCRemoteSwiftPackageReference "SoraCore" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cranci1/Sybau";
+			repositoryURL = "https://github.com/cranci1/SoraCore";
 			requirement = {
 				branch = main;
 				kind = branch;
 			};
 		};
-		130A6C8130373E05004C8B2D /* XCRemoteSwiftPackageReference "SoraCore" */ = {
+		1366C1CA30376162003E4CE1 /* XCRemoteSwiftPackageReference "Sybau" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cranci1/SoraCore";
+			repositoryURL = "https://github.com/cranci1/Sybau";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -1132,15 +1132,15 @@
 			package = 130A6C7B30373DE9004C8B2D /* XCRemoteSwiftPackageReference "MPVKit" */;
 			productName = "MPVKit-GPL";
 		};
-		130A6C7F30373DF5004C8B2D /* Sybau */ = {
+		1366C1C83037615A003E4CE1 /* SoraCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 130A6C7E30373DF5004C8B2D /* XCRemoteSwiftPackageReference "Sybau" */;
-			productName = Sybau;
-		};
-		130A6C8230373E05004C8B2D /* SoraCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 130A6C8130373E05004C8B2D /* XCRemoteSwiftPackageReference "SoraCore" */;
+			package = 1366C1C73037615A003E4CE1 /* XCRemoteSwiftPackageReference "SoraCore" */;
 			productName = SoraCore;
+		};
+		1366C1CB30376162003E4CE1 /* Sybau */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1366C1CA30376162003E4CE1 /* XCRemoteSwiftPackageReference "Sybau" */;
+			productName = Sybau;
 		};
 		136C9B8F30375868007E88D7 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
