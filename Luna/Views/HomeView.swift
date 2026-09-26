@@ -153,7 +153,7 @@ struct HomeView: View {
     
     private var mainScrollView: some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 0) {
+            VStack(spacing: 0) {
                 heroSection
                 continueWatchingSection
                 contentSections
@@ -551,7 +551,7 @@ struct MediaSection: View {
             .padding(.horizontal, isTvOS ? 40 : 16)
             
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: gap) {
+                HStack(spacing: gap) {
                     ForEach(items) { item in
                         MediaCard(result: item)
                     }
@@ -702,7 +702,7 @@ struct ContinueWatchingSection: View {
             .padding(.horizontal, isTvOS ? 40 : 16)
             
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: gap) {
+                HStack(spacing: gap) {
                     ForEach(items) { item in
                         ContinueWatchingCard(
                             item: item,
