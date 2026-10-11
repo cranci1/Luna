@@ -69,46 +69,46 @@ struct HomeView: View {
         }
     }
     
-    private var homeContent: AnyView {
-        AnyView(
-            ZStack {
+    private var homeContent: some View {
+        ZStack {
+            Group {
                 ambientColor
-                    .ignoresSafeArea(.all)
-                
-                if isLoading {
-                    loadingView
-                } else if let errorMessage = errorMessage {
-                    errorView(errorMessage)
-                } else {
-                    mainScrollView
-                }
             }
-                .navigationBarHidden(true)
-                .onAppear {
-                    if !hasLoadedContent {
-                        loadContent()
-                    } else {
-                        continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
-                    }
-                }
-                .onChangeComp(of: contentFilter.filterHorror) { _, _ in
-                    if hasLoadedContent {
-                        loadContent()
-                    }
-                }
-                .onChangeComp(of: contentFilter.filterNSFW) { _, _ in
-                    if hasLoadedContent {
-                        loadContent()
-                    }
-                }
-                .onChangeComp(of: contentFilter.animeOnlyMode) { _, _ in
-                    hasLoadedContent = false
-                    loadContent()
-                }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView()
-                }
-        )
+            .ignoresSafeArea(.all)
+            
+            if isLoading {
+                loadingView
+            } else if let errorMessage = errorMessage {
+                errorView(errorMessage)
+            } else {
+                mainScrollView
+            }
+        }
+        .navigationBarHidden(true)
+        .onAppear {
+            if !hasLoadedContent {
+                loadContent()
+            } else {
+                continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
+            }
+        }
+        .onChangeComp(of: contentFilter.filterHorror) { _, _ in
+            if hasLoadedContent {
+                loadContent()
+            }
+        }
+        .onChangeComp(of: contentFilter.filterNSFW) { _, _ in
+            if hasLoadedContent {
+                loadContent()
+            }
+        }
+        .onChangeComp(of: contentFilter.animeOnlyMode) { _, _ in
+            hasLoadedContent = false
+            loadContent()
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
     }
     
     @ViewBuilder
@@ -151,6 +151,7 @@ struct HomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
+    @ViewBuilder
     private var mainScrollView: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
@@ -346,102 +347,76 @@ struct HomeView: View {
     
     @ViewBuilder
     private var contentSections: some View {
-        ForEach(enabledHomeSections) { section in
-            homeSectionView(section)
+        VStack(spacing: 0) {
+            ForEach(homeSections.filter { $0.isEnabled }) { section in
+                if contentFilter.animeOnlyMode && contentFilter.isNonAnimeSection(section.id) {
+                    EmptyView()
+                } else {
+                    switch section.id {
+                    case "trending":
+                        if !trendingContent.isEmpty {
+                            let filteredTrending = trendingContent.filter { $0.id != heroContent?.id }
+                            MediaSection(
+                                title: section.title,
+                                items: Array(filteredTrending.prefix(15))
+                            )
+                        }
+                    case "popularMovies":
+                        if !popularMovies.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularMovies.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "popularTVShows":
+                        if !popularTVShows.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularTVShows.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "popularAnime":
+                        if !popularAnime.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: popularAnime.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedMovies":
+                        if !topRatedMovies.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedMovies.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedTVShows":
+                        if !topRatedTVShows.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedTVShows.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    case "topRatedAnime":
+                        if !topRatedAnime.isEmpty {
+                            MediaSection(
+                                title: section.title,
+                                items: topRatedAnime.prefix(15).map { $0.asSearchResult }
+                            )
+                        }
+                    default:
+                        EmptyView()
+                    }
+                }
+            }
+            
+            Spacer(minLength: 50)
         }
-        
-        Spacer(minLength: 50)
-    }
-    
-    private var enabledHomeSections: [HomeSection] {
-        homeSections.filter(\.isEnabled)
-    }
-    
-    private func homeSectionView(_ section: HomeSection) -> AnyView {
-        if shouldHideSection(section) {
-            return AnyView(EmptyView())
-        }
-        
-        switch section.id {
-        case "trending":
-            return makeMediaSection(
-                title: section.title,
-                items: filteredTrendingItems
-            )
-            
-        case "popularMovies":
-            return makeMediaSection(
-                title: section.title,
-                items: popularMovies.prefix(15).map(\.asSearchResult)
-            )
-            
-        case "popularTVShows":
-            return makeMediaSection(
-                title: section.title,
-                items: popularTVShows.prefix(15).map(\.asSearchResult)
-            )
-            
-        case "popularAnime":
-            return makeMediaSection(
-                title: section.title,
-                items: popularAnime.prefix(15).map(\.asSearchResult)
-            )
-            
-        case "topRatedMovies":
-            return makeMediaSection(
-                title: section.title,
-                items: topRatedMovies.prefix(15).map(\.asSearchResult)
-            )
-            
-        case "topRatedTVShows":
-            return makeMediaSection(
-                title: section.title,
-                items: topRatedTVShows.prefix(15).map(\.asSearchResult)
-            )
-            
-        case "topRatedAnime":
-            return makeMediaSection(
-                title: section.title,
-                items: topRatedAnime.prefix(15).map(\.asSearchResult)
-            )
-            
-        default:
-            return AnyView(EmptyView())
-        }
-    }
-    
-    private func makeMediaSection(
-        title: String,
-        items: [TMDBSearchResult]
-    ) -> AnyView {
-        guard !items.isEmpty else {
-            return AnyView(EmptyView())
-        }
-        
-        return AnyView(
-            MediaSection(
-                title: title,
-                items: items
-            )
-        )
-    }
-    
-    private var filteredTrendingItems: [TMDBSearchResult] {
-        Array(
-            trendingContent
-                .filter { $0.id != heroContent?.id }
-                .prefix(15)
-        )
-    }
-    
-    private func shouldHideSection(_ section: HomeSection) -> Bool {
-        contentFilter.animeOnlyMode && contentFilter.isNonAnimeSection(section.id)
+        .background(Color.clear)
     }
     
     private func loadContent() {
         isLoading = true
         errorMessage = nil
-        heroLogoURL = nil
         continueWatchingItems = ProgressManager.shared.getContinueWatchingItems()
         
         Task {
@@ -453,21 +428,23 @@ struct HomeView: View {
                     let (popularAnimeResult, topRatedAnimeResult) = try await (popularA, topRatedA)
                     
                     await MainActor.run {
-                        self.trendingContent = []
-                        self.popularMovies = []
-                        self.popularTVShows = []
-                        self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
-                        self.topRatedMovies = []
-                        self.topRatedTVShows = []
-                        self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
-                        
-                        self.heroContent = self.popularAnime
-                            .first { $0.backdropPath != nil }
-                            .map { $0.asSearchResult }
-                        ?? self.popularAnime.first.map { $0.asSearchResult }
-                        
-                        self.isLoading = false
-                        self.hasLoadedContent = true
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            self.trendingContent = []
+                            self.popularMovies = []
+                            self.popularTVShows = []
+                            self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
+                            self.topRatedMovies = []
+                            self.topRatedTVShows = []
+                            self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                            
+                            self.heroContent = self.popularAnime
+                                .first { $0.backdropPath != nil }
+                                .map { $0.asSearchResult }
+                            ?? self.popularAnime.first.map { $0.asSearchResult }
+                            
+                            self.isLoading = false
+                            self.hasLoadedContent = true
+                        }
                     }
                 } else {
                     async let trending = tmdbService.getTrending()
@@ -481,17 +458,19 @@ struct HomeView: View {
                     let (trendingResult, popularMoviesResult, popularTVResult, popularAnimeResult, topRatedMoviesResult, topRatedTVResult, topRatedAnimeResult) = try await (trending, popularM, popularTV, popularA, topRatedM, topRatedTV, topRatedA)
                     
                     await MainActor.run {
-                        self.trendingContent = contentFilter.filterSearchResults(trendingResult)
-                        self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
-                        self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
-                        self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
-                        self.topRatedMovies = contentFilter.filterMovies(topRatedMoviesResult)
-                        self.topRatedTVShows = contentFilter.filterTVShows(topRatedTVResult)
-                        self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
-                        
-                        self.heroContent = self.trendingContent.first { $0.backdropPath != nil } ?? self.trendingContent.first
-                        self.isLoading = false
-                        self.hasLoadedContent = true
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            self.trendingContent = contentFilter.filterSearchResults(trendingResult)
+                            self.popularMovies = contentFilter.filterMovies(popularMoviesResult)
+                            self.popularTVShows = contentFilter.filterTVShows(popularTVResult)
+                            self.popularAnime = contentFilter.filterTVShows(popularAnimeResult)
+                            self.topRatedMovies = contentFilter.filterMovies(topRatedMoviesResult)
+                            self.topRatedTVShows = contentFilter.filterTVShows(topRatedTVResult)
+                            self.topRatedAnime = contentFilter.filterTVShows(topRatedAnimeResult)
+                            
+                            self.heroContent = self.trendingContent.first { $0.backdropPath != nil } ?? self.trendingContent.first
+                            self.isLoading = false
+                            self.hasLoadedContent = true
+                        }
                     }
                 }
                 
@@ -519,7 +498,9 @@ struct HomeView: View {
             
             if let logo = tmdbService.getBestLogo(from: images, preferredLanguage: selectedLanguage) {
                 await MainActor.run {
-                    self.heroLogoURL = logo.fullURL
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        self.heroLogoURL = logo.fullURL
+                    }
                 }
             }
         } catch {
@@ -536,8 +517,15 @@ struct HomeView: View {
 struct MediaSection: View {
     let title: String
     let items: [TMDBSearchResult]
+    let isLarge: Bool
     
     var gap: Double { isTvOS ? 50.0 : 20.0 }
+    
+    init(title: String, items: [TMDBSearchResult], isLarge: Bool = Bool.random()) {
+        self.title = title
+        self.items = items
+        self.isLarge = isLarge
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -562,6 +550,7 @@ struct MediaSection: View {
             .buttonStyle(.borderless)
         }
         .padding(.top, isTvOS ? 40 : 24)
+        .opacity(items.isEmpty ? 0 : 1)
     }
 }
 
